@@ -1,0 +1,5 @@
+string author
+Relation relation
+bool value
+---
+bool ok

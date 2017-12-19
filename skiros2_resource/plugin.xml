@@ -1,0 +1,16 @@
+<library path="src">
+  <class name="skiros/ResourceMgr" type="skiros2_resource.gui.resource_gui.ResourceGui" base_class_type="rqt_gui_py::Plugin">
+    <description>
+      A Python GUI plugin to handle skiros resources
+    </description>
+    <qtgui>
+      <group>
+        <label>SkiROS</label>
+        <icon type="theme">folder</icon>
+        <statustip>SkiROS system GUIs.</statustip>
+      </group>
+      <label>Resource manager</label>
+      <statustip>A Python GUI plugin to monitor skiros resources.</statustip>
+    </qtgui>
+  </class>
+</library>

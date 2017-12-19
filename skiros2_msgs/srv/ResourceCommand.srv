@@ -1,0 +1,15 @@
+#Possible commands
+string PREEMPT=preempt
+string TICK=tick
+string RESET=reset
+
+string author #Author of the action
+string command
+string resource_name
+---
+bool ok
+string error
+string state
+int16 progress_code
+string progress_description 
+

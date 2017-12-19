@@ -1,0 +1,337 @@
+from flufl.enum import Enum
+from copy import deepcopy
+import skiros2_common.tools.logger as log
+from skiros2_common.core.property import Property
+from skiros2_common.core.world_element import Element
+from datetime import datetime, timedelta
+
+"""
+World: shared parameters, related to world model
+Optional: optional parameters
+Config: a configuration parameter
+System: parameters managed automatically
+"""
+ParamTypes = Enum('ParamTypes', 'World Optional Config System')
+
+class Param(Property):
+    """
+    @brief A param is a property with addionally:
+        *a default value and a parameter type
+        *functions to handle World Elements and possibility to be converted in a World Element
+        
+    >>> p = Param("MyProp", "", 0, ParamTypes.Config)
+    >>> p.value
+    0
+    >>> t = p.last_update
+    >>> p.hasChanges(t)
+    False
+    >>> p.value = 1
+    >>> p.hasChanges(t)
+    True
+    
+    """
+    __slots__ = ['_key', '_description', '_param_type', '_values', '_data_type', '_default', '_last_update']
+    def __init__(self, key, description, value, param_type):  
+        self._key=key          
+        self._description=description  
+        self._setLastUpdate() 
+        if isinstance(param_type, int):
+            self._param_type=ParamTypes(param_type+1)
+        else:
+            self._param_type=param_type
+        if isinstance(value, list):
+            self._default = value
+            self._values = value
+            self._data_type = type(value[0])
+        elif isinstance(value, type):
+            self._data_type=value       
+            self._default = list()
+            self._values = list()
+        else:
+            self._default = [value]
+            self._data_type=type(value)
+            self._values = [value] 
+    
+    @property
+    def last_update(self):
+        return self._last_update
+        
+    def _setLastUpdate(self):
+        """
+        @brief Update the time of last update
+        """
+        self._last_update = datetime.now()
+        
+    def hasChanges(self, time, tolerance=1):
+        """
+        @brief Returns true if the property was changes since the specified time
+        @time a datetime
+        @tolerance the tolerance in microseconds
+        """       
+        if (self._last_update-time)>timedelta(microseconds=tolerance):
+            return True
+        return False
+        
+    def setValue(self, value, index=0):
+        """
+        @brief Set the value at the index
+        """
+        super(Param, self).setValue(value, index)
+        self._setLastUpdate()
+            
+    def setValues(self, value):
+        """
+        @brief Set all the values
+        """
+        super(Param, self).setValues(value)
+        self._setLastUpdate()
+
+    def removeValue(self, value):
+        """
+        @brief Removes the first value matching. Does nothing if value is not present
+        """
+        super(Param, self).removeValue(value)
+        self._setLastUpdate()
+    
+    def addValue(self, value):
+        """
+        @brief Append a value
+        """
+        super(Param, self).addValue(value)
+        self._setLastUpdate()
+                    
+    def hasSpecifiedDefault(self):
+        """
+        @brief Check if the current parameter has default values specified
+        """
+        return len(self._default)>0
+        
+    def getDefaultValue(self, index=0):
+        return self._default[index]
+        
+    def getDefaultValues(self):
+        return self._default
+        
+    def hasDefaultValues(self):
+        """
+        @brief Check if the current parameter value is the default
+        """
+        for v1, v2 in zip(self._default, self._values):
+            if v1!=v2: return False
+        return True
+            
+    def makeDefault(self, values):
+        """
+        @brief Specify a new default value
+        """
+        if isinstance(values, list):
+            self._default = self._values
+        else:
+            self._default = [self._values]
+            
+    def setDefault(self):
+        """
+        @brief Set the parameter to default value
+        """
+        self._values = self._default        
+    
+    @property
+    def description(self):
+        return self._description
+        
+    @property  
+    def paramType(self):
+        return self._param_type  
+        
+    def paramTypeIs(self, ptype):
+        return self._param_type == ptype
+                
+    def toElement(self):    
+        to_ret = Element("skiros:Parameter", self._key)
+        to_ret.setProperty("rdfs:comment", self._description)
+        to_ret.setProperty("skiros:ParameterType", int(self._param_type)-1)
+        if(not self.dataTypeIs(Element)):
+            to_ret.setProperty("skiros:DataType", self._data_type)
+            if self.hasSpecifiedDefault():
+                to_ret.setProperty("skiros:Default", self._default)
+            if self.isSpecified():
+                to_ret.setProperty("skiros:Value", self._values)
+        else:
+            to_ret.setProperty("skiros:DataType", self._default[0]._type)
+            if self.isSpecified():
+                for v in self._values:
+                    if v._id!="":
+                        to_ret.addRelation("-1", "skiros:hasValue", v._id)
+        return to_ret
+     
+class ParamHandler(object):
+    """
+    >>> ph = ParamHandler()
+    >>> ph.addParam("Trajectory", dict, ParamTypes.Config)
+    >>> ph.printState()
+    'Trajectory:[] '
+    >>> ph.specify("Trajectory", {"MyTraj": "Ue"})
+    >>> ph.printState() 
+    "Trajectory:[{'MyTraj': 'Ue'}] "
+    >>> ph.setDefault("Trajectory")
+    >>> ph.printState() 
+    'Trajectory:[] '
+    
+    """
+    __slots__ = ['_params']
+    def __init__(self, params=None):
+        self._params={}
+        if params:
+            self._params=params
+            
+    def __getitem__(self, key):
+        if self.hasParam(key):
+            return self._params[key]
+        else:
+            log.error('ParamHandler', 'Param {} is not in the map. Debug: {}'.format(key, self.printState()))
+    
+    def iteritems(self):
+        return self._params.iteritems()
+        
+    def reset(self, copy):
+        self._params=copy
+
+    def getCopy(self):
+        return deepcopy(self._params)
+        
+    def getParamMap(self):
+        return self._params
+
+    def merge(self, other):
+        """
+        Return the parameter map, result of the merge between self and another ParameterHandler 
+        """
+        to_ret = self.getCopy()
+        for key, param in other._params.iteritems():
+            if self.hasParam(key):
+                to_ret[key].setValues(param.getValues())
+            else:
+                to_ret[key] = param
+        return to_ret
+        
+    def remap(self, initial_key, target_key):
+        """
+        Remap a parameter to a new key
+        """
+        if self.hasParam(initial_key):
+            #print self.printState()
+            temp = self._params[initial_key]
+            temp._key = target_key
+            self._params[target_key] = temp
+            del self._params[initial_key]
+            #print 'after ' + self.printState()
+
+    def specifyParams(self, other, keep_default=False):
+        """
+        Set the input params
+        """
+        for key, param in other._params.iteritems():
+            if self.hasParam(key):
+                t = self._params[key]
+                if keep_default and t.hasSpecifiedDefault():
+                    if t.dataTypeIs(Element):
+                        if t.getDefaultValue()._id=="" or t.getDefaultValue()._id==param.value._id:
+                            t.values = param.values
+                else:
+                    t.values = param.values
+        
+    def specifyParamsDefault(self, other):
+        """
+        Set the input params and default value
+        """
+        for key, param in other._params.iteritems():
+            if self.hasParam(key):
+                self._params[key].setValues(param.getValues())
+                self._params[key].makeDefault(param.getValues())
+                    
+    def hasParam(self, key):
+        """
+        Check that a key exists and return false otherwise
+        """
+        return self._params.has_key(key)
+
+    def setDefault(self, key=None):
+        """
+        Set the param (or the params, if key is a list) to the default value
+        """
+        if isinstance(key, list):
+            for k in key:
+                self._params[k].setDefault()
+        elif key is None:
+            for _, p in self._params.iteritems():
+                p.setDefault()
+        else:
+            self._params[key].setDefault()
+        
+    def addParam(self, key, value, param_type, description=""):
+        self._params[key] = Param(key, description, value, param_type)
+                    
+    def getParam(self, key):
+        if self.hasParam(key):
+            return self._params[key]
+        else:
+            log.error('getParam', 'Param {} is not in the map. Debug: {}'.format(key, self.printState()))
+        
+    def specifyDefault(self, key, values):
+        self.specify(key, values)
+        self._params[key].makeDefault(values)
+    
+    def specify(self, key, values):
+        if self.hasParam(key):
+            self._params[key].setValues(values)
+        else:
+            log.error('specify', 'Param {} is not in the map. Debug: {}'.format(key, self.printState()))
+            
+    def isSpecified(self, key):
+        return self._params[key].isSpecified()
+        
+    def getParamValue(self, key, make_instance=False):
+        """
+        Return the first value of the parameter
+        
+        If make_instance is True and the parameter is not specified, an instance is returned
+        rather than None
+        """
+        if self.hasParam(key):
+            if make_instance and not self.isSpecified(key):
+                return self._params[key].makeInstance()
+            return self._params[key].getValue()
+        else:
+            log.error('getParamValue', 'Param {} is not in the map. Debug: {}'.format(key, self.printState()))
+        
+    def getParamValues(self, key):
+        """
+        Return the parameter values (list)
+        
+        If make_instance is True and the parameter is not specified, an instance list is returned
+        rather than a None list
+        """
+        if self.hasParam(key):
+            return self._params[key].getValues()
+        else:
+            log.error('getParamValues', 'Param {} is not in the map. Debug: {}'.format(key, self.printState()))
+        
+    def getParamMapFiltered(self, type_filter):
+        to_ret = {}
+        for key, param in self._params.iteritems():
+            if isinstance(type_filter, list):
+                if param.paramType in type_filter:
+                    to_ret[key] = param
+            else:
+                if param.paramType == type_filter:
+                    to_ret[key] = param                
+        return to_ret
+        
+    def printState(self):
+        to_ret = ""
+        for _, p in self._params.iteritems():
+            #if not p.hasDefaultValues():
+            #if p.paramTypeIs(ParamTypes.Online):
+            to_ret += p.printState() + " "
+        return to_ret
+        

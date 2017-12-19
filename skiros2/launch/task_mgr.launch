@@ -1,0 +1,8 @@
+<launch>
+  <arg name="debug" default="false"/>
+  <arg unless="$(arg debug)" name="prefix" value="xterm -geometry 100x60+1280+0 -hold -e " />
+  <arg if="$(arg debug)" name="prefix" value="xterm -e python -m pdb" />
+
+  <node launch-prefix="$(arg prefix)" name="skiros_task_mgr" pkg="skiros2_task" type="task_manager_node" respawn="true"> 
+  </node>
+</launch>

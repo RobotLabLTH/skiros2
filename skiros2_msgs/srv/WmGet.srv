@@ -1,0 +1,12 @@
+#Possible actions
+string GET=get
+string GET_TEMPLATE=get_template
+string RESOLVE=resolve
+string GET_RECURSIVE=get_recursive
+
+string action
+WmElement element
+string relation_filter
+string type_filter
+---
+WmElement[] elements

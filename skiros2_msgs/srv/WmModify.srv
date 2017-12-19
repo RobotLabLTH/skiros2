@@ -1,0 +1,13 @@
+#Possible actions
+string ADD=add
+string UPDATE=update
+string REMOVE=remove
+string REMOVE_RECURSIVE=remove_recursive
+
+string author
+string action
+string relation_filter
+string type_filter
+WmElement[] elements
+---
+string[] ids

@@ -1,0 +1,7 @@
+string resource_name
+Param[] param_map
+---
+bool ok
+string error
+
+

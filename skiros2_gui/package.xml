@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<package>
+  <name>skiros2_gui</name>
+  <version>0.0.1</version>
+  <description>SkiROS GUI</description>
+
+  <maintainer email="francesco@m-tech.aau.dk">Francesco Rovida</maintainer>
+  <license>BSD</license>
+  <author email="francesco@m-tech.aau.dk">Francesco Rovida</author>
+  <author>Francesco Rovida</author>
+
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>skiros2_msgs</build_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>skiros2_msgs</run_depend>
+  <run_depend>skiros2_common</run_depend>
+  <run_depend>skiros2_world_model</run_depend>
+  <run_depend>skiros2_skill</run_depend>
+
+  <!-- GUI -->
+  <run_depend>rqt_gui_py</run_depend>
+  <run_depend>rqt_py_common</run_depend>
+  <export>
+    <rqt_gui plugin="${prefix}/plugin.xml"/>
+  </export>
+</package>

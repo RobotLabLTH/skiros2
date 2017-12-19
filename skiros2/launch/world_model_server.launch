@@ -1,0 +1,16 @@
+<launch>
+  <arg name="debug" default="false"/>
+  <arg unless="$(arg debug)" name="prefix" value="xterm -geometry 100x60+0+0 -hold -e " />
+  <arg if="$(arg debug)" name="prefix" value="xterm -e python -m pdb" />
+  <arg name="init_scene" default=""/>
+  <arg name="verbose" default="true"/>
+  <arg name="reasoners_pkgs" default="[]"/>
+  <arg name="workspace_dir" default=""/>
+
+  <node launch-prefix="$(arg prefix)" name="skiros_wm" pkg="skiros2_world_model" type="world_model_server_node" respawn="true"> 
+    <param name="workspace_dir" value="$(arg workspace_dir)" />
+    <param name="init_scene" value="$(arg init_scene)" />
+    <param name="verbose" value="$(arg verbose)" /> 
+    <rosparam param = "reasoners_pkgs" subst_value="True">$(arg reasoners_pkgs)</rosparam>   
+  </node>
+</launch>

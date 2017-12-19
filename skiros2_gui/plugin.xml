@@ -1,0 +1,16 @@
+<library path="src">
+  <class name="Skiros" type="skiros2_gui.gui.Skiros" base_class_type="rqt_gui_py::Plugin">
+    <description>
+      A general control GUI for skiros 
+    </description>
+    <qtgui>
+      <group>
+        <label>SkiROS</label>
+        <icon type="theme">folder</icon>
+        <statustip>SkiROS system GUIs.</statustip>
+      </group>
+      <label>SkiROS</label>
+      <statustip> A general control GUI for skiros.</statustip>
+    </qtgui>
+  </class>
+</library>

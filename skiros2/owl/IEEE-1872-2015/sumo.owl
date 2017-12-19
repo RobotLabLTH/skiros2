@@ -1,0 +1,403 @@
+<?xml version="1.0"?>
+
+
+<!DOCTYPE rdf:RDF [
+    <!ENTITY owl "http://www.w3.org/2002/07/owl#" >
+    <!ENTITY xsd "http://www.w3.org/2001/XMLSchema#" >
+    <!ENTITY owl2xml "http://www.w3.org/2006/12/owl2-xml#" >
+    <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#" >
+    <!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >
+    <!ENTITY sumo "http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#" >
+    <!ENTITY RobotsAutomation "http://www.semanticweb.org/ontologies/2013/7/RobotsAutomation.owl#" >
+    <!ENTITY SUMO "http://www.semanticweb.org/ontologies/2013/7/RobotsAutomation.owl#SUMO:" >
+]>
+
+
+<rdf:RDF xmlns="http://www.semanticweb.org/ontologies/2013/7/RobotsAutomation.owl#"
+     xml:base="http://www.semanticweb.org/ontologies/2013/7/RobotsAutomation.owl"
+     xmlns:RobotsAutomation="http://www.semanticweb.org/ontologies/2013/7/RobotsAutomation.owl#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     xmlns:owl2xml="http://www.w3.org/2006/12/owl2-xml#"
+     xmlns:sumo="http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:SUMO="&RobotsAutomation;SUMO:">
+    <owl:Ontology rdf:about="http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Object Properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#CaseRole -->
+
+    <owl:ObjectProperty rdf:about="&sumo;CaseRole"/>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#abstractPart -->
+
+    <owl:ObjectProperty rdf:about="&sumo;abstractPart">
+        <rdf:type rdf:resource="&owl;AsymmetricProperty"/>
+        <rdfs:range rdf:resource="&sumo;Abstract"/>
+        <rdfs:domain rdf:resource="&sumo;Abstract"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#agent -->
+
+    <owl:ObjectProperty rdf:about="&sumo;agent">
+        <rdfs:range rdf:resource="&sumo;Agent"/>
+        <rdfs:subPropertyOf rdf:resource="&sumo;CaseRole"/>
+        <rdfs:domain rdf:resource="&sumo;Process"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#hasMember -->
+
+    <owl:ObjectProperty rdf:about="&sumo;hasMember">
+        <owl:inverseOf rdf:resource="&sumo;member"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#hasPart -->
+
+    <owl:ObjectProperty rdf:about="&sumo;hasPart">
+        <owl:inverseOf rdf:resource="&sumo;part"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#isLocationOf -->
+
+    <owl:ObjectProperty rdf:about="&sumo;isLocationOf">
+        <owl:inverseOf rdf:resource="&sumo;located"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#isMemberOf -->
+
+    <owl:ObjectProperty rdf:about="&sumo;isMemberOf">
+        <owl:inverseOf rdf:resource="&sumo;member"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#located -->
+
+    <owl:ObjectProperty rdf:about="&sumo;located">
+        <rdf:type rdf:resource="&owl;AsymmetricProperty"/>
+        <rdf:type rdf:resource="&owl;IrreflexiveProperty"/>
+        <rdfs:subPropertyOf rdf:resource="&sumo;partlyLocated"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#measure -->
+
+    <owl:ObjectProperty rdf:about="&sumo;measure">
+        <rdf:type rdf:resource="&owl;AsymmetricProperty"/>
+        <rdf:type rdf:resource="&owl;IrreflexiveProperty"/>
+        <rdfs:domain rdf:resource="&sumo;Object"/>
+        <rdfs:range rdf:resource="&sumo;PhysicalQuantity"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#member -->
+
+    <owl:ObjectProperty rdf:about="&sumo;member">
+        <rdf:type rdf:resource="&owl;AsymmetricProperty"/>
+        <rdfs:range rdf:resource="&sumo;Collection"/>
+        <rdfs:domain>
+            <owl:Class>
+                <owl:intersectionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="&sumo;Object"/>
+                    <owl:Class>
+                        <owl:complementOf rdf:resource="&sumo;Collection"/>
+                    </owl:Class>
+                </owl:intersectionOf>
+            </owl:Class>
+        </rdfs:domain>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#part -->
+
+    <owl:ObjectProperty rdf:about="&sumo;part">
+        <rdf:type rdf:resource="&owl;AsymmetricProperty"/>
+        <rdfs:range rdf:resource="&sumo;Object"/>
+        <rdfs:domain rdf:resource="&sumo;Object"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#partlyLocated -->
+
+    <owl:ObjectProperty rdf:about="&sumo;partlyLocated">
+        <rdfs:range rdf:resource="&sumo;Object"/>
+        <rdfs:domain rdf:resource="&sumo;Physical"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#property -->
+
+    <owl:ObjectProperty rdf:about="&sumo;property">
+        <rdfs:range rdf:resource="&sumo;Attribute"/>
+        <rdfs:domain rdf:resource="&sumo;Entity"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Classes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Abstract -->
+
+    <owl:Class rdf:about="&sumo;Abstract">
+        <rdfs:subClassOf rdf:resource="&sumo;Entity"/>
+        <owl:disjointWith rdf:resource="&sumo;Physical"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Agent -->
+
+    <owl:Class rdf:about="&sumo;Agent">
+        <rdfs:subClassOf rdf:resource="&sumo;Object"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Artifact -->
+
+    <owl:Class rdf:about="&sumo;Artifact">
+        <rdfs:subClassOf rdf:resource="&sumo;Object"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Attribute -->
+
+    <owl:Class rdf:about="&sumo;Attribute">
+        <rdfs:subClassOf rdf:resource="&sumo;Abstract"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Collection -->
+
+    <owl:Class rdf:about="&sumo;Collection">
+        <rdfs:subClassOf rdf:resource="&sumo;Object"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Device -->
+
+    <owl:Class rdf:about="&sumo;Device">
+        <rdfs:subClassOf rdf:resource="&sumo;Artifact"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#ElectricDevice -->
+
+    <owl:Class rdf:about="&sumo;ElectricDevice">
+        <rdfs:subClassOf rdf:resource="&sumo;Device"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Entity -->
+
+    <owl:Class rdf:about="&sumo;Entity"/>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Function -->
+
+    <owl:Class rdf:about="&sumo;Function">
+        <rdfs:subClassOf rdf:resource="&sumo;SingleValuedRelation"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Group -->
+
+    <owl:Class rdf:about="&sumo;Group">
+        <rdfs:subClassOf>
+            <owl:Class>
+                <owl:intersectionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="&sumo;Agent"/>
+                    <rdf:Description rdf:about="&sumo;Collection"/>
+                </owl:intersectionOf>
+            </owl:Class>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#InheritableRelation -->
+
+    <owl:Class rdf:about="&sumo;InheritableRelation">
+        <rdfs:subClassOf rdf:resource="&sumo;Relation"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#List -->
+
+    <owl:Class rdf:about="&sumo;List">
+        <rdfs:subClassOf rdf:resource="&sumo;Relation"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#MeasuringDevice -->
+
+    <owl:Class rdf:about="&sumo;MeasuringDevice">
+        <rdfs:subClassOf rdf:resource="&sumo;Device"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Object -->
+
+    <owl:Class rdf:about="&sumo;Object">
+        <rdfs:subClassOf rdf:resource="&sumo;Physical"/>
+        <owl:disjointWith rdf:resource="&sumo;Process"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Physical -->
+
+    <owl:Class rdf:about="&sumo;Physical">
+        <rdfs:subClassOf rdf:resource="&sumo;Entity"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#PhysicalQuantity -->
+
+    <owl:Class rdf:about="&sumo;PhysicalQuantity">
+        <rdfs:subClassOf rdf:resource="&sumo;Quantity"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Predicate -->
+
+    <owl:Class rdf:about="&sumo;Predicate">
+        <rdfs:subClassOf rdf:resource="&sumo;InheritableRelation"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Process -->
+
+    <owl:Class rdf:about="&sumo;Process">
+        <rdfs:subClassOf rdf:resource="&sumo;Physical"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Proposition -->
+
+    <owl:Class rdf:about="&sumo;Proposition">
+        <rdfs:subClassOf rdf:resource="&sumo;Abstract"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Quantity -->
+
+    <owl:Class rdf:about="&sumo;Quantity">
+        <rdfs:subClassOf rdf:resource="&sumo;Abstract"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Region -->
+
+    <owl:Class rdf:about="&sumo;Region">
+        <rdfs:subClassOf rdf:resource="&sumo;Object"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Relation -->
+
+    <owl:Class rdf:about="&sumo;Relation">
+        <rdfs:subClassOf rdf:resource="&sumo;Abstract"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#SingleValuedRelation -->
+
+    <owl:Class rdf:about="&sumo;SingleValuedRelation">
+        <rdfs:subClassOf rdf:resource="&sumo;InheritableRelation"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#TimeInterval -->
+
+    <owl:Class rdf:about="&sumo;TimeInterval">
+        <rdfs:subClassOf rdf:resource="&sumo;TimeMeasure"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#TimeMeasure -->
+
+    <owl:Class rdf:about="&sumo;TimeMeasure">
+        <rdfs:subClassOf rdf:resource="&sumo;PhysicalQuantity"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#TimePoint -->
+
+    <owl:Class rdf:about="&sumo;TimePoint">
+        <rdfs:subClassOf rdf:resource="&sumo;TimeMeasure"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Wheel -->
+
+    <owl:Class rdf:about="&sumo;Wheel">
+        <rdfs:subClassOf rdf:resource="&sumo;Artifact"/>
+    </owl:Class>
+</rdf:RDF>
+
+
+
+<!-- Generated by the OWL API (version 3.4.2) http://owlapi.sourceforge.net -->
+

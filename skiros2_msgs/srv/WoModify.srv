@@ -1,0 +1,4 @@
+string author
+Statement[] statements
+---
+bool ok
