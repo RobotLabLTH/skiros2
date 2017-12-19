@@ -1,0 +1,131 @@
+<?xml version="1.0"?>
+<rdf:RDF xmlns="http://rvmi.aau.dk/ontologies/skiros.owl#"
+     xmlns:skiros="http://rvmi.aau.dk/ontologies/skiros.owl#"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:xml="http://www.w3.org/XML/1998/namespace"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#hasFov -->
+    <owl:ObjectProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#hasFov">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#conditionProperty"/>
+    </owl:ObjectProperty>
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#partReference -->
+    <owl:ObjectProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#partReference">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#conditionProperty"/>
+    </owl:ObjectProperty>
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#Product -->
+    <owl:Class rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#Product">
+        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Object"/>
+    </owl:Class>
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#Starter -->
+    <owl:Class rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#Starter">
+        <rdfs:subClassOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Product"/>
+    </owl:Class>
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#starter -->
+    <owl:NamedIndividual rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#starter">
+        <rdf:type rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Starter"/>
+        <skiros:DiscreteReasoner rdf:datatype="http://www.w3.org/2001/XMLSchema#string">AauSpatialReasoner</skiros:DiscreteReasoner>
+        <skiros:Weight rdf:datatype="http://www.w3.org/2001/XMLSchema#double">3.0</skiros:Weight>
+    </owl:NamedIndividual>
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#LargeBox -->
+    <owl:Class rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#LargeBox">
+        <rdfs:subClassOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Container"/>
+    </owl:Class>
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#large_box_test_starter -->
+    <owl:NamedIndividual rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#large_box_test_starter">
+        <rdf:type rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#LargeBox"/>
+        <skiros:DiscreteReasoner>AauSpatialReasoner</skiros:DiscreteReasoner>
+        <partReference rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#starter"/>
+    </owl:NamedIndividual>
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#blank_scene -->
+    <owl:NamedIndividual rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#blank_scene">
+        <rdf:type rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Scene"/>
+        <skiros:DiscreteReasoner rdf:datatype="http://www.w3.org/2001/XMLSchema#string">AauSpatialReasoner</skiros:DiscreteReasoner>
+        <skiros:FrameId rdf:datatype="http://www.w3.org/2001/XMLSchema#string">map</skiros:FrameId>
+        <skiros:OrientationW rdf:datatype="http://www.w3.org/2001/XMLSchema#double">1.0</skiros:OrientationW>
+        <skiros:OrientationX rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</skiros:OrientationX>
+        <skiros:OrientationY rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</skiros:OrientationY>
+        <skiros:OrientationZ rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</skiros:OrientationZ>
+        <skiros:PositionX rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</skiros:PositionX>
+        <skiros:PositionY rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</skiros:PositionY>
+        <skiros:PositionZ rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</skiros:PositionZ>
+    </owl:NamedIndividual>
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#unknown_location -->
+    <owl:NamedIndividual rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#unknown_location">
+        <rdf:type rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Location"/>
+        <skiros:DiscreteReasoner>AauSpatialReasoner</skiros:DiscreteReasoner>
+    </owl:NamedIndividual>
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#test_robot -->
+    <owl:NamedIndividual rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#test_robot">
+        <rdf:type rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/cora.owl#Robot"/>
+        <skiros:DiscreteReasoner>AauSpatialReasoner</skiros:DiscreteReasoner>
+        <skiros:SkillMgr>/test_robot</skiros:SkillMgr>
+        <skiros:DiscreteReasoner rdf:datatype="http://www.w3.org/2001/XMLSchema#string">AauSpatialReasoner</skiros:DiscreteReasoner>
+        <skiros:OrientationW rdf:datatype="http://www.w3.org/2001/XMLSchema#double">1.0</skiros:OrientationW>
+        <skiros:OrientationX rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</skiros:OrientationX>
+        <skiros:OrientationY rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</skiros:OrientationY>
+        <skiros:OrientationZ rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</skiros:OrientationZ>
+        <skiros:PositionX rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</skiros:PositionX>
+        <skiros:PositionY rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</skiros:PositionY>
+        <skiros:PositionZ rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</skiros:PositionZ>
+        <skiros:hasStartLocation rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#unknown_location"/>
+        <skiros:hasA rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#test_arm"/>
+    </owl:NamedIndividual>
+
+    <owl:NamedIndividual rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#test_arm">
+        <skiros:DiscreteReasoner>AauSpatialReasoner</skiros:DiscreteReasoner>
+        <skiros:LinkedToFrameId></skiros:LinkedToFrameId>
+        <rdf:type rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#ArmDevice"/>
+        <skiros:hasA rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#test_gripper"/>
+        <skiros:hasA rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#test_camera"/>
+    </owl:NamedIndividual>
+
+
+    <owl:NamedIndividual rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#test_gripper">
+        <skiros:DiscreteReasoner>AauSpatialReasoner</skiros:DiscreteReasoner>
+        <skiros:LinkedToFrameId></skiros:LinkedToFrameId>
+        <rdf:type rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#GripperEffector"/>
+        <skiros:ContainerState>Empty</skiros:ContainerState>
+    </owl:NamedIndividual>
+
+    <owl:NamedIndividual rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#test_camera">
+        <skiros:DiscreteReasoner>AauSpatialReasoner</skiros:DiscreteReasoner>
+        <skiros:LinkedToFrameId></skiros:LinkedToFrameId>
+        <rdf:type rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#DepthCamera"/>
+        <skiros:StateProperty>Idle</skiros:StateProperty>
+    </owl:NamedIndividual>
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#transformation_pose_linked_t -->
+    <owl:NamedIndividual rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#transformation_pose_linked_t">
+        <rdf:type rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#TransformationPose"/>
+        <skiros:DiscreteReasoner rdf:datatype="http://www.w3.org/2001/XMLSchema#string">AauSpatialReasoner</skiros:DiscreteReasoner>
+        <skiros:LinkedToFrameId rdf:datatype="http://www.w3.org/2001/XMLSchema#string"></skiros:LinkedToFrameId>
+    </owl:NamedIndividual>
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#transformation_pose_t -->
+    <owl:NamedIndividual rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#transformation_pose_t">
+        <rdf:type rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#TransformationPose"/>
+        <skiros:DiscreteReasoner rdf:datatype="http://www.w3.org/2001/XMLSchema#string">AauSpatialReasoner</skiros:DiscreteReasoner>
+        <skiros:OrientationW rdf:datatype="http://www.w3.org/2001/XMLSchema#double">1.0</skiros:OrientationW>
+        <skiros:OrientationX rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</skiros:OrientationX>
+        <skiros:OrientationY rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</skiros:OrientationY>
+        <skiros:OrientationZ rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</skiros:OrientationZ>
+        <skiros:PositionX rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</skiros:PositionX>
+        <skiros:PositionY rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</skiros:PositionY>
+        <skiros:PositionZ rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</skiros:PositionZ>
+    </owl:NamedIndividual>
+</rdf:RDF>
+

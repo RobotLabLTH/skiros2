@@ -1,0 +1,48 @@
+<launch>
+  <arg name="libraries_list" default="[]"/>
+  <arg name="primitive_list" default="[
+                                      ]"/>
+  <arg name="skill_list" default="[
+                                  ]"/>
+  <arg name="memory_contexts" default="[
+                                        ]"/>
+
+  <arg name="robot_ontology_prefix" default="skiros" />
+  <arg name="robot_name" default="test_robot" />
+  <arg name="deploy" default="true" />
+  <arg name="gui" default="true"/>
+  <arg name="verbose" default="false"/>
+  <arg name="debug" default="false"/>
+  <arg name="workspace_dir" default="$(find skiros2)/owl"/>
+  <arg name="init_scene" default=""/>
+  <arg name="skill_mgr_on" default="true"/>
+  <arg name="task_mgr_on" default="true"/>
+
+  <node name="map2world" type="static_transform_publisher" pkg="tf" args="0 0 0 0 0 0 1 map world 100" />
+
+  <include file="$(find skiros2)/launch/world_model_server.launch">
+      <arg name="init_scene" value="$(arg init_scene)"/>
+      <arg name="verbose" value="$(arg verbose)"/>
+      <arg name="gui" value="$(arg gui)"/>
+      <arg name="reasoners_pkgs" value="[skiros2_std_reasoners]"/>
+      <arg name="load_contexts" value="$(arg memory_contexts)"/>
+      <arg name="workspace_dir" value="$(arg workspace_dir)"/>
+      <arg name="debug" value="$(arg debug)"/>
+      <arg name="deploy" value="$(arg deploy)"/>
+  </include>
+
+  <include if="$(arg skill_mgr_on)" file="$(find skiros2)/launch/skill_mgr.launch">
+      <arg name="verbose" value="$(arg verbose)"/>
+      <arg name="debug" value="$(arg debug)"/>
+      <arg name="libraries_list" value="$(arg libraries_list)"/>
+      <arg name="primitive_list" value="$(arg primitive_list)"/>
+      <arg name="skill_list" value="$(arg skill_list)" />
+      <arg name="robot_ontology_prefix" value="$(arg robot_ontology_prefix)"/>
+      <arg name="robot_name" value="$(arg robot_name)"/>
+      <arg name="deploy" value="$(arg deploy)"/>
+  </include>
+
+  <include if="$(arg task_mgr_on)" file="$(find skiros2)/launch/task_mgr.launch">
+      <arg name="deploy" value="$(arg deploy)"/>
+  </include>
+</launch>

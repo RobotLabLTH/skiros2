@@ -1,0 +1,13 @@
+#Possible actions
+string START=start
+string PAUSE=pause
+string PREEMPT=preempt
+string TICK_ONCE=tick_once
+
+string author 			            #Author of the action
+string action				            #Action to perform
+int16 execution_id
+ResourceDescription[] skills
+---
+bool ok
+int16 execution_id

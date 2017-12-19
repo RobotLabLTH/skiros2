@@ -1,0 +1,16 @@
+#Possible actions
+string ADD=add
+string UPDATE=update
+string UPDATE_PROPERTIES=update_properties
+string REMOVE=remove
+string REMOVE_RECURSIVE=remove_recursive
+
+string author
+string action
+string relation_filter
+string type_filter
+string context
+WmElement[] elements
+---
+#ADD/UPDATE/UPDATE_PROPERTIES: return updated elements REMOVE/REMOVE_RECURSIVE: return nothing
+WmElement[] elements

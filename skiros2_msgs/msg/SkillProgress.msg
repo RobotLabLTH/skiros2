@@ -1,0 +1,20 @@
+#Possible states
+int16 SUCCESS=1
+int16 FAILURE=2
+int16 RUNNING=3
+int16 IDLE=4
+
+string robot
+int16 task_id
+int16 id
+string parent_label
+int16 parent_id
+string type
+string label
+Param[] params
+string processor
+int16 state
+int16 progress_code
+float32 progress_period
+float32 progress_time
+string progress_message

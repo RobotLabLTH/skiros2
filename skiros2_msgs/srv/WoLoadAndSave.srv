@@ -1,0 +1,9 @@
+#Possible actions
+string LOAD=load
+string SAVE=save
+
+string action
+string filename
+string context
+---
+bool ok

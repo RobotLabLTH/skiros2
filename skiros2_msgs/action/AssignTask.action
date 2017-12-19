@@ -1,0 +1,8 @@
+string author
+string goals #PDDL format
+---
+int16 progress_code
+string progress_message
+---
+int16 progress_code
+string progress_message

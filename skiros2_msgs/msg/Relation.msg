@@ -1,0 +1,3 @@
+string subjectId
+string predicate
+string objectId

@@ -1,0 +1,904 @@
+<?xml version="1.0"?>
+<rdf:RDF xmlns="http://rvmi.aau.dk/ontologies/skiros.owl#"
+     xml:base="http://rvmi.aau.dk/ontologies/skiros.owl"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:xml="http://www.w3.org/XML/1998/namespace"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+    <owl:Ontology rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl">
+        <owl:imports rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl"/>
+        <rdfs:comment>The base ontology for the SkiROS2 platform.</rdfs:comment>
+    </owl:Ontology>
+
+
+
+    <!--
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Object Properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#hasTemplate -->
+
+    <owl:ObjectProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#hasTemplate">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#conditionProperty"/>
+    </owl:ObjectProperty>
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#at -->
+
+    <owl:ObjectProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#at">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#conditionProperty"/>
+    </owl:ObjectProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#conditionProperty -->
+
+    <owl:ObjectProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#conditionProperty"/>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#contain -->
+
+    <owl:ObjectProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#contain">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#spatiallyRelated"/>
+    </owl:ObjectProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#hasA -->
+
+    <owl:ObjectProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#hasA">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#spatiallyRelated"/>
+    </owl:ObjectProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#hasParam -->
+
+    <owl:ObjectProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#hasParam">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#skillProperty"/>
+    </owl:ObjectProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#hasPostCondition -->
+
+    <owl:ObjectProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#hasPostCondition">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#skillProperty"/>
+    </owl:ObjectProperty>
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#hasHoldCondition -->
+
+    <owl:ObjectProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#hasHoldCondition">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#skillProperty"/>
+    </owl:ObjectProperty>
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#hasPreCondition -->
+
+    <owl:ObjectProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#hasPreCondition">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#skillProperty"/>
+    </owl:ObjectProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#hasSkill -->
+
+    <owl:ObjectProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#hasSkill">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#robotProperty"/>
+    </owl:ObjectProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#hasStartLocation -->
+
+    <owl:ObjectProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#hasStartLocation">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#robotProperty"/>
+    </owl:ObjectProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#robotProperty -->
+
+    <owl:ObjectProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#robotProperty">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#sceneProperty"/>
+    </owl:ObjectProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#sceneProperty -->
+
+    <owl:ObjectProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#sceneProperty"/>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#skillProperty -->
+
+    <owl:ObjectProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#skillProperty">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#sceneProperty"/>
+    </owl:ObjectProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#spatiallyRelated -->
+
+    <owl:ObjectProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#spatiallyRelated">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#sceneProperty"/>
+    </owl:ObjectProperty>
+
+
+
+    <!--
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Data properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#ArmProperty -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#ArmProperty">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#DeviceProperty"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#BaseFrameId -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#BaseFrameId">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#TransformationProperty"/>
+        <rdfs:comment>The reference frame for the transformation</rdfs:comment>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#CameraProperty -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#CameraProperty">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#DeviceProperty"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#ConditionProperty -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#ConditionProperty"/>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#ContainerState -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#ContainerState">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#PhysicalObjectProperty"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#DataType -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#DataType">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#ParameterProperty"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#Default -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#Default">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#ParameterProperty"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#DepthImageRaw -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#DepthImageRaw">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#DepthTopic"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#DepthTopic -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#DepthTopic">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#CameraProperty"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#DeviceProperty -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#DeviceProperty"/>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#DiscreteReasoner -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#DiscreteReasoner">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#PhysicalObjectProperty"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#DriverAddress -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#DriverAddress">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#DeviceProperty"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#EndEffectorProperty -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#EndEffectorProperty">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#DeviceProperty"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#FrameId -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#FrameId">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#TransformationProperty"/>
+        <rdfs:comment>The ID of the transformation</rdfs:comment>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#FrontAxis -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#FrontAxis">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#EndEffectorProperty"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#LinkedToFrameId -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#LinkedToFrameId">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#TransformationProperty"/>
+        <rdfs:comment>An equivalent transformation name </rdfs:comment>
+    </owl:DatatypeProperty>
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#PushToFrameId -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#PushToFrameId">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#TransformationProperty"/>
+        <rdfs:comment>An equivalent transformation name</rdfs:comment>
+    </owl:DatatypeProperty>
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#MotionExe -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#MotionExe">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#ArmProperty"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#MotionPlanner -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#MotionPlanner">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#ArmProperty"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#MoveItGroup -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#MoveItGroup">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#ArmProperty"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#Orientation -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#Orientation">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#TransformationProperty"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#OrientationW -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#OrientationW">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Orientation"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#float"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#OrientationX -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#OrientationX">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Orientation"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#float"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#OrientationY -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#OrientationY">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Orientation"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#float"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#OrientationZ -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#OrientationZ">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Orientation"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#float"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#ParameterProperty -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#ParameterProperty"/>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#ParameterType -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#ParameterType">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#ParameterProperty"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#PhysicalObjectProperty -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#PhysicalObjectProperty"/>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#Position -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#Position">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#TransformationProperty"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#PositionX -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#PositionX">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Position"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#float"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#PositionY -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#PositionY">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Position"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#float"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#PositionZ -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#PositionZ">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Position"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#float"/>
+    </owl:DatatypeProperty>
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#Velocity -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#VelocityX">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Velocity"/>
+    </owl:DatatypeProperty>
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#VelocityX -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#VelocityX">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Velocity"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#float"/>
+    </owl:DatatypeProperty>
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#VelocityY -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#VelocityY">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Velocity"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#float"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#VelocityZ -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#VelocityZ">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Velocity"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#float"/>
+    </owl:DatatypeProperty>
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#PublishTf -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#PublishTf">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#TransformationProperty"/>
+        <rdfs:comment>If true, the orientation and position info will be used to publish the object transformation on tf.</rdfs:comment>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+    </owl:DatatypeProperty>
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#TfTimeStamp -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#TfTimeStamp">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#TransformationProperty"/>
+        <rdfs:comment>The time stamp of a pose or transformation.</rdfs:comment>
+    </owl:DatatypeProperty>
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#RgbTopic -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#RgbTopic">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#CameraProperty"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#Size -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#Size">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#PhysicalObjectProperty"/>
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#TransformationProperty"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#SizeX -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#SizeX">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Size"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#SizeY -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#SizeY">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Size"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#SizeZ -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#SizeZ">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Size"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#Force -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#Force">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#PhysicalObjectProperty"/>
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#TransformationProperty"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#ForceX -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#ForceX">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Force"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#float"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#ForceY -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#ForceY">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Force"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#float"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#ForceZ -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#ForceZ">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Force"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#float"/>
+    </owl:DatatypeProperty>
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#SkillMgr -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#SkillMgr">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#DeviceProperty"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#StateProperty -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#StateProperty">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#DeviceProperty"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#Template -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#Template"/>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#TransformationProperty -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#TransformationProperty">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#PhysicalObjectProperty"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#Value -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#Value">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#ParameterProperty"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#Weight -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#Weight">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#PhysicalObjectProperty"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#float"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#appliedOnType -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#appliedOnType">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#ConditionProperty"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#desiredState -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#desiredState">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#ConditionProperty"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#desiredValue -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#desiredValue">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#ConditionProperty"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#hasObject -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#hasObject">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#ConditionProperty"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#hasSubject -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#hasSubject">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#ConditionProperty"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#operator -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#operator">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#ConditionProperty"/>
+    </owl:DatatypeProperty>
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#CadModel -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#CadModel">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#PhysicalObjectProperty"/>
+        <rdfs:comment>Path to a CAD model.</rdfs:comment>
+    </owl:DatatypeProperty>
+
+    <!--
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Classes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#DepthCamera -->
+
+    <owl:Class rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#DepthCamera">
+        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#Sensor"/>
+    </owl:Class>
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#CompoundSkill -->
+
+    <owl:Class rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#CompoundSkill">
+        <rdfs:subClassOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Skill"/>
+        <rdfs:comment>A skill composed of other skills</rdfs:comment>
+    </owl:Class>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#Condition -->
+
+    <owl:Class rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#Condition">
+        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Abstract"/>
+    </owl:Class>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#Container -->
+
+    <owl:Class rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#Container">
+        <rdfs:subClassOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Location"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#isLocationOf"/>
+                <owl:someValuesFrom rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Manipulatable"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#GraspingPose -->
+
+    <owl:Class rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#GraspingPose">
+        <rdfs:subClassOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#TransformationPose"/>
+    </owl:Class>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#Location -->
+
+    <owl:Class rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#Location">
+        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Object"/>
+    </owl:Class>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#Manipulatable -->
+
+    <owl:Class rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#Manipulatable">
+        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Artifact"/>
+    </owl:Class>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#ObservationPose -->
+
+    <owl:Class rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#ObservationPose">
+        <rdfs:subClassOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#TransformationPose"/>
+    </owl:Class>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#Parameter -->
+
+    <owl:Class rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#Parameter">
+        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Abstract"/>
+    </owl:Class>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#Part -->
+
+    <owl:Class rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#Part">
+        <rdfs:subClassOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Manipulatable"/>
+        <rdfs:comment>Source parts which are needed to assemble one unit of a target Product.</rdfs:comment>
+    </owl:Class>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#PlacingPose -->
+
+    <owl:Class rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#PlacingPose">
+        <rdfs:subClassOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#TransformationPose"/>
+    </owl:Class>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#PostCondition -->
+
+    <owl:Class rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#PostCondition">
+        <rdfs:subClassOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Condition"/>
+    </owl:Class>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#PreCondition -->
+
+    <owl:Class rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#PreCondition">
+        <rdfs:subClassOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Condition"/>
+    </owl:Class>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#PrimitiveSkill -->
+
+    <owl:Class rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#PrimitiveSkill">
+        <rdfs:subClassOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Skill"/>
+        <rdfs:comment>A skill linked to an executable primitive</rdfs:comment>
+    </owl:Class>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#Product -->
+
+    <owl:Class rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#Product">
+        <rdfs:subClassOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Manipulatable"/>
+        <rdfs:comment>Represents what the production aims to achieve (e.g. diesel engine, interior door handle, plastic component)</rdfs:comment>
+    </owl:Class>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#Scene -->
+
+    <owl:Class rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#Scene">
+        <owl:equivalentClass rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/coraX.owl#PhysicalEnvironment"/>
+        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Abstract"/>
+        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Object"/>
+    </owl:Class>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#Skill -->
+
+    <owl:Class rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#Skill">
+        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Abstract"/>
+        <rdfs:comment>A robot capability</rdfs:comment>
+    </owl:Class>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#TransformationPose -->
+
+    <owl:Class rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#TransformationPose">
+        <rdfs:subClassOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Location"/>
+    </owl:Class>
+
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/cora.owl#Robot -->
+
+    <rdf:Description rdf:about="http://www.inf.ufrgs.br/phi-group/ontologies/cora.owl#Robot">
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#hasA"/>
+                <owl:someValuesFrom rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Device"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </rdf:Description>
+
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/coraX.owl#PhysicalEnvironment -->
+
+    <rdf:Description rdf:about="http://www.inf.ufrgs.br/phi-group/ontologies/coraX.owl#PhysicalEnvironment"/>
+
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Agent -->
+
+    <rdf:Description rdf:about="http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Agent">
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#hasSkill"/>
+                <owl:someValuesFrom rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Skill"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </rdf:Description>
+
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Physical -->
+
+    <rdf:Description rdf:about="http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Physical">
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#BaseFrameId"/>
+                <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
+                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#FrameId"/>
+                <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
+                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#OrientationW"/>
+                <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
+                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#float"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#OrientationX"/>
+                <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
+                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#float"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#OrientationY"/>
+                <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
+                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#float"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#OrientationZ"/>
+                <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
+                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#float"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#PositionX"/>
+                <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
+                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#float"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#PositionY"/>
+                <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
+                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#float"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#PositionZ"/>
+                <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
+                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#float"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#LinkedToFrameId"/>
+                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </rdf:Description>
+</rdf:RDF>
+
+
+
+<!-- Generated by the OWL API (version 4.2.8.20170104-2310) https://github.com/owlcs/owlapi -->
+

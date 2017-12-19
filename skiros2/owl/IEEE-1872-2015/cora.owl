@@ -1,0 +1,336 @@
+<?xml version="1.0"?>
+
+
+<!DOCTYPE rdf:RDF [
+    <!ENTITY owl "http://www.w3.org/2002/07/owl#" >
+    <!ENTITY xsd "http://www.w3.org/2001/XMLSchema#" >
+    <!ENTITY owl2xml "http://www.w3.org/2006/12/owl2-xml#" >
+    <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#" >
+    <!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >
+    <!ENTITY sumo "http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#" >
+    <!ENTITY cora "http://www.inf.ufrgs.br/phi-group/ontologies/cora.owl#" >
+    <!ENTITY coraX "http://www.inf.ufrgs.br/phi-group/ontologies/coraX.owl#" >
+]>
+
+
+<rdf:RDF xmlns="http://www.inf.ufrgs.br/phi-group/ontologies/cora.owl#"
+     xml:base="http://www.inf.ufrgs.br/phi-group/ontologies/cora.owl"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     xmlns:owl2xml="http://www.w3.org/2006/12/owl2-xml#"
+     xmlns:sumo="http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:coraX="http://www.inf.ufrgs.br/phi-group/ontologies/coraX.owl#"
+     xmlns:cora="http://www.inf.ufrgs.br/phi-group/ontologies/cora.owl#">
+    <owl:Ontology rdf:about="">
+        <owl:imports rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/coraX.owl"/>
+    </owl:Ontology>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Object Properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/cora.owl#robotprocesslink -->
+
+    <owl:ObjectProperty rdf:about="#robotprocesslink">
+        <rdfs:label xml:lang="en">agentRobot</rdfs:label>
+        <rdfs:domain rdf:resource="#Robot"/>
+        <rdfs:range rdf:resource="&sumo;Process"/>
+        <rdfs:subPropertyOf rdf:resource="&sumo;agent"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/cora.owl#automatedRobot -->
+
+    <owl:ObjectProperty rdf:about="#automatedRobot">
+        <rdfs:subPropertyOf rdf:resource="#robotprocesslink"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/cora.owl#equippedWith -->
+
+    <owl:ObjectProperty rdf:about="#equippedWith">
+        <rdf:type rdf:resource="&owl;AsymmetricProperty"/>
+        <rdfs:domain rdf:resource="#RoboticEnvironment"/>
+        <rdfs:range rdf:resource="#RoboticSystem"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/cora.owl#fullyautonomousRobot -->
+
+    <owl:ObjectProperty rdf:about="#fullyautonomousRobot">
+        <rdfs:subPropertyOf rdf:resource="#robotprocesslink"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/cora.owl#isSupportedBy -->
+
+    <owl:ObjectProperty rdf:about="#isSupportedBy">
+        <owl:inverseOf rdf:resource="#support"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/cora.owl#remotecontrolledRobot -->
+
+    <owl:ObjectProperty rdf:about="#remotecontrolledRobot">
+        <rdfs:subPropertyOf rdf:resource="#robotprocesslink"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/cora.owl#robotPart -->
+
+    <owl:ObjectProperty rdf:about="#robotPart">
+        <rdf:type rdf:resource="&owl;AsymmetricProperty"/>
+        <rdfs:range rdf:resource="#Robot"/>
+        <rdfs:domain rdf:resource="&sumo;Device"/>
+        <rdfs:subPropertyOf rdf:resource="&sumo;part"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/cora.owl#semiautonomousRobot -->
+
+    <owl:ObjectProperty rdf:about="#semiautonomousRobot">
+        <rdfs:subPropertyOf rdf:resource="#robotprocesslink"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/cora.owl#support -->
+
+    <owl:ObjectProperty rdf:about="#support">
+        <rdfs:range rdf:resource="#RoboticSystem"/>
+        <rdfs:domain rdf:resource="&sumo;Device"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/cora.owl#teleoperatedRobot -->
+
+    <owl:ObjectProperty rdf:about="#teleoperatedRobot">
+        <rdfs:subPropertyOf rdf:resource="#robotprocesslink"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#agent -->
+
+    <owl:ObjectProperty rdf:about="&sumo;agent"/>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#hasPart -->
+
+    <owl:ObjectProperty rdf:about="&sumo;hasPart"/>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#member -->
+
+    <owl:ObjectProperty rdf:about="&sumo;member"/>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#part -->
+
+    <owl:ObjectProperty rdf:about="&sumo;part"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Classes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/cora.owl#CollectiveRoboticSystem -->
+
+    <owl:Class rdf:about="#CollectiveRoboticSystem">
+        <rdfs:subClassOf rdf:resource="#RoboticSystem"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&sumo;hasPart"/>
+                <owl:onClass rdf:resource="#Robot"/>
+                <owl:minQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">2</owl:minQualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&sumo;hasPart"/>
+                <owl:onClass rdf:resource="#RobotGroup"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/cora.owl#Robot -->
+
+    <owl:Class rdf:about="#Robot">
+        <rdfs:subClassOf rdf:resource="&sumo;Agent"/>
+        <rdfs:subClassOf rdf:resource="&sumo;Device"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/cora.owl#RobotGroup -->
+
+    <owl:Class rdf:about="#RobotGroup">
+        <rdfs:subClassOf rdf:resource="&sumo;Group"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&sumo;member"/>
+                <owl:allValuesFrom rdf:resource="#Robot"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/cora.owl#RobotInterface -->
+
+    <owl:Class rdf:about="#RobotInterface">
+        <rdfs:subClassOf rdf:resource="&sumo;Device"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/cora.owl#RoboticEnvironment -->
+
+    <owl:Class rdf:about="#RoboticEnvironment">
+        <rdfs:subClassOf rdf:resource="&coraX;PhysicalEnvironment"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="#equippedWith"/>
+                <owl:onClass rdf:resource="#RoboticSystem"/>
+                <owl:minQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:minQualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/cora.owl#RoboticSystem -->
+
+    <owl:Class rdf:about="#RoboticSystem">
+        <rdfs:subClassOf rdf:resource="&coraX;ArtificialSystem"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&sumo;hasPart"/>
+                <owl:onClass>
+                    <owl:Class>
+                        <owl:intersectionOf rdf:parseType="Collection">
+                            <rdf:Description rdf:about="&sumo;Device"/>
+                            <owl:Class>
+                                <owl:complementOf rdf:resource="#Robot"/>
+                            </owl:Class>
+                        </owl:intersectionOf>
+                    </owl:Class>
+                </owl:onClass>
+                <owl:minQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:minQualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="#isSupportedBy"/>
+                <owl:onClass>
+                    <owl:Class>
+                        <owl:intersectionOf rdf:parseType="Collection">
+                            <rdf:Description rdf:about="&sumo;Device"/>
+                            <owl:Class>
+                                <owl:complementOf rdf:resource="#Robot"/>
+                            </owl:Class>
+                        </owl:intersectionOf>
+                    </owl:Class>
+                </owl:onClass>
+                <owl:minQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:minQualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&sumo;hasPart"/>
+                <owl:onClass rdf:resource="#Robot"/>
+                <owl:minQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:minQualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/cora.owl#SingleRoboticSystem -->
+
+    <owl:Class rdf:about="#SingleRoboticSystem">
+        <rdfs:subClassOf rdf:resource="#RoboticSystem"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&sumo;hasPart"/>
+                <owl:onClass rdf:resource="#Robot"/>
+                <owl:maxQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxQualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <owl:disjointWith rdf:resource="#CollectiveRoboticSystem"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/coraX.owl#ArtificialSystem -->
+
+    <owl:Class rdf:about="&coraX;ArtificialSystem"/>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/coraX.owl#PhysicalEnvironment -->
+
+    <owl:Class rdf:about="&coraX;PhysicalEnvironment"/>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Agent -->
+
+    <owl:Class rdf:about="&sumo;Agent"/>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Device -->
+
+    <owl:Class rdf:about="&sumo;Device"/>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Group -->
+
+    <owl:Class rdf:about="&sumo;Group"/>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Process -->
+
+    <owl:Class rdf:about="&sumo;Process"/>
+</rdf:RDF>
+
+
+
+<!-- Generated by the OWL API (version 2.2.1.1138) http://owlapi.sourceforge.net -->
+

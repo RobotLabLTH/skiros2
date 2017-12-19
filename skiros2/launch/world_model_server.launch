@@ -1,0 +1,25 @@
+<launch>
+  <arg name="deploy" default="false"/>
+  <arg if="$(arg deploy)" name="term" value="" />
+  <arg unless="$(arg deploy)" name="term" value="xterm -geometry 100x60+0+0 -hold -e " />
+
+  <arg name="debug" default="false"/>
+  <arg name="gui" default="true"/>
+  <arg unless="$(arg debug)" name="prefix" value="$(arg term)" />
+  <arg if="$(arg debug)" name="prefix" value="xterm -e python -m pdb" />
+  <arg name="init_scene" default=""/>
+  <arg name="verbose" default="true"/>
+  <arg name="reasoners_pkgs" default="[skiros2_std_reasoners]"/>
+  <arg name="load_contexts" default="[]"/>
+  <arg name="workspace_dir" default=""/>
+
+  <node launch-prefix="$(arg prefix)" name="wm" pkg="skiros2_world_model" type="world_model_server_node" respawn="true" output="screen">
+    <param name="workspace_dir" value="$(arg workspace_dir)" />
+    <param name="init_scene" value="$(arg init_scene)" />
+    <param name="verbose" value="$(arg verbose)" />
+    <rosparam param = "reasoners_pkgs" subst_value="True">$(arg reasoners_pkgs)</rosparam>
+    <rosparam param = "load_contexts" subst_value="True">$(arg load_contexts)</rosparam>
+  </node>
+
+  <node if="$(arg gui)" name="skiros_gui" pkg="rqt_gui" type="rqt_gui" args="-s gui.skiros" output="screen" />
+</launch>

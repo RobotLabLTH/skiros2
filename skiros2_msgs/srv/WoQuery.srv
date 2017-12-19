@@ -1,0 +1,8 @@
+#World Ontology query message
+#Std Owl query (use SPARQL syntax, e.g. "SELECT ?x WHERE { ?x rdf:type stmn:GraspingPose. }")
+string query_string
+string context
+bool cut_prefix
+---
+#Owl answer (with matches separated by endline)
+string[] answer

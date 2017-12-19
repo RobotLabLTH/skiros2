@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>skiros2_world_model</name>
+  <version>1.0.5</version>
+  <description>SkiROS semantic database</description>
+
+  <maintainer email="francesco@m-tech.aau.dk">Francesco Rovida</maintainer>
+  <maintainer email="bjarne@m-tech.aau.dk">Bjarne Grossmann</maintainer>
+  <license>L-GPL</license>
+  <author email="francesco@m-tech.aau.dk">Francesco Rovida</author>
+  <author>Francesco Rovida</author>
+
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>skiros2_msgs</build_depend>
+  <exec_depend condition="$ROS_PYTHON_VERSION == 2">python-rdflib</exec_depend>
+  <exec_depend condition="$ROS_PYTHON_VERSION == 3">python3-rdflib</exec_depend>
+  <exec_depend>rospy</exec_depend>
+  <exec_depend>skiros2_msgs</exec_depend>
+  <exec_depend>skiros2_common</exec_depend>
+</package>

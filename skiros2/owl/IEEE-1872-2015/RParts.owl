@@ -1,0 +1,302 @@
+<?xml version="1.0"?>
+
+
+<!DOCTYPE rdf:RDF [
+    <!ENTITY owl "http://www.w3.org/2002/07/owl#" >
+    <!ENTITY xsd "http://www.w3.org/2001/XMLSchema#" >
+    <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#" >
+    <!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >
+]>
+
+
+<rdf:RDF xmlns="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#"
+     xml:base="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+    <owl:Ontology rdf:about="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl">
+        <owl:imports rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/cora.owl"/>
+    </owl:Ontology>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Classes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#Actuator -->
+
+    <owl:Class rdf:about="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#Actuator">
+        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Device"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#ArmDevice -->
+
+    <owl:Class rdf:about="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#ArmDevice">
+        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Device"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#BrushedMC -->
+
+    <owl:Class rdf:about="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#BrushedMC">
+        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#MotorController"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#BrushlessMC -->
+
+    <owl:Class rdf:about="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#BrushlessMC">
+        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#MotorController"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#ElectricActuator -->
+
+    <owl:Class rdf:about="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#ElectricActuator">
+        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#Actuator"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#ElectronicDevice -->
+
+    <owl:Class rdf:about="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#ElectronicDevice">
+        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#ElectricDevice"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#EndEffector -->
+
+    <owl:Class rdf:about="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#EndEffector">
+        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Device"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#ExteroceptiveSensor -->
+
+    <owl:Class rdf:about="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#ExteroceptiveSensor">
+        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#Sensor"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#GripperEffector -->
+
+    <owl:Class rdf:about="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#GripperEffector">
+        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#EndEffector"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#HydraulicActuator -->
+
+    <owl:Class rdf:about="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#HydraulicActuator">
+        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#Actuator"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#LegDevice -->
+
+    <owl:Class rdf:about="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#LegDevice">
+        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#LocomotionDevice"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#LocomotionDevice -->
+
+    <owl:Class rdf:about="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#LocomotionDevice">
+        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Device"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#MechanicalLink -->
+
+    <owl:Class rdf:about="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#MechanicalLink">
+        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Device"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#Microcontroller -->
+
+    <owl:Class rdf:about="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#Microcontroller">
+        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#ElectronicDevice"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#MotorController -->
+
+    <owl:Class rdf:about="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#MotorController">
+        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#ElectronicDevice"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#MultifingeredHandEffector -->
+
+    <owl:Class rdf:about="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#MultifingeredHandEffector">
+        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#EndEffector"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#PneumaticActuator -->
+
+    <owl:Class rdf:about="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#PneumaticActuator">
+        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#Actuator"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#PropellerDevice -->
+
+    <owl:Class rdf:about="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#PropellerDevice">
+        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#LocomotionDevice"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#ProprioceptiveSensor -->
+
+    <owl:Class rdf:about="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#ProprioceptiveSensor">
+        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#Sensor"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#RobotChassis -->
+
+    <owl:Class rdf:about="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#RobotChassis">
+        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Device"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#RoboticBase -->
+
+    <owl:Class rdf:about="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#RoboticBase">
+        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Device"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#Sensor -->
+
+    <owl:Class rdf:about="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#Sensor">
+        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#MeasuringDevice"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#ServoMC -->
+
+    <owl:Class rdf:about="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#ServoMC">
+        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#MotorController"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#SphericalWheel -->
+
+    <owl:Class rdf:about="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#SphericalWheel">
+        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#WheelLocomotionDevice"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#StepperMC -->
+
+    <owl:Class rdf:about="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#StepperMC">
+        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#MotorController"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#SwedishWheel -->
+
+    <owl:Class rdf:about="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#SwedishWheel">
+        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#WheelLocomotionDevice"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#TrackDevice -->
+
+    <owl:Class rdf:about="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#TrackDevice">
+        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#LocomotionDevice"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#VacuumEffector -->
+
+    <owl:Class rdf:about="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#VacuumEffector">
+        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#EndEffector"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#VacuumEffectorMultiCup -->
+
+    <owl:Class rdf:about="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#VacuumEffectorMultiCup">
+        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#VacuumEffector"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#VacuumEffectorSingleCup -->
+
+    <owl:Class rdf:about="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#VacuumEffectorSingleCup">
+        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#VacuumEffector"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#WheelLocomotionDevice -->
+
+    <owl:Class rdf:about="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#WheelLocomotionDevice">
+        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#LocomotionDevice"/>
+        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Wheel"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#WingDevice -->
+
+    <owl:Class rdf:about="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#WingDevice">
+        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#LocomotionDevice"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#WristDevice -->
+
+    <owl:Class rdf:about="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#WristDevice">
+        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Device"/>
+    </owl:Class>
+</rdf:RDF>
+
+
+
+<!-- Generated by the OWL API (version 3.4.2) http://owlapi.sourceforge.net -->
+
