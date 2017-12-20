@@ -297,7 +297,7 @@ class WorldModel(Ontology):
         elif param.dataTypeIs(int):
             return XSD.integer
         else:
-            log.error("[Wm]", "Param {} has type {} that is not supported.".format(param.key(), param.dataType()))
+            log.error("[Wm]", "Param {} has type {} that is not supported.".format(param.key, param.dataType))
             return None
         
     @synchronized
