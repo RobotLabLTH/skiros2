@@ -81,7 +81,20 @@
         <skiros:PositionX rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</skiros:PositionX>
         <skiros:PositionY rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</skiros:PositionY>
         <skiros:PositionZ rdf:datatype="http://www.w3.org/2001/XMLSchema#double">0.0</skiros:PositionZ>
+        <skiros:hasStartLocation rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#unknown_location"/>
+        <skiros:hasA rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#test_arm"/>
     </owl:NamedIndividual>
+
+    <owl:NamedIndividual rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#test_arm">
+        <rdf:type rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#ArmDevice"/>
+        <skiros:hasA rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#test_gripper"/>
+    </owl:NamedIndividual>
+    
+
+    <owl:NamedIndividual rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#test_gripper">
+        <rdf:type rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#GripperEffector"/>
+        <skiros:ContainerState>Empty</skiros:ContainerState>
+    </owl:NamedIndividual>  
 
 </rdf:RDF>
     
