@@ -18,6 +18,7 @@ add_message_files(
   Relation.msg
   Statement.msg
   Condition.msg
+  RobotDescription.msg
   ResourceDescription.msg
   ResourceMonitor.msg
   WmElement.msg

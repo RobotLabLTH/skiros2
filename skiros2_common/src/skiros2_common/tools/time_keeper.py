@@ -1,4 +1,39 @@
+from functools import wraps
+from timeit import default_timer as now
+
 import time
+import logger as log
+
+
+class Timer(object):
+    def __init__(self, name):
+        self._name = name
+        self._start_time = now()
+        self._time = self._start_time
+
+    def reset(self):
+        self._start_time = now()
+        self._time = self._start_time
+
+    def tic(self, desc=None):
+        dt = now() - self._time
+        log.info(self._name, "{} took {:0.4f} secs.".format(desc, dt))
+
+    def toc(self, desc=None):
+        self.tic(desc)
+        self._time = now()
+
+    def __enter__(self):
+        self._start_time = now()
+        self._time = self._start_time
+        return self
+        
+    def __exit__(self, type, value, traceback):
+        if type is not None: return False
+        dt = now() - self._start_time
+        log.info(self._name, "Total: {:0.4f} secs.".format(dt))
+        return True
+
 
 """
 Usage

@@ -49,13 +49,13 @@ class PrettyObject(object):
     __metaclass__ = PrettyMetaClass
 
     def __repr__(self):
-        return self.name
+        return self.class_name
 
     def __str__(self):
-        return self.name
+        return self.class_name
 
     @property
-    def name(self):
+    def class_name(self):
         """
         Return the name of the class in a readable way
         """
