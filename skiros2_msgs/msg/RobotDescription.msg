@@ -1,0 +1,3 @@
+string robot
+string[] skills 
+

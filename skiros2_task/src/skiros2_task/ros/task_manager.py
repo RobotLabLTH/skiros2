@@ -30,47 +30,67 @@
 
 import rospy
 import rospkg
+
+from skiros2_msgs.msg import RobotDescription
+from std_msgs.msg import Empty
+
 import skiros2_msgs.srv as srvs
 import skiros2_common.core.params as skirosp
 import skiros2_common.core.conditions as cond
-import skiros2_common.tools.time_keeper as tk
+
+from skiros2_common.tools.decorators import PrettyObject
 import skiros2_common.tools.logger as log
+import skiros2_common.tools.time_keeper as tk
+
 import skiros2_world_model.core.local_world_model as wm
 import skiros2_world_model.ros.world_model_interface as wmi
 import skiros2_skill.ros.skill_layer_interface as sli
 import skiros2_task.core.pddl_interface as pddl
 from skiros2_skill.ros.utils import SkillHolder
 
-class TaskManagerNode(object):
+
+class TaskManagerNode(PrettyObject):
     """
     This class manage the robot task.
     A list of goals can be modified by external agent (e.g. users) with the service 'set_goals'
     The task manager plans a sequence of skills to reach the goals. 
     In case of execution failure replans until all goals are reached.
     """
+
+
     def __init__(self):
-        #Init ROS interfaces
+        """Initialization of the task manager.
+
+        Initialize task manager as a ros node.
+        Establish access to the global and local world model, skill manager and the task planner.
+        """
         self._author_name = "task_manager"
         rospy.init_node("task_manager", anonymous=False)
-        self._wmi = wmi.WorldModelInterface()
-        self._sli = sli.SkillLayerInterface(self._wmi)
+
         self._goals = []
         self._task = []
         self._skills = {}
         self._abstract_objects = []
-        #Init world model
-        self._local_wm = wm.WorldModel(self._wmi)
-        self._local_wm._verbose = False
-        self._local_wm.sync()
-        rospy.sleep(0.5)
-        rospack = rospkg.RosPack()
-        self._pddl_interface = pddl.PddlInterface(rospack.get_path("skiros2_task"))
+
+        self._wmi = wmi.WorldModelInterface()
+        self._sli = sli.SkillLayerInterface(self._wmi)
+        self._pddl_interface = pddl.PddlInterface(rospkg.RosPack().get_path("skiros2_task"))
+
         self._goal_modify = rospy.Service('~set_goals', srvs.TmSetGoals, self._setGoalsCb)
-        self._time_keeper = tk.TimeKeeper()
+
+        self._sub_robot_discovery = rospy.Subscriber('/robot_discovery', Empty, self._onRobotDiscovery)
+        self._pub_robot_description = rospy.Publisher('~robot_description', RobotDescription, queue_size=10)
+
+
+
+    @property
+    def skills(self):
+        """Get available skills.
         
-    def getSkills(self):
-        """
         Return the updated list of skills available in the system
+        
+        Returns:
+            dict: {Skill name : instance? }
         """
         if self._sli.hasChanges():
             self._skills.clear()
@@ -79,26 +99,46 @@ class TaskManagerNode(object):
                     s.manager = ak
                     self._skills[sk] = s     
         return self._skills
+
+
+    def _onRobotDiscovery(self, msg):
+        """Callback for robot discovery messages.
         
+        Answers robot discovery messages by publishing robot name and its skills.
+
+        Args:
+            msg (std_msgs.msg.Empty): Empty ping message
+        """
+        log.debug(self.class_name, "Received robot discovery message")
+        for a in self._sli._agents.values():
+            log.debug(self.class_name, "Publish description for {}: {}".format(a._robot, a.getSkillList().keys()))
+            self._pub_robot_description.publish(a._robot, a.getSkillList().keys())
+
+
+
     def _setGoalsCb(self, msg):
+        """Callback for setting new goals.
+        
+        Executed whenever we receive a service call to set a new goal.
+
+        Args:
+            msg (skiros2_msgs.srv.TmSetGoals): Service message containing the goals
+        """
         self._pddl_interface.clear()
-        with self._time_keeper:
+        with tk.Timer(self.class_name) as timer:
             self.initDomain()
-        log.info(self.__class__.__name__, "Init domain in {}  secs".format(self._time_keeper.getLast()))
-        with self._time_keeper:
+            timer.toc("Init domain")
             self.setGoal(msg.goals)
             self.initProblem()
-        log.info(self.__class__.__name__, "Init problem in {} secs".format(self._time_keeper.getLast()))
-        with self._time_keeper:
+            timer.toc("Init problem")
             plan = self.plan()
-        if plan:
-            log.info(self.__class__.__name__, "Planned sequence: \n{}in {} secs".format(plan, self._time_keeper.getLast()))
-            self.buildTask(plan)
-            self.execute()
-        else:
-            log.error(self.__class__.__name__, "No plan found in {} secs".format(self._time_keeper.getLast()))
+            timer.toc("Planning sequence")
+            log.assertWarn(plan, self.class_name, "Planning failed!")
+            if plan:
+                self.buildTask(plan)
+                self.execute()
 
-    
+
     def buildTask(self, plan):
         """
         Decompose the plan (a string) into parameterized skills and append to self._task
@@ -108,13 +148,14 @@ class TaskManagerNode(object):
         for s in skills:
             s = s[s.find('(')+1: s.find(')')]
             tokens = s.split(' ')
-            skill = self.getSkills()[tokens[0]]
-            i= 1
-            for _, t in  skill.ph._params.items():
-                t.setValue(self.getElement(tokens[i]))
-                i += 1
+            skill = self.skills[tokens.pop(0)]
+            map(lambda t,p: t.setValue(self.getElement(p)), skill.ph._params.values(), tokens)
+            # params is a dict? how to preserve order? -> tokens?
+            # for _, t in  skill.ph._params.iteritems():
+            #     t.setValue(self.getElement(tokens.pop(0)))
             self._task.append(skill)            
-        
+
+
     def initDomain(self):
         skills = self._wmi.resolveElements(wmi.Element(":Skill"))
         for skill in skills:
@@ -134,12 +175,14 @@ class TaskManagerNode(object):
                     postconds.append(pddl.Predicate(e, params, e._type.find("Abs")!=-1))
             self._pddl_interface.addAction(pddl.Action(skill, params, preconds, postconds))
         #self._pddl_interface.printDomain(False)
-        
+
+
     def getElement(self, uid):
         if uid.find("-")>0:
             return self._elements[uid[uid.find("-")+1:]]
         return self._elements[uid]
-        
+
+
     def initProblem(self):
         objects = {}
         elements = {}
@@ -202,7 +245,8 @@ class TaskManagerNode(object):
                 if c.evaluate(params, self._wmi):
                     init_state.append(pddl.GroundPredicate(p.name, [xe._id], p.operator, p.value))
         self._pddl_interface.setInitState(init_state)
-                
+
+
     def setGoal(self, goal):
         for g in goal:
             g = g[1:-1]
@@ -212,16 +256,19 @@ class TaskManagerNode(object):
                 self._abstract_objects.append(self._wmi.getTemplateElement(tokens[1]))
             if tokens[2].find("-")==-1: #If isAbstractObject
                 self._abstract_objects.append(self._wmi.getTemplateElement(tokens[2]))
-                
-        
+
+
     def plan(self):
         return self._pddl_interface.invokePlanner()        
-    
+
+
     def execute(self):
         self._sli.getAgent(self._task[0].manager).execute(self._task, self._author_name) 
-        
+
+
     def run(self):
         rospy.spin()                    
+
 
 
 if __name__ == '__main__':
