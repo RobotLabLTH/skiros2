@@ -264,7 +264,7 @@ class NodeMemorizer:
     def hasMemory(self):
         return len(self._tree)>0
     
-    def memorize(self, skill, tag):
+    def memorize(self, skill, tag=None):
         #self._debug("Memorize " + skill.printInfo(False))
         self._tree.append((skill, tag))
 
@@ -276,17 +276,22 @@ class NodeMemorizer:
             if index and abs(index)<len(self._tree):
                 return self._tree[index]
             return self._tree[-1]
+        return None
             
     def forget(self):
         if self._tree:
             skill = self._tree.pop()
             #self._debug("Forget " + skill[0].printInfo(False))
-            return skill   
+            return skill
+        return None
         
     def printMemory(self):
         print self._name + ":"
         for p in self._tree:
-            print p[0].printState() + '-' + p[1]
+            if p[1] is None:
+                print p[0].printState()
+            else:
+                print p[0].printState() + '-' + p[1]
         
 class TreeBuilder:
     """

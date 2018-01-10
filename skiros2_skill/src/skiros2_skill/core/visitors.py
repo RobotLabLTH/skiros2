@@ -202,4 +202,33 @@ class VisitorReversibleSimulator(VisitorInterface, NodePrinter, NodeReversibleSi
             return False
         self.back.printMemory()
         return True
+
+
+class VisitorFlatten(VisitorInterface, NodeExecutor, NodeMemorizer):
+    """
+    Expands and flattens the whole procedure tree
+    """    
+    def __init__(self, wmi, instanciator):
+        #Execution
+        VisitorInterface.__init__(self)
+        NodeExecutor.__init__(self, wmi, instanciator)
+        NodeMemorizer.__init__(self, 'Flatten')
+        self._verbose = False
+        self._processor = Serial()
         
+    def processNode(self, procedure):
+        self.init(procedure)
+        self.memorize(procedure, procedure._state)
+        return State.Running
+        
+    def processChildren(self, procedure):
+        """ Use serial processor always """
+        return self._processor.processChildren(procedure._children, self)
+        
+    def postProcessNode(self, procedure):
+        return State.Success
+
+    def processingDone(self, procedure):
+        print(self._name + ":")
+        print('\n\t'.join(p1._label + '-' + str(p2) for (p1,p2) in self._tree))
+        return True

@@ -69,6 +69,9 @@ class TaskManager:
         """
         Tick tree at 25hz
         """
+        flatten = visitors.VisitorFlatten(visitor._wm, visitor._instanciator)
+        flatten.traverse(TaskManager._tasks[uid])
+
         iteration = 0
         result = State.Running
         rate = rospy.Rate(25)
