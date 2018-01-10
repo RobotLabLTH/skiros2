@@ -64,32 +64,23 @@ class TaskManagerNode(PrettyObject):
         Initialize task manager as a ros node.
         Establish access to the global and local world model, skill manager and the task planner.
         """
-        #Init ROS interfaces
         self._author_name = "task_manager"
         rospy.init_node("task_manager", anonymous=False)
 
-        #Init variables
-        self._wmi = wmi.WorldModelInterface()
-        self._sli = sli.SkillLayerInterface(self._wmi)
         self._goals = []
         self._task = []
         self._skills = {}
         self._abstract_objects = []
 
-        # #Init world model
-        # self._local_wm = wm.WorldModel(self._wmi)
-        # self._local_wm._verbose = False
-        # self._local_wm.sync()
-        rospy.sleep(0.5)
-        rospack = rospkg.RosPack()
-        self._pddl_interface = pddl.PddlInterface(rospack.get_path("skiros2_task"))
+        self._wmi = wmi.WorldModelInterface()
+        self._sli = sli.SkillLayerInterface(self._wmi)
+        self._pddl_interface = pddl.PddlInterface(rospkg.RosPack().get_path("skiros2_task"))
 
         self._goal_modify = rospy.Service('~set_goals', srvs.TmSetGoals, self._setGoalsCb)
 
         self._sub_robot_discovery = rospy.Subscriber('/robot_discovery', Empty, self._onRobotDiscovery)
         self._pub_robot_description = rospy.Publisher('~robot_description', RobotDescription, queue_size=10)
 
-        self._time_keeper = tk.TimeKeeper()
 
 
     @property
@@ -103,8 +94,8 @@ class TaskManagerNode(PrettyObject):
         """
         if self._sli.hasChanges():
             self._skills.clear()
-            for ak, e in self._sli._agents.items():
-                for sk, s in e._skill_list.items():
+            for ak, e in self._sli._agents.iteritems():
+                for sk, s in e._skill_list.iteritems():
                     s.manager = ak
                     self._skills[sk] = s     
         return self._skills
@@ -119,8 +110,9 @@ class TaskManagerNode(PrettyObject):
             msg (std_msgs.msg.Empty): Empty ping message
         """
         log.debug(self.class_name, "Received robot discovery message")
-        print(self.skills)
-        self._pub_robot_description.publish('This robot', ['Pick', 'Place', 'Drive'])
+        for a in self._sli._agents.values():
+            log.debug(self.class_name, "Publish description for {}: {}".format(a._robot, a.getSkillList().keys()))
+            self._pub_robot_description.publish(a._robot, a.getSkillList().keys())
 
 
 
@@ -130,7 +122,7 @@ class TaskManagerNode(PrettyObject):
         Executed whenever we receive a service call to set a new goal.
 
         Args:
-            msg (ros_msg): Message containing the goals
+            msg (skiros2_msgs.srv.TmSetGoals): Service message containing the goals
         """
         self._pddl_interface.clear()
         with tk.Timer(self.class_name) as timer:
@@ -162,7 +154,8 @@ class TaskManagerNode(PrettyObject):
             # for _, t in  skill.ph._params.iteritems():
             #     t.setValue(self.getElement(tokens.pop(0)))
             self._task.append(skill)            
-        
+
+
     def initDomain(self):
         skills = self._wmi.resolveElements(wmi.Element(":Skill"))
         for skill in skills:
@@ -182,12 +175,14 @@ class TaskManagerNode(PrettyObject):
                     postconds.append(pddl.Predicate(e, params, e._type.find("Abs")!=-1))
             self._pddl_interface.addAction(pddl.Action(skill, params, preconds, postconds))
         #self._pddl_interface.printDomain(False)
-        
+
+
     def getElement(self, uid):
         if uid.find("-")>0:
             return self._elements[uid[uid.find("-")+1:]]
         return self._elements[uid]
-        
+
+
     def initProblem(self):
         objects = {}
         elements = {}
@@ -250,7 +245,8 @@ class TaskManagerNode(PrettyObject):
                 if c.evaluate(params, self._wmi):
                     init_state.append(pddl.GroundPredicate(p.name, [xe._id], p.operator, p.value))
         self._pddl_interface.setInitState(init_state)
-                
+
+
     def setGoal(self, goal):
         for g in goal:
             g = g[1:-1]
@@ -260,16 +256,19 @@ class TaskManagerNode(PrettyObject):
                 self._abstract_objects.append(self._wmi.getTemplateElement(tokens[1]))
             if tokens[2].find("-")==-1: #If isAbstractObject
                 self._abstract_objects.append(self._wmi.getTemplateElement(tokens[2]))
-                
-        
+
+
     def plan(self):
         return self._pddl_interface.invokePlanner()        
-    
+
+
     def execute(self):
         self._sli.getAgent(self._task[0].manager).execute(self._task, self._author_name) 
-        
+
+
     def run(self):
         rospy.spin()                    
+
 
 
 if __name__ == '__main__':
