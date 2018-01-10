@@ -88,6 +88,7 @@
     <owl:NamedIndividual rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#test_arm">
         <rdf:type rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#ArmDevice"/>
         <skiros:hasA rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#test_gripper"/>
+        <skiros:hasA rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#test_camera"/>
     </owl:NamedIndividual>
     
 
@@ -96,5 +97,9 @@
         <skiros:ContainerState>Empty</skiros:ContainerState>
     </owl:NamedIndividual>  
 
+    <owl:NamedIndividual rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#test_camera">
+        <rdf:type rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Camera"/>
+        <skiros:StateProperty>Idle</skiros:StateProperty>
+    </owl:NamedIndividual>
 </rdf:RDF>
     
