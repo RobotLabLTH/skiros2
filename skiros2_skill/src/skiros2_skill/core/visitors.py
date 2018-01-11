@@ -4,16 +4,16 @@ from skiros2_common.core.abstract_skill import State, Event
 class VisitorInterface:
     """
     Base interface for visitors
-    """    
-    #--------Class functions--------   
+    """
+    #--------Class functions--------
     def __init__(self):
         #Execution
         self._state=State.Idle
         self._preempt_request = Event()
- 
+
     def preempt(self):
         self._preempt_request.set()
-        
+
     def verifyPreempt(self, root):
         if self._preempt_request.is_set():
             self._preempt_request.clear()
@@ -22,23 +22,23 @@ class VisitorInterface:
             self._setState(State.Failure)
             return True
         return False
-        
+
     def _setState(self, state):
-        self._state = state  
-        
+        self._state = state
+
     def getState(self):
-        return self._state 
-        
+        return self._state
+
     def hasState(self, state):
         return self._state == state
-        
+
     def traverse(self, root):
         self._setState(State.Running)
         if not self.verifyPreempt(root):
             self._setState(root.visit(self))
             self.processingDone(root)
         return self.getState()
-    
+
     def process(self, procedure):
         #Process node
         state = self.processNode(procedure)
@@ -50,8 +50,8 @@ class VisitorInterface:
             if state!=State.Success:
                 return state
         #Post-process node
-        return self.postProcessNode(procedure)            
-        
+        return self.postProcessNode(procedure)
+
     def processNode(self, procedure):
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
@@ -59,19 +59,19 @@ class VisitorInterface:
     def processChildren(self, procedure):
         """ Use the processor embedded in the procedure """
         return procedure.processChildren(self)
-        
+
     def postProcessNode(self, procedure):
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
-        
+
     def processingDone(self, procedure):
         """ Optional - Not implemented in abstract class. """
         return True
-       
+
 class VisitorPrint(VisitorInterface, NodePrinter, NodeExecutor):
     """
     Expands and print the whole procedure tree
-    """    
+    """
     def __init__(self, wmi, instanciator):
         #Execution
         VisitorInterface.__init__(self)
@@ -80,43 +80,43 @@ class VisitorPrint(VisitorInterface, NodePrinter, NodeExecutor):
         self._wm = wmi
         self._instanciator = instanciator
         self._processor = Serial()
-        
+
     def setVerbose(self, verbose):
         self._verbose=verbose
-        
+
     def processNode(self, procedure):
         self.init(procedure)
         self.printTree(procedure, self._verbose)
         self.indend()
         return State.Running
-        
+
     def processChildren(self, procedure):
         """ Use serial processor always """
         return self._processor.processChildren(procedure._children, self)
-        
+
     def postProcessNode(self, procedure):
         self.unindend()
         return State.Success
-    
+
 class VisitorPreempt(VisitorInterface):
     """
     Stops all running nodes
-    """    
+    """
     def __init__(self):
         VisitorInterface.__init__(self)
-        
+
     def setVerbose(self, verbose):
         self._verbose=verbose
-        
+
     def processNode(self, procedure):
         if procedure.hasState(State.Running):
             return State.Running
         return State.Success
-        
+
     def postProcessNode(self, procedure):
         procedure.preempt()
         return State.Success
-        
+
 class VisitorExecutor(VisitorInterface, NodePrinter, NodeExecutor):
     """
     Simulate the procedure execution
@@ -127,16 +127,16 @@ class VisitorExecutor(VisitorInterface, NodePrinter, NodeExecutor):
         self._simulate=False
         self._verbose=False
         self._prefix = "->"
-        self._indend = 0       
+        self._indend = 0
         self._wm = wmi
         self._stack = []
         self._tracked_params = []
         self._instanciator = instanciator
         self._params=params.ParamHandler()
-        
+
     def setVerbose(self, verbose):
         self._verbose=verbose
-              
+
     def processNode(self, procedure):
         if procedure.hasState(State.Success):# or procedure.hasState(State.Failure):
             return procedure.getState()
@@ -144,21 +144,21 @@ class VisitorExecutor(VisitorInterface, NodePrinter, NodeExecutor):
             state = self.execute(procedure)
         else:
             state = State.Running
-        self.indend()    
+        self.indend()
         #print "Pre "+procedure.printState()
         return state
-        
+
     def postProcessNode(self, procedure):
         if procedure.hasState(State.Success):
             return State.Success
         state = self.postExecute(procedure)
         self.unindend()
         return state
-        
+
     def processingDone(self, procedure):
         self.syncParams()
         return True
-                      
+
 class VisitorReversibleSimulator(VisitorInterface, NodePrinter, NodeReversibleSimulator):
     """
     Simulate the procedure execution and revert the simulation
@@ -171,7 +171,7 @@ class VisitorReversibleSimulator(VisitorInterface, NodePrinter, NodeReversibleSi
         self._stack = []
         self._tracked_params = []
         self._prefix = "->"
-        self._indend = 0       
+        self._indend = 0
         self._wm = wmi
         self._instanciator = instanciator
         self._params=params.ParamHandler()
@@ -181,22 +181,22 @@ class VisitorReversibleSimulator(VisitorInterface, NodePrinter, NodeReversibleSi
         self._forget_branch = []
         self.visitor = VisitorPrint(self._wm, self._instanciator)
         self._bound = {}
-              
+
     def setVerbose(self, verbose):
         self._verbose=verbose
-        
+
     def processNode(self, procedure):
         state = self.execute(procedure)
         self.printTree(procedure)
         self.indend()
         return state
-        
+
     def postProcessNode(self, procedure):
         state = self.postExecute(procedure)
         self.unindend()
         self.visitor.traverse(self.getExecutionRoot())
         return state
-    
+
     def processingDone(self, procedure):
         if not self.undoAll():
             return False
@@ -204,31 +204,31 @@ class VisitorReversibleSimulator(VisitorInterface, NodePrinter, NodeReversibleSi
         return True
 
 
-class VisitorFlatten(VisitorInterface, NodeExecutor, NodeMemorizer):
+class VisitorProgress(VisitorInterface, NodeMemorizer):
     """
     Expands and flattens the whole procedure tree
-    """    
-    def __init__(self, wmi, instanciator):
+    """
+    def __init__(self):
         #Execution
         VisitorInterface.__init__(self)
-        NodeExecutor.__init__(self, wmi, instanciator)
-        NodeMemorizer.__init__(self, 'Flatten')
+        NodeMemorizer.__init__(self, 'VisitorProgress')
         self._verbose = False
         self._processor = Serial()
-        
+
     def processNode(self, procedure):
-        self.init(procedure)
-        self.memorize(procedure, procedure._state)
+        if procedure.progress_msg:
+            self.memorize((procedure.type, procedure.label), (procedure.state, procedure.progress_msg, procedure.progress_code))
         return State.Running
-        
-    def processChildren(self, procedure):
-        """ Use serial processor always """
-        return self._processor.processChildren(procedure._children, self)
-        
+
     def postProcessNode(self, procedure):
         return State.Success
 
+    def processChildren(self, procedure):
+        """ Use serial processor always """
+        return self._processor.processChildren(procedure._children, self)
+
     def processingDone(self, procedure):
-        print(self._name + ":")
-        print('\n\t'.join(p1._label + '-' + str(p2) for (p1,p2) in self._tree))
         return True
+
+    def getProgress(self):
+        return self._tree

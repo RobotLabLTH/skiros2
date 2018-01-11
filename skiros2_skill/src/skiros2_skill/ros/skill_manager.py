@@ -49,9 +49,9 @@ def skill2msg(skill):
     msg = msgs.ResourceDescription()
     msg.type = skill._type
     msg.name = skill._label
-    msg.params = utils.serializeParamMap(skill._description._params.getParamMap())   
+    msg.params = utils.serializeParamMap(skill._description._params.getParamMap())
     return msg
-    
+
 class TaskManager:
     """
     Internal task manager used to keep track of on-going tasks
@@ -61,16 +61,15 @@ class TaskManager:
     _processes = {}
     _visitors = {}
     _id_gen = IdGen()
-            
+
     def __getitem__(self, key):
         return TaskManager._tasks[key]
-        
+
     def _run(self, uid, visitor, clear):
         """
         Tick tree at 25hz
         """
-        flatten = visitors.VisitorFlatten(visitor._wm, visitor._instanciator)
-        flatten.traverse(TaskManager._tasks[uid])
+        progress = visitors.VisitorProgress()
 
         iteration = 0
         result = State.Running
@@ -79,6 +78,10 @@ class TaskManager:
             iteration += 1
             result = visitor.traverse(TaskManager._tasks[uid])
             log.info("[{}]".format(visitor.__class__.__name__), "Iteration {} result: {}".format(iteration, result.name))
+            progress.reset()
+            progress.traverse(TaskManager._tasks[uid])
+            for (p1,p2) in progress.snapshot():
+                log.info("[{}]".format(progress.__class__.__name__), "{}[{}] ({}): {} ({})".format(p1[0], p1[1], p2[0], p2[1], p2[2]))
             rate.sleep()
         #if result==State.Failure:
         print "===Final state==="
@@ -86,7 +89,7 @@ class TaskManager:
         printer.traverse(TaskManager._tasks[uid])
         if clear:
             self.removeTask(uid)
-            
+
     def clear(self):
         for uid, v in TaskManager._visitors.iteritems():
             self.preempt(uid)
@@ -94,38 +97,38 @@ class TaskManager:
         TaskManager._tasks.clear()
         TaskManager._visitors.clear()
         TaskManager._id_gen.clear()
-        
+
     def addTask(self, obj, desired_id=-1):
         uid = TaskManager._id_gen.getId()
         TaskManager._tasks[uid] = obj
         return uid
-        
+
     def removeTask(self, uid):
         if TaskManager._processes.has_key(uid):
             TaskManager._visitors.pop(uid)
             TaskManager._processes.pop(uid)
         TaskManager._tasks.pop(uid)
         TaskManager._id_gen.removeId(uid)
-            
+
     def start(self, uid, visitor, clear=False):
         TaskManager._visitors[uid] = visitor
         TaskManager._processes[uid] = Process(target=TaskManager._run, args=(self, uid, visitor, clear))
         TaskManager._processes[uid].start()
         return True
-        
+
     def isAlive(self, uid):
-        TaskManager._processes[uid].is_alive()        
-        
+        TaskManager._processes[uid].is_alive()
+
     def join(self, uid):
         TaskManager._processes[uid].join()
-        
+
     def preempt(self, uid):
         TaskManager._visitors[uid].preempt()
         log.info("preempt", "Task {} preempted.".format(uid))
-        
+
     def kill(self, uid):
         log.error("", "TODO")
-        
+
 
 class SkillManager:
     """
@@ -143,8 +146,8 @@ class SkillManager:
         self._tasks._verbose = verbose
         self._registerAgent(agent_name)
         self._skills = []
-            
-    def _registerAgent(self, agent_name):    
+
+    def _registerAgent(self, agent_name):
         res = self._wmi.resolveElement(wm.Element("cora:Robot", agent_name))
         if res:
             log.info("[{}]".format(self.__class__.__name__), "Found robot {}, skipping registration.".format(res[0]))
@@ -157,38 +160,38 @@ class SkillManager:
                 self._wmi.setRelation(self._robot._id, "skiros:at", start_location._id)
         log.info("[{}]".format(self.__class__.__name__), "Registered robot {}".format(self._robot))
         #TODO: update skill mgr name
-        
+
     def shutdown(self):
         for s in self._skills:
             self._wmi.removeElement(s)
-            
+
     def loadSkills(self, package):
         """
         Load definitions from a package
         """
         self._plug_loader.load(package, skill.SkillDescription)
-        
+
     def addSkill(self, name):
         """
-        @brief Add a skill to the available skill set 
+        @brief Add a skill to the available skill set
         """
         skill = self._plug_loader.getPluginByName(name)()
-        self._instanciator.addInstance(skill)    
+        self._instanciator.addInstance(skill)
         e = skill.toElement()
-        e.addRelation(self._robot._id, "skiros:hasSkill", "-1")      
+        e.addRelation(self._robot._id, "skiros:hasSkill", "-1")
         #print skill.printInfo(True)
         if not self._wmi.getType(e._type):
             self._wmi.addClass(e._type, "skiros:Skill")
-        self._wmi.addElement(e) 
+        self._wmi.addElement(e)
         self._skills.append(e)
         return SkillHolder(self._agent_name, skill._type, skill._label, skill.params.getCopy())
-        
+
     def addLocalPrimitive(self, name):
         """
-        @brief Add a local primitive 
+        @brief Add a local primitive
         """
         self.addSkill(name)
-    
+
     def addExternalPrimitive(self, rtype, name, ri, mgr_name):
         """
         @brief Instanciate a link to a primitive hosted on a resource manager
@@ -197,30 +200,30 @@ class SkillManager:
         skill = RosSkill()
         skill.setDescription(description, name)
         skill.setRosInterface(ri, mgr_name)
-        self._instanciator.addInstance(skill)    
+        self._instanciator.addInstance(skill)
         e = skill.toElement()
-        e.addRelation(self._robot._id, "skiros:hasSkill", "-1")   
+        e.addRelation(self._robot._id, "skiros:hasSkill", "-1")
         if not self._wmi.getType(e._type):
             self._wmi.addClass(e._type, "skiros:Skill")
-        self._wmi.addElement(e) 
+        self._wmi.addElement(e)
         self._skills.append(e)
-        
+
     def addTask(self, task, desired_id=-1):
         self._task = skill.Root("root", self._local_wm)
         for i in task:
-            print i.manager+":"+i.type+":"+i.name+i.ph.printState()    
+            print i.manager+":"+i.type+":"+i.name+i.ph.printState()
             self._task.addChild(skill.SkillWrapper(i.type, i.name, self._instanciator))
-            self._task.last().specifyParamsDefault(i.ph)   
+            self._task.last().specifyParamsDefault(i.ph)
         return self._tasks.addTask(self._task, desired_id)
-            
+
     def preemptTask(self, uid):
         self._tasks.preempt(uid)
-        
+
     def printTask(self, uid):
         self.visitor = visitors.VisitorPrint(self._local_wm, self._instanciator)
         self.visitor.setVerbose(self._verbose)
         return self._tasks.start(uid, self.visitor)
-        
+
     def executeTask(self, uid, sim=False, track_params=list()):
         self.visitor = visitors.VisitorExecutor(self._local_wm, self._instanciator)
         self.visitor.setSimulate(sim)
@@ -228,17 +231,17 @@ class SkillManager:
             self.visitor.trackParam(*t)
         self.visitor.setVerbose(self._verbose)
         return self._tasks.start(uid, self.visitor)
-            
+
     def clearTasks(self):
         self._tasks.clear()
-        
+
     def executeOptimal(self):
         #Optimize Procedure
         self.optimizeTask()
         self.printTask()
         #Execute
-        return self.executeTask(False)              
-    
+        return self.executeTask(False)
+
     def simulateTask(self, uid):
         self.visitor = visitors.VisitorReversibleSimulator(self._local_wm, self._instanciator)
         self.visitor.setVerbose(self._verbose)
@@ -246,7 +249,7 @@ class SkillManager:
         #self.visitor.trackParam("Gripper")
         if self.visitor.traverse(self._tasks[uid]):
             self._task = self.visitor.getExecutionRoot()
-                   
+
     def optimizeTask(self):
         self.visitor = optimizer.VisitorOptimizer(self._local_wm, self._instanciator)
         #self.visitor.setVerbose(True)
@@ -266,9 +269,9 @@ class SkillManager:
             print "Exe: {}".format(self.visitor._execution_branch)
             self.printTask()
             raise e
-            
-        
-            
+
+
+
 class SkillManagerNode(object):
     """
     At boot:
@@ -303,8 +306,8 @@ class SkillManagerNode(object):
         self._monitor = rospy.Publisher("~monitor", msgs.ResourceMonitor, queue_size=20)
         rospy.on_shutdown(self._sm.shutdown)
         rospy.sleep(0.5)
-                        
-    def _initSkills(self):            
+
+    def _initSkills(self):
         """
         @brief Initialize the robot with a set of skills
         """
@@ -320,14 +323,14 @@ class SkillManagerNode(object):
         if not sl:
             pass #TODO: load all defined skills
         for r in sl:
-            self._sm.addSkill(r)    
-                
+            self._sm.addSkill(r)
+
     def _makeTask(self, msg):
         task = []
         for s in msg:
             task.append(SkillHolder("", s.type, s.name, utils.deserializeParamMap(s.params)))
-        return task 
-                
+        return task
+
     def _commandCb(self, msg):
         if msg.action == msg.START:
             self._sm.clearTasks()
@@ -335,7 +338,7 @@ class SkillManagerNode(object):
             #self._sm.printTask(task_id)
             self._sm.executeTask(task_id)
         elif msg.action == msg.PREEMPT:
-            task_id = self._sm.preemptTask(msg.execution_id)            
+            task_id = self._sm.preemptTask(msg.execution_id)
         elif msg.action == msg.PAUSE:
             log.error("[{}]".format(self.__class__.__name__), "TODO")
             pass
@@ -349,7 +352,7 @@ class SkillManagerNode(object):
             self._sm.executeTask(task_id)
             return srvs.SkillCommandResponse(False, -1)
         return srvs.SkillCommandResponse(True, task_id)
-        
+
     def _publishMonitor(self, action, code, description, seconds=0.0):
         #start = rospy.Time.now()
         #self.publish("Optimization", 1, "Success.", (rospy.Time.now()-start).to_sec())
@@ -361,7 +364,7 @@ class SkillManagerNode(object):
         msg.progress_description = description
         msg.progress_seconds = seconds
         self._monitor.publish(msg)
-       
+
     def _getDescriptionsCb(self, msg):
         """
         Called when receiving a command on ~/get_descriptions
@@ -373,7 +376,7 @@ class SkillManagerNode(object):
             for s in r:
                 to_ret.list.append(skill2msg(s))
         return to_ret
-         
+
     def run(self):
         rospy.spin()
 

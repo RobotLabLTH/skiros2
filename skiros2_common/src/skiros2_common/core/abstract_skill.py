@@ -6,12 +6,12 @@ from flufl.enum import Enum
 from copy import copy, deepcopy
 from multiprocessing.dummy import Event
 from sets import Set
-        
+
 """
 Possible states for a skill
 """
 State = Enum('State', 'Success Failure Running Idle Uninitialized')
-        
+
 """
 Unspecify: (postCondition) The parameter is unspecified (removed from the Blackboard) after execution
 Consume: (postCondition) The parameter is unspecified and removed from world model after execution
@@ -35,11 +35,11 @@ class SkillDescription(object):
         self.createDescription()
         self.generateDefParams()
         #self.generateDefConditions()
-        
+
     @property
     def params(self):
         return self._params
-        
+
     def getDescription(self):
         """
         Extracts the skill description
@@ -59,7 +59,7 @@ class SkillDescription(object):
     def addParam(self, key, value, param_type, options=[], description=""):
         """
         Add a parameter
-        
+
         key: a unique string identifier
         value: the default value or type
         param_type: the type of parameter (see ParamTypes)
@@ -96,7 +96,7 @@ class SkillDescription(object):
         #    self.addPreCondition(self.getPropCond("DeviceIdle", "deviceState", key, "Idle", True))
         for key, param in self._params.getParamMapFiltered(params.ParamTypes.Optional).iteritems():
             if param.dataType() == type(Element()):
-                c1 = self.getGenerateCond("Has"+key, key, True)                   
+                c1 = self.getGenerateCond("Has"+key, key, True)
                 dont_add = False
                 for c2 in self._post_conditions:
                     if c1.isEqual(c2) or c1.hasConflict(c2):
@@ -106,7 +106,7 @@ class SkillDescription(object):
 
     def getOutputParams(self):
         return self._params.getParamMapFiltered(params.ParamTypes.Optional)
-        
+
     def addPreCondition(self, condition):
         self._pre_conditions.append(condition)
 
@@ -130,7 +130,7 @@ class SkillDescription(object):
 
     def getAbsRelationCond(self, clabel, olabel, subj, obj, desired_state):
         return cond.AbsConditionRelation(clabel, olabel, subj, obj, desired_state)
-        
+
     def getRelationCond(self, clabel, olabel, subj, obj, desired_state):
         return cond.ConditionRelation(clabel, olabel, subj, obj, desired_state)
 
@@ -174,11 +174,11 @@ class SkillDescription(object):
         for c in self._post_conditions:
             to_ret.addRelation(self, "skiros:hasPostCondition", c.toElement())
         return to_ret
-        
+
     #--------Virtual functions--------
     def createDescription(self):
         """ Optional, Not implemented in abstract class. """
-        return        
+        return
 
 class SkillCore(SkillDescription):
     """
@@ -203,10 +203,10 @@ class SkillCore(SkillDescription):
     #--------Class functions--------
     def expand(self, skill):
         return
-        
+
     def hasChildren(self):
         return False
-        
+
     def _setState(self, state):
         self._state = state
         self._state_change.set()
@@ -216,6 +216,28 @@ class SkillCore(SkillDescription):
             code = self._progress_code+1
         self._progress_code=code
         self._progress_msg=msg
+
+    @property
+    def progress_code(self):
+        return self._progress_code
+
+    @property
+    def progress_msg(self):
+        return self._progress_msg
+
+    @property
+    def label(self):
+        return self._label
+
+    @property
+    def type(self):
+        return self._type
+
+    @property
+    def state(self):
+        return self._state
+
+
 
     def _resetDescription(self, other=None):
         if other:
@@ -231,7 +253,7 @@ class SkillCore(SkillDescription):
             return True
         else:
             return False
-    
+
     def checkPreCond(self, verbose=False):
         """
         @brief Check pre-conditions.
@@ -245,16 +267,16 @@ class SkillCore(SkillDescription):
                 for key in c.getKeys():
                     to_ret.add(key)
         return list(to_ret)
-         
+
     def hasPostCond(self):
         if self._post_conditions:
             return True
         else:
             return False
-            
+
     def checkPostCond(self, verbose=False):
         """
-        @brief Check post-conditions. 
+        @brief Check post-conditions.
         @return A list of parameters that breaks the conditions, or an empty list if all are satisfied
         """
         to_ret = []
@@ -264,12 +286,12 @@ class SkillCore(SkillDescription):
                     log.error(c.getDescription(), "ConditionCheck failed")
                 to_ret += c.getKeys()
         return to_ret
-    #-------- Control functions--------               
+    #-------- Control functions--------
     def preempt(self):
         if self.hasState(State.Running):
             self._setState(self.onPreempt())
         return self._state
-            
+
     def getState(self):
         return self._state
 
@@ -288,11 +310,11 @@ class SkillCore(SkillDescription):
                 self._state_change.clear()
                 self._state_change.wait()
         #print 'State changed {}'.format(self._state)
-                
+
     def reset(self):
         self.onReset()
         self._params.setDefault()
-        self._setProgress("", 0)  
+        self._setProgress("", 0)
         self._setState(State.Idle)
         return self._state
 
@@ -301,7 +323,7 @@ class SkillCore(SkillDescription):
             self.specifyParams(params, False)
         self._setState(self.onStart())
         return self._state
-        
+
     def printInfo(self, verbose=False):
         s = "{}-{} ".format(self._type,self._label)
         if verbose:
@@ -311,15 +333,15 @@ class SkillCore(SkillDescription):
         else:
             s += "\n"
         return s
-        
+
     def printState(self, verbose=False):
         s = "{}".format(self._label)
         if verbose:
             s += "[{}]".format(self._params.printState())
         return s
-        
+
     def printProgress(self):
-        return "[{}] {}".format(self._progress_code, self._progress_msg)        
+        return "[{}] {}".format(self._progress_code, self._progress_msg)
 
     def specifyParamDefault(self, key, values):
         """
@@ -345,37 +367,37 @@ class SkillCore(SkillDescription):
 
     def specifyParams(self, input_params, keep_default=True):
         """
-        Set the parameters. 
-        
+        Set the parameters.
+
         If keep_offline is true, params already specified are preserved
-        
+
         TODO: changed for working in real. Can fuck up in optimization
         """
         self._params.specifyParams(input_params, keep_default)
-        
+
     #-------- User's functions--------
-    def setDescription(self, description, label=""):   
+    def setDescription(self, description, label=""):
         """
         Description is a SkillDescription
         """
         self._description = description
-        self._type = description._type  
+        self._type = description._type
         if label!="":
             self._label = label
-        self._resetDescription()          
-       
+        self._resetDescription()
+
     #-------- Virtual functions--------
     def onReset(self):
         """ Called when resetting. """
-        
+
     def onStart(self):
         """Called just before 1st execute"""
         return State.Running
-        
+
     def onPreempt(self):
         """ Called when skill is requested to stop. """
         return State.Failure
-        
+
     def execute(self):
         """ Main execution function """
         raise NotImplementedError("Not implemented in abstract class")
