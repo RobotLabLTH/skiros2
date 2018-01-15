@@ -53,7 +53,7 @@ class TaskManagerNode(PrettyObject):
     """
     This class manage the robot task.
     A list of goals can be modified by external agent (e.g. users) with the service 'set_goals'
-    The task manager plans a sequence of skills to reach the goals. 
+    The task manager plans a sequence of skills to reach the goals.
     In case of execution failure replans until all goals are reached.
     """
 
@@ -78,17 +78,17 @@ class TaskManagerNode(PrettyObject):
 
         self._goal_modify = rospy.Service('~set_goals', srvs.TmSetGoals, self._setGoalsCb)
 
-        self._sub_robot_discovery = rospy.Subscriber('/robot_discovery', Empty, self._onRobotDiscovery)
-        self._pub_robot_description = rospy.Publisher('~robot_description', RobotDescription, queue_size=10)
+        self._sub_robot_discovery = rospy.Subscriber('/skiros/robot_discovery', Empty, self._onRobotDiscovery)
+        self._pub_robot_description = rospy.Publisher('/skiros/robot_description', RobotDescription, queue_size=10)
 
 
 
     @property
     def skills(self):
         """Get available skills.
-        
+
         Return the updated list of skills available in the system
-        
+
         Returns:
             dict: {Skill name : instance? }
         """
@@ -97,13 +97,13 @@ class TaskManagerNode(PrettyObject):
             for ak, e in self._sli._agents.iteritems():
                 for sk, s in e._skill_list.iteritems():
                     s.manager = ak
-                    self._skills[sk] = s     
+                    self._skills[sk] = s
         return self._skills
 
 
     def _onRobotDiscovery(self, msg):
         """Callback for robot discovery messages.
-        
+
         Answers robot discovery messages by publishing robot name and its skills.
 
         Args:
@@ -111,14 +111,14 @@ class TaskManagerNode(PrettyObject):
         """
         log.debug(self.class_name, "Received robot discovery message")
         for a in self._sli._agents.values():
-            log.debug(self.class_name, "Publish description for {}: {}".format(a._robot, a.getSkillList().keys()))
-            self._pub_robot_description.publish(a._robot, a.getSkillList().keys())
+            log.debug(self.class_name, "Publish description for {}: {}".format(a._robot._label, a.getSkillList().keys()))
+            self._pub_robot_description.publish(a._robot._label, a.getSkillList().keys())
 
 
 
     def _setGoalsCb(self, msg):
         """Callback for setting new goals.
-        
+
         Executed whenever we receive a service call to set a new goal.
 
         Args:
@@ -153,7 +153,7 @@ class TaskManagerNode(PrettyObject):
             # params is a dict? how to preserve order? -> tokens?
             # for _, t in  skill.ph._params.iteritems():
             #     t.setValue(self.getElement(tokens.pop(0)))
-            self._task.append(skill)            
+            self._task.append(skill)
 
 
     def initDomain(self):
@@ -188,7 +188,7 @@ class TaskManagerNode(PrettyObject):
         elements = {}
         self._elements = {}
         #Find objects
-        for objType in self._pddl_interface._types._types["thing"]:   
+        for objType in self._pddl_interface._types._types["thing"]:
             temp = self._wmi.resolveElements(wmi.Element(objType))
             elements[objType] = temp
             if len(temp)>0:
@@ -205,14 +205,14 @@ class TaskManagerNode(PrettyObject):
             objects[ctype].append(e._label)
             elements[ctype].append(e)
             self._elements[e._id] = e
-        self._pddl_interface.setObjects(objects)        
+        self._pddl_interface.setObjects(objects)
         #Evaluate inital state
         init_state = []
-        for supertype, types in self._pddl_interface._types._types.iteritems():   
+        for supertype, types in self._pddl_interface._types._types.iteritems():
             elements[supertype] = []
             for t in types:
                 elements[supertype] += elements[t]
-        
+
         params = skirosp.ParamHandler()
         params.addParam("x", wm.Element(), skirosp.ParamTypes.World)
         params.addParam("y", wm.Element(), skirosp.ParamTypes.World)
@@ -250,7 +250,7 @@ class TaskManagerNode(PrettyObject):
     def setGoal(self, goal):
         for g in goal:
             g = g[1:-1]
-            tokens = g.split(" ")            
+            tokens = g.split(" ")
             self._pddl_interface.addGoal(pddl.GroundPredicate(tokens[0], [tokens[1], tokens[2]]))
             if tokens[1].find("-")==-1: #If isAbstractObject
                 self._abstract_objects.append(self._wmi.getTemplateElement(tokens[1]))
@@ -259,15 +259,15 @@ class TaskManagerNode(PrettyObject):
 
 
     def plan(self):
-        return self._pddl_interface.invokePlanner()        
+        return self._pddl_interface.invokePlanner()
 
 
     def execute(self):
-        self._sli.getAgent(self._task[0].manager).execute(self._task, self._author_name) 
+        self._sli.getAgent(self._task[0].manager).execute(self._task, self._author_name)
 
 
     def run(self):
-        rospy.spin()                    
+        rospy.spin()
 
 
 
