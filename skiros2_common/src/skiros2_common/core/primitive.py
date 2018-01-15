@@ -5,7 +5,7 @@ from datetime import datetime
 
 class PrimitiveBase(SkillCore):
     """
-    Base class for primitive skills
+    @brief Base class for primitive skills
     """
     #--------Control functions-------- 
     def tick(self):
@@ -13,11 +13,12 @@ class PrimitiveBase(SkillCore):
             log.error("tick", "Reset required before ticking.")
             return State.Failure
         elif not self.hasState(State.Running):
-            return self.start()
+            log.error("tick", "Start required before ticking.")
+            return State.Failure
         else:
-            now = datetime.now()
+            start_time = datetime.now()
             self._setState(self.execute())
-            self._updateRoutine(now)
+            self._updateRoutine(start_time)
             if self._progress_msg!="":
                 log.info("[{}]".format(self.printState()), self._progress_msg)
             if self.hasState(State.Success) or self.hasState(State.Failure):
@@ -47,20 +48,26 @@ class PrimitiveBase(SkillCore):
         
     #-------- User's functions--------        
     def step(self, msg=""):
-        """ Set a running breakpoint """
+        """ 
+        @brief Set a running breakpoint 
+        """
         self._setProgress(msg)
         return State.Running
         #print '[{}:{}]'.format(self._label, self._progress)
         
     def fail(self, msg, code):
-        """ Set a failure state """
+        """ 
+        @brief Set a failure state 
+        """
         if code > 0:
             code *= -1
         self._setProgress(msg, code)
         return State.Failure
 
     def success(self, msg=""):
-        """ Set a success state """
+        """ 
+        @brief Set a success state 
+        """
         self._setProgress(msg)
         return State.Success
 

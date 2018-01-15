@@ -299,7 +299,10 @@ class SkillCore(SkillDescription):
     def start(self, params=None):
         if params:
             self.specifyParams(params, False)
-        self._setState(self.onStart())
+        if self.onStart():
+            self._setState(State.Running)
+        else:
+            self._setState(State.Failure)
         return self._state
         
     def printInfo(self, verbose=False):
@@ -370,7 +373,7 @@ class SkillCore(SkillDescription):
         
     def onStart(self):
         """Called just before 1st execute"""
-        return State.Running
+        return True
         
     def onPreempt(self):
         """ Called when skill is requested to stop. """
