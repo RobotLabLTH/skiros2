@@ -1,17 +1,17 @@
 cmake_minimum_required(VERSION 2.8.3)
- 
+
 project(skiros2_msgs)
 
-find_package(catkin REQUIRED COMPONENTS 
-genmsg 
-message_generation 
-std_msgs 
-actionlib_msgs 
-trajectory_msgs 
-sensor_msgs 
+find_package(catkin REQUIRED COMPONENTS
+genmsg
+message_generation
+std_msgs
+actionlib_msgs
+trajectory_msgs
+sensor_msgs
 control_msgs
-) 
-  
+)
+
 add_message_files(
   FILES
   Param.msg
@@ -19,12 +19,13 @@ add_message_files(
   Statement.msg
   Condition.msg
   RobotDescription.msg
+  SkillProgress.msg
   ResourceDescription.msg
   ResourceMonitor.msg
   WmElement.msg
   WmMonitor.msg
   )
-   
+
 add_service_files(
   FILES
   ResourceCommand.srv
@@ -39,8 +40,8 @@ add_service_files(
   WmModify.srv
   SkillCommand.srv
   TmSetGoals.srv
-  ) 
-  
+  )
+
 #add_action_files(
 #  FILES
   #Gripper.action
@@ -51,4 +52,4 @@ generate_messages(
 
 catkin_package(
     CATKIN_DEPENDS message_runtime genmsg std_msgs actionlib_msgs
-) 
+)

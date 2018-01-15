@@ -375,6 +375,12 @@ class SkillWrapper(SkillInterface):
 
 
     ## HACK for accessing progress member variable due to shitty implementation -.-
+
+    @property
+    def id(self):
+        if not self._has_instance: return super(SkillWrapper, self).id
+        return self._instance.id
+
     @property
     def progress_code(self):
         if not self._has_instance: return super(SkillWrapper, self).progress_code

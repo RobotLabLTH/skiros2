@@ -36,8 +36,9 @@ from skiros2_skill.ros.utils import *
 import skiros2_world_model.core.local_world_model as wm
 import skiros2_world_model.ros.world_model_interface as wmi
 import skiros2_skill.core.skill as skill
+from skiros2_common.core.abstract_skill import State
 from skiros2_skill.core.skill_instanciator import SkillInstanciator
-from skiros2_skill.ros.ros_skill import RosSkill, State
+from skiros2_skill.ros.ros_skill import RosSkill
 import skiros2_common.tools.logger as log
 from skiros2_common.tools.id_generator import IdGen
 from skiros2_common.tools.plugin_loader import *
@@ -62,6 +63,9 @@ class TaskManager:
     _visitors = {}
     _id_gen = IdGen()
 
+    _progress_cb = None
+
+
     def __getitem__(self, key):
         return TaskManager._tasks[key]
 
@@ -70,6 +74,7 @@ class TaskManager:
         Tick tree at 25hz
         """
         progress = visitors.VisitorProgress()
+        finished_skill_ids = []
 
         iteration = 0
         result = State.Running
@@ -80,8 +85,12 @@ class TaskManager:
             log.info("[{}]".format(visitor.__class__.__name__), "Iteration {} result: {}".format(iteration, result.name))
             progress.reset()
             progress.traverse(TaskManager._tasks[uid])
-            for (p1,p2) in progress.snapshot():
-                log.info("[{}]".format(progress.__class__.__name__), "{}[{}] ({}): {} ({})".format(p1[0], p1[1], p2[0], p2[1], p2[2]))
+            for (id,desc) in progress.snapshot():
+                if id not in finished_skill_ids:
+                    if desc['state'] is State.Success or desc['state'] is State.Failure:
+                        finished_skill_ids.append(id)
+                    if self._progress_cb is not None:
+                        self._progress_cb(task_id=uid, id=id, **desc)
             rate.sleep()
         #if result==State.Failure:
         print "===Final state==="
@@ -89,6 +98,11 @@ class TaskManager:
         printer.traverse(TaskManager._tasks[uid])
         if clear:
             self.removeTask(uid)
+
+
+    def observeProgress(self, func):
+        self._progress_cb = func
+
 
     def clear(self):
         for uid, v in TaskManager._visitors.iteritems():
@@ -99,7 +113,7 @@ class TaskManager:
         TaskManager._id_gen.clear()
 
     def addTask(self, obj, desired_id=-1):
-        uid = TaskManager._id_gen.getId()
+        uid = TaskManager._id_gen.getId(desired_id)
         TaskManager._tasks[uid] = obj
         return uid
 
@@ -147,6 +161,9 @@ class SkillManager:
         self._registerAgent(agent_name)
         self._skills = []
 
+    def observeTaskProgress(self, func):
+        self._tasks.observeProgress(func)
+
     def _registerAgent(self, agent_name):
         res = self._wmi.resolveElement(wm.Element("cora:Robot", agent_name))
         if res:
@@ -160,6 +177,7 @@ class SkillManager:
                 self._wmi.setRelation(self._robot._id, "skiros:at", start_location._id)
         log.info("[{}]".format(self.__class__.__name__), "Registered robot {}".format(self._robot))
         #TODO: update skill mgr name
+
 
     def shutdown(self):
         for s in self._skills:
@@ -209,12 +227,12 @@ class SkillManager:
         self._skills.append(e)
 
     def addTask(self, task, desired_id=-1):
-        self._task = skill.Root("root", self._local_wm)
+        root = skill.Root("root", self._local_wm)
         for i in task:
             print i.manager+":"+i.type+":"+i.name+i.ph.printState()
-            self._task.addChild(skill.SkillWrapper(i.type, i.name, self._instanciator))
-            self._task.last().specifyParamsDefault(i.ph)
-        return self._tasks.addTask(self._task, desired_id)
+            root.addChild(skill.SkillWrapper(i.type, i.name, self._instanciator))
+            root.last().specifyParamsDefault(i.ph)
+        return self._tasks.addTask(root, desired_id)
 
     def preemptTask(self, uid):
         self._tasks.preempt(uid)
@@ -290,6 +308,7 @@ class SkillManagerNode(object):
         prefix = ""
         full_name = rospy.get_param('~prefix', prefix) + robot_name.replace("/", ":")
         self._sm = SkillManager(full_name, verbose=rospy.get_param('~verbose', True))
+        self._sm.observeTaskProgress(self._onProgressUpdate)
         self._rli = ResourceLayerInterface()
         self._rli.printState()
         #Init skills
@@ -303,7 +322,7 @@ class SkillManagerNode(object):
         #self._sm._local_wm.printModel()
         #Start communications
         self._command = rospy.Service('~command', srvs.SkillCommand, self._commandCb)
-        self._monitor = rospy.Publisher("~monitor", msgs.ResourceMonitor, queue_size=20)
+        self._monitor = rospy.Publisher("~monitor", msgs.SkillProgress, queue_size=20)
         rospy.on_shutdown(self._sm.shutdown)
         rospy.sleep(0.5)
 
@@ -353,17 +372,31 @@ class SkillManagerNode(object):
             return srvs.SkillCommandResponse(False, -1)
         return srvs.SkillCommandResponse(True, task_id)
 
-    def _publishMonitor(self, action, code, description, seconds=0.0):
-        #start = rospy.Time.now()
-        #self.publish("Optimization", 1, "Success.", (rospy.Time.now()-start).to_sec())
-        #self._opt_time = (rospy.Time.now()-start).to_sec()
-        msg = msgs.ResourceMonitor()
-        msg.author = "skirospy"
-        msg.action = action
-        msg.progress_code = code
-        msg.progress_description = description
-        msg.progress_seconds = seconds
+
+    def _onProgressUpdate(self, *args, **kwargs):
+        log.debug("[{}]".format(self.__class__.__name__), "{}:Task[{task_id}]{type}:{label}[{id}]: Message[{code}]: {msg} ({state})".format(self._sm._agent_name[1:], **kwargs))
+        msg = msgs.SkillProgress()
+        msg.robot = self._sm._agent_name
+        msg.task_id = kwargs['task_id']
+        msg.id = kwargs['id']
+        msg.type = kwargs['type']
+        msg.label = kwargs['label']
+        msg.state = kwargs['state']
+        msg.progress_code = kwargs['code']
+        msg.progress_message = kwargs['msg']
         self._monitor.publish(msg)
+
+    # def _publishMonitor(self, action, code, description, seconds=0.0):
+    #     #start = rospy.Time.now()
+    #     #self.publish("Optimization", 1, "Success.", (rospy.Time.now()-start).to_sec())
+    #     #self._opt_time = (rospy.Time.now()-start).to_sec()
+    #     msg = msgs.ResourceMonitor()
+    #     msg.author = "skirospy"
+    #     msg.action = action
+    #     msg.progress_code = code
+    #     msg.progress_description = description
+    #     msg.progress_seconds = seconds
+    #     self._monitor.publish(msg)
 
     def _getDescriptionsCb(self, msg):
         """

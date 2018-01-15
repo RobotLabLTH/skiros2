@@ -1,6 +1,7 @@
 import skiros2_common.core.params as params
 from skiros2_common.core.world_element import Element
 import skiros2_common.core.conditions as cond
+from skiros2_common.tools.id_generator import IdGen
 import skiros2_common.tools.logger as log
 from flufl.enum import Enum
 from copy import copy, deepcopy
@@ -184,8 +185,12 @@ class SkillCore(SkillDescription):
     """
     An abstract executable skill with a description (type, label, params, conditions), a state and progress code
     """
+
+    gen_id = IdGen()
+
     def __init__(self):
         #Description
+        self._id=SkillCore.gen_id.getId()
         self._type=""
         self._label=""
         self._description = SkillDescription()
@@ -216,6 +221,10 @@ class SkillCore(SkillDescription):
             code = self._progress_code+1
         self._progress_code=code
         self._progress_msg=msg
+
+    @property
+    def id(self):
+        return self._id
 
     @property
     def progress_code(self):
