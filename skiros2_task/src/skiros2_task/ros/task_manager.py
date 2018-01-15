@@ -64,8 +64,8 @@ class TaskManagerNode(PrettyObject):
         Initialize task manager as a ros node.
         Establish access to the global and local world model, skill manager and the task planner.
         """
-        self._author_name = "task_manager"
         rospy.init_node("task_manager", anonymous=False)
+        self._author_name = rospy.get_name()
 
         self._goals = []
         self._task = []
@@ -110,9 +110,7 @@ class TaskManagerNode(PrettyObject):
             msg (std_msgs.msg.Empty): Empty ping message
         """
         log.debug(self.class_name, "Received robot discovery message")
-        for a in self._sli._agents.values():
-            log.debug(self.class_name, "Publish description for {}: {}".format(a._robot._label, a.getSkillList().keys()))
-            self._pub_robot_description.publish(a._robot._label, a.getSkillList().keys())
+        self._pub_robot_description.publish(self._author_name, self.skills.keys())
 
 
 
