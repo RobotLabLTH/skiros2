@@ -47,29 +47,28 @@ class SkillManagerInterface:
         self.init()
         self._msg_lock = Lock()
         self._msg_rec = Event()
-    
+
     def init(self):
         self._skill_mgr_name = self._robot.getProperty('skiros:SkillMgr').getValue()
         rospy.wait_for_service(self._skill_mgr_name + '/get_skills')
         self._skill_exe_client = rospy.ServiceProxy(self._skill_mgr_name + '/command', srvs.SkillCommand)
         self._wm_monitor_sub = rospy.Subscriber('/skiros_wm/monitor', msgs.WmMonitor, self._wmMonitorCB)
-        self._module_monitor_sub = rospy.Subscriber(self._skill_mgr_name + '/monitor', msgs.ResourceMonitor, self._smMonitorCB)
         self._get_skills = rospy.ServiceProxy(self._skill_mgr_name + '/get_skills', srvs.ResourceGetDescriptions)
         self._skill_set = self._wmi.getSubClasses("Skill")
         self.getSkillList(True)
-        
+
     def printState(self):
         temp = "Skills: { "
-        for c in self.getSkillList():        
-            temp += c       
+        for c in self.getSkillList():
+            temp += c
             temp += ", "
         temp += "}"
         return temp
-        
+
     def _wmMonitorCB(self, msg):
         #print msg
         pass
-    
+
     def _smMonitorCB(self, msg):
         #with self._mutex:
         print msg
@@ -78,7 +77,7 @@ class SkillManagerInterface:
             with self._msg_lock:
                 self._monitored_tasks[execution_id] = msg
                 self._msg_rec.set()
-    
+
     def waitResult(self, execution_id, timeout=None):
         if not self._monitored_tasks.has_key(execution_id):
             log.warn("SkillManagerInterface.waitResult", "No task {} in list ".format(execution_id))
@@ -99,12 +98,12 @@ class SkillManagerInterface:
         else:
             log.warn("SkillManagerInterface.waitResult", "Final status {}".format(self._monitored_tasks[execution_id].status))
             return False
-        
+
     def getResult(self, execution_id):
         if not self._monitored_tasks.has_key(execution_id):
             return False
         return utils.deserializeParamMap(self._monitored_tasks[execution_id].resource.status)
-    
+
     def getSkillList(self, update=False):
         if update or not self._skill_list:
             msg = srvs.ResourceGetDescriptionsRequest()
@@ -116,10 +115,10 @@ class SkillManagerInterface:
             for c in res.list:
                 self._skill_list[c.name] = SkillHolder("", c.type, c.name, utils.deserializeParamMap(c.params))
         return self._skill_list
-    
+
     def getSkill(self, name):
         return self._skill_list[name]
-        
+
     def execute(self, skill_list, author):
         msg = srvs.SkillCommandRequest()
         msg.action = msg.START;
@@ -132,7 +131,7 @@ class SkillManagerInterface:
             return -1
         self._monitored_tasks[res.execution_id] = None
         return res.execution_id
-    
+
     def preempt(self, execution_id, author):
         msg = srvs.SkillCommandRequest()
         msg.action = msg.PREEMPT;
@@ -143,7 +142,7 @@ class SkillManagerInterface:
             log.error("Can t stop task " + execution_id)
             return False
         return True
-    
+
     def call(self, service, msg):
         try:
             resp1 = service(msg)
