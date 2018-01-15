@@ -35,6 +35,7 @@ from skiros2_msgs.msg import RobotDescription
 from std_msgs.msg import Empty
 
 import skiros2_msgs.srv as srvs
+import skiros2_msgs.msg as msgs
 import skiros2_common.core.params as skirosp
 import skiros2_common.core.conditions as cond
 
@@ -73,10 +74,11 @@ class TaskManagerNode(PrettyObject):
         self._abstract_objects = []
 
         self._wmi = wmi.WorldModelInterface()
-        self._sli = sli.SkillLayerInterface(self._wmi)
+        self._sli = sli.SkillLayerInterface(self._wmi, self._onMonitorMsg)
         self._pddl_interface = pddl.PddlInterface(rospkg.RosPack().get_path("skiros2_task"))
 
         self._goal_modify = rospy.Service('~set_goals', srvs.TmSetGoals, self._setGoalsCb)
+        self._monitor = rospy.Publisher("~monitor", msgs.SkillProgress, queue_size=20)
 
         self._sub_robot_discovery = rospy.Subscriber('/skiros/robot_discovery', Empty, self._onRobotDiscovery)
         self._pub_robot_description = rospy.Publisher('/skiros/robot_description', RobotDescription, queue_size=10)
@@ -101,6 +103,9 @@ class TaskManagerNode(PrettyObject):
         return self._skills
 
 
+    def _onMonitorMsg(self, msg):
+        self._monitor.publish(msg)
+        
     def _onRobotDiscovery(self, msg):
         """Callback for robot discovery messages.
 
@@ -135,6 +140,7 @@ class TaskManagerNode(PrettyObject):
             if plan:
                 self.buildTask(plan)
                 self.execute()
+        return srvs.TmSetGoalsResponse()
 
 
     def buildTask(self, plan):

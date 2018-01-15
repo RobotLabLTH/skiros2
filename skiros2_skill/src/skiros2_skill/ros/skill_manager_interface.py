@@ -37,22 +37,23 @@ import skiros2_common.tools.logger as log
 from multiprocessing import Lock, Event
 
 class SkillManagerInterface:
-    def __init__(self, wmi, robot):
+    def __init__(self, wmi, robot, monitor_cb=None):
         self._wmi = wmi
         self._robot = robot
         self._robot_uri = robot._label
         self._monitored_tasks = dict()
         self._module_list = dict()
         self._skill_list = dict()
-        self.init()
+        self.init(monitor_cb)
         self._msg_lock = Lock()
         self._msg_rec = Event()
 
-    def init(self):
+    def init(self, monitor_cb):
         self._skill_mgr_name = self._robot.getProperty('skiros:SkillMgr').getValue()
         rospy.wait_for_service(self._skill_mgr_name + '/get_skills')
         self._skill_exe_client = rospy.ServiceProxy(self._skill_mgr_name + '/command', srvs.SkillCommand)
-        self._wm_monitor_sub = rospy.Subscriber('/skiros_wm/monitor', msgs.WmMonitor, self._wmMonitorCB)
+        if monitor_cb:
+            self._monitor_sub = rospy.Subscriber(self._skill_mgr_name + '/monitor', msgs.SkillProgress, monitor_cb)
         self._get_skills = rospy.ServiceProxy(self._skill_mgr_name + '/get_skills', srvs.ResourceGetDescriptions)
         self._skill_set = self._wmi.getSubClasses("Skill")
         self.getSkillList(True)
@@ -64,10 +65,6 @@ class SkillManagerInterface:
             temp += ", "
         temp += "}"
         return temp
-
-    def _wmMonitorCB(self, msg):
-        #print msg
-        pass
 
     def _smMonitorCB(self, msg):
         #with self._mutex:

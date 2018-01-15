@@ -34,7 +34,7 @@ import skiros2_common.tools.logger as log
 from skiros2_skill.ros.skill_manager_interface import SkillManagerInterface
 
 class SkillLayerInterface:
-    def __init__(self, wmi):
+    def __init__(self, wmi, skill_monitor_cb=None):
         """
         Initialize agents list
         """
@@ -46,7 +46,7 @@ class SkillLayerInterface:
         v = self._wmi.resolveElement(wm.Element("sumo:Agent"))
         for e in v:
             log.info("[SkillLayerInterface] Detected robot: {}".format(e))
-            self._agents[e.getProperty("skiros:SkillMgr").value] = SkillManagerInterface(self._wmi, e)
+            self._agents[e.getProperty("skiros:SkillMgr").value] = SkillManagerInterface(self._wmi, e, skill_monitor_cb)
         self._wmi.setMonitorCallback(self._wmMonitorCB)
 
     def getAgent(self, agent):
