@@ -176,7 +176,8 @@ class SkillManager:
                 start_location = self._wmi.instanciate(startLocUri[0]["dst"], False, [])
                 self._wmi.setRelation(self._robot._id, "skiros:at", start_location._id)
         log.info("[{}]".format(self.__class__.__name__), "Registered robot {}".format(self._robot))
-        #TODO: update skill mgr name
+        self._robot.setProperty("skiros:SkillMgr", self._agent_name)
+        self._wmi.updateElement(self._robot)
 
 
     def shutdown(self):

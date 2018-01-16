@@ -38,10 +38,12 @@ from skiros2_common.core.discrete_reasoner import DiscreteReasoner
 from skiros2_world_model.ros.ontology_server import OntologyServer
 from skiros2_world_model.core.world_model import WorldModel
 import uuid
+from time import sleep
             
 class WorldModelServer(OntologyServer):
     def __init__(self, anonymous=False):
         rospy.init_node("wm", anonymous=anonymous)
+        rospy.on_shutdown(self._waitClientsDisconnection)
         self._wm = WorldModel(rospy.get_param('~verbose', False))
         self._ontology = self._wm
         self._plug_loader = PluginLoader()
@@ -57,6 +59,10 @@ class WorldModelServer(OntologyServer):
         self._modify = rospy.Service('~scene/modify', srvs.WmModify, self._wmModifyCb)
         self._get = rospy.Service('~scene/load_and_save', srvs.WmLoadAndSave, self._wmLoadAndSaveCb)
         self._monitor = rospy.Publisher("~monitor", msgs.WmMonitor, queue_size=20)
+        
+    def _waitClientsDisconnection(self):
+        while self._monitor.get_num_connections()>0:
+            sleep(0.1)
         
     def _publishChange(self, author, action, elements=None, relation=None):
         msg =  msgs.WmMonitor()
