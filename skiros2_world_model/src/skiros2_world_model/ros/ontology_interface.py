@@ -42,8 +42,8 @@ class OntologyInterface(OntologyAbstractInterface):
     """
     def __init__(self, author_name="test"):
         self._author_name = author_name
-        self._ontology_query = rospy.ServiceProxy('/skiros_wm/ontology/query', srvs.WoQuery)
-        self._ontology_modify = rospy.ServiceProxy('/skiros_wm/ontology/modify', srvs.WoModify)
+        self._ontology_query = rospy.ServiceProxy('wm/ontology/query', srvs.WoQuery)
+        self._ontology_modify = rospy.ServiceProxy('wm/ontology/modify', srvs.WoModify)
         log.info("[{}] ".format(self.__class__.__name__), "Waiting wm communications...")
         self._ontology_modify.wait_for_service()
         log.info("[{}] ".format(self.__class__.__name__), "Wm communications active.")

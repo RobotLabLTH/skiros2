@@ -306,7 +306,7 @@ class SkillManagerNode(object):
         rospy.init_node("skill_mgr", anonymous=False)
         robot_name = rospy.get_name()
         prefix = ""
-        full_name = rospy.get_param('~prefix', prefix) + robot_name.replace("/", ":")
+        full_name = rospy.get_param('~prefix', prefix) + ':' + robot_name[robot_name.rfind("/")+1:]
         self._sm = SkillManager(full_name, verbose=rospy.get_param('~verbose', True))
         self._sm.observeTaskProgress(self._onProgressUpdate)
         self._rli = ResourceLayerInterface()

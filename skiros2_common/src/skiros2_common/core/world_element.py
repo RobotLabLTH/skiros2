@@ -67,7 +67,7 @@ class Element(object):
         Element._plug_loader = PluginLoader() 
         Element._property_reasoner_map = {}
         #TODO: remove dependency from ROSpy
-        for package in rospy.get_param('/skiros_wm/reasoners_pkgs', []):
+        for package in rospy.get_param('wm/reasoners_pkgs', []):
             Element._plug_loader.load(package, DiscreteReasoner)       
         for plugin in Element._plug_loader:
             r = plugin()

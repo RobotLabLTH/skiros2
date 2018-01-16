@@ -41,7 +41,7 @@ import uuid
             
 class WorldModelServer(OntologyServer):
     def __init__(self, anonymous=False):
-        rospy.init_node("skiros_wm", anonymous=anonymous)
+        rospy.init_node("wm", anonymous=anonymous)
         self._wm = WorldModel(rospy.get_param('~verbose', False))
         self._ontology = self._wm
         self._plug_loader = PluginLoader()

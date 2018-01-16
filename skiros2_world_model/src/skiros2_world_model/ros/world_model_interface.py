@@ -42,13 +42,13 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
     """
     def __init__(self, author_name="test", monitor_callback=None):
         OntologyInterface.__init__(self, author_name)
-        self._load_and_save = rospy.ServiceProxy('/skiros_wm/scene/load_and_save', srvs.WmLoadAndSave)
-        self._set_relations = rospy.ServiceProxy('/skiros_wm/scene/set_relation', srvs.WmSetRelation)
-        self._get = rospy.ServiceProxy('/skiros_wm/scene/get', srvs.WmGet)
-        self._modify = rospy.ServiceProxy('/skiros_wm/scene/modify', srvs.WmModify)
-        self._query_relations = rospy.ServiceProxy('/skiros_wm/scene/query_relations', srvs.WmQueryRelations)
+        self._load_and_save = rospy.ServiceProxy('wm/scene/load_and_save', srvs.WmLoadAndSave)
+        self._set_relations = rospy.ServiceProxy('wm/scene/set_relation', srvs.WmSetRelation)
+        self._get = rospy.ServiceProxy('wm/scene/get', srvs.WmGet)
+        self._modify = rospy.ServiceProxy('wm/scene/modify', srvs.WmModify)
+        self._query_relations = rospy.ServiceProxy('wm/scene/query_relations', srvs.WmQueryRelations)
         if monitor_callback:
-            self._monitor = rospy.Subscriber("/skiros_wm/monitor", msgs.WmMonitor, monitor_callback)
+            self._monitor = rospy.Subscriber("wm/monitor", msgs.WmMonitor, monitor_callback)
         
     def getScene(self):
         """
@@ -57,7 +57,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         return self.getBranch("skiros:Scene-0")
         
     def setMonitorCallback(self, callback):
-        self._monitor = rospy.Subscriber("/skiros_wm/monitor", msgs.WmMonitor, callback)
+        self._monitor = rospy.Subscriber("wm/monitor", msgs.WmMonitor, callback)
         
     def load(self, filename):
         msg = srvs.WmLoadAndSaveRequest()

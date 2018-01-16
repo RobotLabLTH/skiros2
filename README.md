@@ -22,19 +22,31 @@ For detailed info refer to the [wiki](https://github.com/RVMI/skiros2/wiki)
 
 ### Dependencies
 
-pip install networkx==1.11 semanticnet flufl.enum rdflib wrapt
+> pip install networkx==1.11 semanticnet flufl.enum rdflib wrapt  
+
+### Task planning
+
+To run the task planning you should install the fast downward planner:
+
+> roscd skiros2  
+> cd scripts  
+> ./install_fd_task_planner.sh  
+
+When asked for the install folder, you can insert the location you prefer or leave the default.
 
 ### Explore ontology
 
 To create and edit ontologies, we suggest to use the GUI [**Protege_5.0**](http://protege.stanford.edu/download/protege/5.0/snapshots/). 
 The ontology, coded in one or more .owl file, defines which data, concepts, relations and individuals are possible to store to and retrieve from the world model. 
 The core ontology can be found in the folder skiros2/owl. The knowledge base can be extended from the developer with custom OWL ontologies. 
-It is possible to specify the workspace, by specifying the parameter ”skiros_wm/workspace_dir". (see world_model_servel launch file)
+It is possible to specify the workspace, by specifying the parameter ”wm/workspace_dir". (see world_model_servel launch file)
 All the OWL files found in the specified path are loaded from the system at boot. 
 
 ### Launching the system
 
-See the skiros2_template_lib for an example on how to launch the system
+See the skiros2_template_lib for a minimal example on how to launch the system (also useful to create a new library from scratch).
+
+See the skiros2_test_lib for more elaborated examples.
 
 ### Doxygen documentation
 
