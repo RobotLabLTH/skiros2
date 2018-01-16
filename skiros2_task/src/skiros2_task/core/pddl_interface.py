@@ -66,19 +66,19 @@ class Predicate(object):
         return not self.__eq__(other)
         
     def __init__(self, predicate, params, abstracts):
-        self.name = predicate.getProperty("skiros:appliedOnType")
+        self.name = predicate.getProperty("skiros:appliedOnType").value
         self.operator = None
         self.value = None
         self.abstracts = abstracts
         self.negated = not predicate.getProperty("skiros:desiredState").value
         self.params = []
-        sub = predicate.getProperty("skiros:hasSubject")
+        sub = predicate.getProperty("skiros:hasSubject").value
         self.params.append({"paramType": "x", "key": sub, "valueType": params[sub]})
         if predicate.hasProperty("skiros:hasObject"):
             obj = predicate.getProperty("skiros:hasObject").value
             self.params.append({"paramType": "y", "key": obj, "valueType": params[obj]})
         if predicate.hasProperty("skiros:operator"):
-            self.operator = predicate.getProperty("skiros:operator")
+            self.operator = predicate.getProperty("skiros:operator").value
             self.value = predicate.getProperty("skiros:desiredValue").value
                 
     def isFunction(self):

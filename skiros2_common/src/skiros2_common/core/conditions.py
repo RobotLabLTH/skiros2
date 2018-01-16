@@ -112,7 +112,7 @@ class ConditionProperty(ConditionBase):
                 return True
             else:
                 return False
-        if subj.hasPropertyValue(self._owl_label, self._value):
+        if subj.hasProperty(self._owl_label, self._value):
             return self._desired_state
         return not self._desired_state
         
@@ -125,10 +125,10 @@ class ConditionProperty(ConditionBase):
         self._has_cache = True
         self._cache = deepcopy(subj)
         if self._desired_state:
-            if not subj.hasPropertyValue(self._owl_label, self._value):
+            if not subj.hasProperty(self._owl_label, self._value):
                 subj.appendProperty(self._owl_label, self._value)
         else:
-            while subj.hasPropertyValue(self._owl_label, self._value):
+            while subj.hasProperty(self._owl_label, self._value):
                 subj.removePropertyValue(self._owl_label, self._value)
         self._params.specify(self._subject_key, subj)
         self._wm.updateElement(subj)
@@ -149,10 +149,10 @@ class ConditionProperty(ConditionBase):
         e = ph.getParamValue(self._subject_key)
         if e.getIdNumber()>=0: return
         if self._desired_state:
-            if not e.hasPropertyValue(self._owl_label, self._value):
+            if not e.hasProperty(self._owl_label, self._value):
                 e.appendProperty(self._owl_label, self._value)
         else:
-            if e.hasPropertyValue(self._owl_label, self._value):
+            if e.hasProperty(self._owl_label, self._value):
                 e.removePropertyValue(self._owl_label, self._value)
                 
     def toElement(self):
