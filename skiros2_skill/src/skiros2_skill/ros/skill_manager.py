@@ -46,6 +46,8 @@ from multiprocessing.dummy import Process
 import skiros2_skill.core.visitors as visitors
 from skiros2_resource.ros.resource_layer_interface import *
 
+log.setLevel(log.INFO)
+
 def skill2msg(skill):
     msg = msgs.ResourceDescription()
     msg.type = skill._type
@@ -82,7 +84,7 @@ class TaskManager:
         while result==State.Running:
             iteration += 1
             result = visitor.traverse(TaskManager._tasks[uid])
-            log.info("[{}]".format(visitor.__class__.__name__), "Iteration {} result: {}".format(iteration, result.name))
+            log.debug("[{}]".format(visitor.__class__.__name__), "Iteration {} result: {}".format(iteration, result.name))
             progress.reset()
             progress.traverse(TaskManager._tasks[uid])
             for (id,desc) in progress.snapshot():
