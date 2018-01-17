@@ -131,6 +131,7 @@ class OntologyInterface(OntologyAbstractInterface):
             sub_classes = self.queryOntology("SELECT ?x WHERE { ?x rdfs:subClassOf+ " + self.addPrefix(parent_class) + " . } ")
             for c in sub_classes:
                 to_ret += self.queryOntology("SELECT ?x where {?x rdf:type+ "+self.addPrefix(c)+"}")
+            to_ret += self.queryOntology("SELECT ?x where {?x rdf:type+ "+self.addPrefix(parent_class)+"}")
             return to_ret
         else:
             return self.queryOntology("SELECT ?x where {?x rdf:type+ "+self.addPrefix(parent_class)+"}")
