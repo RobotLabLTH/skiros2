@@ -4,74 +4,74 @@ import ast
 class Property(object):
     """
     @brief Touple key-value with datatype check
-    
+
     If input doesn't correspond to the defined data type, it is refused
-    
+
     Data type is set during initialization
     """
     __slots__ = ['_key', '_values', '_data_type']
-        
-    def __init__(self, key, value):  
+
+    def __init__(self, key, value):
         """
         Value can be any value or list of values
-        
+
         Value can also be a type, in such a case the _data_type is set and the value list is left empty
         """
-        self._key=key          
+        self._key=key
         if isinstance(value, list):
             self._values = value
             self._data_type = type(value[0])
-        elif isinstance(value, type):  
+        elif isinstance(value, type):
             self._values = list()
-            self._data_type = value     
+            self._data_type = value
         else:
-            self._values = [value] 
+            self._values = [value]
             self._data_type= type(value)
-                
+
     def isSpecified(self):
         """
         @brief Return true if the property has at least one value specified
         """
         return len(self._values)>0
-        
+
     def isList(self):
         """
         @brief Return true if the property has more than one value
         """
         return len(self._values)>1
-        
+
     @property
     def key(self):
         return self._key
-        
+
     @property
     def value(self):
         return self.getValue()
-    
+
     @value.setter
     def value(self, value):
         self.setValue(value)
-        
+
     @property
     def values(self):
         return self.getValues()
-        
+
     @values.setter
     def values(self, value):
         self.setValues(value)
-        
+
     def makeInstance(self):
         """
         @brief Return an instance of the property datatype
         """
         return self._data_type()
-        
+
     def dataType(self):
         """
         @brief Return the property datatype
         """
         return self._data_type
-        
+
     def dataTypeIs(self, vtype):
         """
         @brief Return true if input type match the property datatype
@@ -79,8 +79,8 @@ class Property(object):
         if isinstance(vtype, type):
             return self._data_type == vtype
         else:
-            return self._data_type == type(vtype)            
-                
+            return self._data_type == type(vtype)
+
     def setValue(self, value, index=0):
         """
         @brief Set the value at the index
@@ -90,10 +90,10 @@ class Property(object):
                 self._values[index] = value
             else:
                 self._values.append(value)
-        else: 
+        else:
             log.error("setValue", "{}: Input {} != {}. Debug: {}".format(self.key, type(value), self._data_type, self.printState()))
             return
-            
+
     def setValueFromStr(self, value, index=0):
         """
         @brief Try to convert a string into the property datatype and set the value at index
@@ -102,7 +102,7 @@ class Property(object):
             self.setValue(ast.literal_eval(value), index)
         else:
             self.setValue(self._data_type(value), index)
-            
+
     def setValues(self, value):
         """
         @brief Set all the values
@@ -113,11 +113,11 @@ class Property(object):
                 return
             if isinstance(value[0], self._data_type):
                 self._values = value
-            else: 
+            else:
                 log.error("setValuesList", "{}: Input {} != {} Debug: {}".format(self.key, type(value[0]), self._data_type, self.printState()))
         elif isinstance(value, self._data_type):
             self._values = [value]
-        else: 
+        else:
             log.error("setValues", "{}: Input {} != {}. Debug: {}".format(self.key, type(value), self._data_type, self.printState()))
             return
 
@@ -128,7 +128,7 @@ class Property(object):
         i = self.find(value)
         if i>=0:
             del self._values[i]
-        
+
     def find(self, value):
         """
         @brief Return the index of the value, or -1 if not found
@@ -136,18 +136,18 @@ class Property(object):
         for i, v in enumerate(self._values):
             if v == value:
                 return i
-        return -1                
-    
+        return -1
+
     def addValue(self, value):
         """
         @brief Append a value
         """
         if isinstance(value, self._data_type):
             self._values.append(value)
-        else: 
+        else:
             log.error("append", self._key+": "+str(type(value))+"!="+str(self._data_type))
             return
-                    
+
     def getValue(self, index=0):
         """
         @brief Get value at index
@@ -155,21 +155,21 @@ class Property(object):
         if not self.isSpecified():
             return None
         return self._values[index]
-        
+
     def getValues(self):
         """
         @brief Get all values
         """
         return self._values
-        
+
     def getValuesStr(self):
         """
         @brief Get values as string
         """
         return str(self._values)
-        
+
     def printState(self):
         """
         @brief Return a string with key and values
         """
-        return "{}:{}".format(self._key, self._values)       
+        return "{}:{}".format(self._key, self._values)
