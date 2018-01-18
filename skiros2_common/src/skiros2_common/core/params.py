@@ -30,8 +30,9 @@ class Param(Property):
     True
     
     """
-    __slots__ = ['_key', '_description', '_param_type', '_values', '_data_type', '_default', '_last_update']
-    def __init__(self, key, description, value, param_type):  
+    __slots__ = ['_key', '_description', '_param_type', '_values', '_data_type', '_default', '_last_update', '_is_list']
+    def __init__(self, key, description, value, param_type, is_list=False):
+        self._is_list = is_list
         self._key=key          
         self._description=description  
         self._setLastUpdate() 

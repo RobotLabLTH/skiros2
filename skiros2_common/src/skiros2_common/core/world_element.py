@@ -197,46 +197,47 @@ class Element(object):
             return self.getProperty(key).find(value)!=-1
         return self._properties.has_key(key)
 
-    def setProperty(self, key, value, datatype=None):
+    def setProperty(self, key, value, datatype=None, is_list=False):
         """
         @brief Set the property to a value. If datatype is specified tries to convert.
         """
         self._setLastUpdate()
 
         if key == 'skiros:DiscreteReasoner':
-            old_reasoners = self._properties[key].values:
-
+            old_reasoners = []
+            if self.hasProperty('skiros:DiscreteReasoner'):
+                old_reasoners = self._properties[key].values
 
         if datatype:
             if datatype=="xsd:double" or datatype=="xsd:float":
-                self._properties[key] = Property(key, float)
+                self._properties[key] = Property(key, float, is_list)
                 if value!=None:
                     self._properties[key].setValues(value)
             elif datatype=="xsd:int" or datatype=="xsd:integer":
-                self._properties[key] = Property(key, int)
+                self._properties[key] = Property(key, int, is_list)
                 if value!=None:
                     self._properties[key].setValues(int(value))
             elif datatype=="xsd:boolean":
-                self._properties[key] = Property(key, bool)
+                self._properties[key] = Property(key, bool, is_list)
                 if value!=None:
                     self._properties[key].setValues(value)
             elif datatype=="xsd:string":
-                self._properties[key] = Property(key, str)
+                self._properties[key] = Property(key, str, is_list)
                 if value!=None:
                     self._properties[key].setValues(str(value))
             else:
                 log.warn("[Element]", "Datatype {} not recognized. Set default".format(datatype))
-                self._properties[key] = Property(key, value)
+                self._properties[key] = Property(key, value, is_list)
         else:
             if self.hasProperty(key):
                 self._properties[key].setValues(value)
             else:
-                self._properties[key] = Property(key, value)
+                self._properties[key] = Property(key, value, is_list)
 
         if key == 'skiros:DiscreteReasoner':
             new_reasoners = self._properties[key].values
-            [self._getReasoner(v).removeProperties(self) for r in old_reasoners if r not in new_reasoners]
-            [self._getReasoner(v).addProperties(self)    for r in new_reasoners if r not in old_reasoners]
+            [self._getReasoner(r).removeProperties(self) for r in old_reasoners if r not in new_reasoners]
+            [self._getReasoner(r).addProperties(self)    for r in new_reasoners if r not in old_reasoners]
 
 
     def removeProperty(self, key):
@@ -246,7 +247,7 @@ class Element(object):
         self._setLastUpdate()
 
         if key == 'skiros:DiscreteReasoner':
-            [self._getReasoner(v).removeProperties(self) for r in self._properties[key].values]
+            [self._getReasoner(r).removeProperties(self) for r in self._properties[key].values]
 
         del self._properties[key]
 
@@ -259,7 +260,7 @@ class Element(object):
         if self.hasProperty(key):
             self._properties[key].append(value)
         else:
-            self.setProperty(key, value)
+            self.setProperty(key, value, is_list=True)
 
     def getProperty(self, key):
         """

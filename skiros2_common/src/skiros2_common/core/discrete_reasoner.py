@@ -36,46 +36,46 @@ class DiscreteReasoner(object):
         Set an interface to the world model
         """
         self._wmi = wmi
-        
+
     def parse(self, element, action):
         """ Parse the action (add, remove,update) [element] """
         raise NotImplementedError("Not implemented in abstract class")
-        
+
     def execute(self):
-        self._thread = Process(target=self.run)   
+        self._thread = Process(target=self.run)
         self._thread.start()
-        
+
     def run(self):
         """ Run the reasoner daemon on the world model """
         raise NotImplementedError("Not implemented in abstract class")
-        
+
     def addProperties(self, element):
         if not element.hasProperty("skiros:DiscreteReasoner", self.__class__.__name__):
-            element.appendProperty("skiros:DiscreteReasoner", self.__class__.__name__)
+            element.setProperty("skiros:DiscreteReasoner", self.__class__.__name__, is_list=True)
         self.onAddProperties(element)
-        
+
     def onAddProperties(self, element):
         """ Add default reasoner properties to the element """
         raise NotImplementedError("Not implemented in abstract class")
-        
+
     def removeProperties(self, element):
         """ Remove default reasoner properties from the element """
         if element.hasProperty("skiros:DiscreteReasoner", self.__class__.__name__):
-            element.appendProperty("skiros:DiscreteReasoner", self.__class__.__name__)
+            element.getProperty("skiros:DiscreteReasoner").removeValue(self.__class__.__name__)
         self.onRemoveProperties(element)
-        
+
     def onRemoveProperties(self, element):
         """ Remove default reasoner properties from the element """
         raise NotImplementedError("Not implemented in abstract class")
-        
+
     def hasData(self, element, get_code):
         """ Return data from the element in the format indicated in get_code """
         raise NotImplementedError("Not implemented in abstract class")
-        
+
     def getData(self, element, get_code):
         """ Return data from the element in the format indicated in get_code """
         raise NotImplementedError("Not implemented in abstract class")
-        
+
     def setData(self, element, data, set_code):
         """ Convert user data to reasoner data and store it into given element """
         raise NotImplementedError("Not implemented in abstract class")
@@ -83,11 +83,11 @@ class DiscreteReasoner(object):
     def getAssociatedRelations(self):
         """ TODO """
         raise NotImplementedError("Not implemented in abstract class")
-        
+
     def getAssociatedProperties(self):
         """ TODO """
         raise NotImplementedError("Not implemented in abstract class")
-        
+
     def computeRelations(self, sub, obj):
         """ TODO """
         raise NotImplementedError("Not implemented in abstract class")

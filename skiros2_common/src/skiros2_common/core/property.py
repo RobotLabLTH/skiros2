@@ -9,14 +9,15 @@ class Property(object):
 
     Data type is set during initialization
     """
-    __slots__ = ['_key', '_values', '_data_type']
+    __slots__ = ['_key', '_values', '_data_type', '_is_list']
 
-    def __init__(self, key, value):
+    def __init__(self, key, value, is_list=False):
         """
         Value can be any value or list of values
 
         Value can also be a type, in such a case the _data_type is set and the value list is left empty
         """
+        self._is_list = is_list
         self._key=key
         if isinstance(value, list):
             self._values = value
@@ -36,9 +37,9 @@ class Property(object):
 
     def isList(self):
         """
-        @brief Return true if the property has more than one value
+        @brief Return true if the property can have more than one value
         """
-        return len(self._values)>1
+        return self._is_list
 
     @property
     def key(self):
