@@ -81,6 +81,9 @@ class Element(object):
     def available_properties(self):
         return self._properties.keys()
 
+    @property
+    def properties(self):
+        return self._properties
 
 
 
