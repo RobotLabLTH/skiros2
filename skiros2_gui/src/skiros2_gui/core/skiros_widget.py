@@ -5,11 +5,12 @@ import rospkg
 from functools import partial
 
 from python_qt_binding import loadUi
-from python_qt_binding.QtCore import QTimer, Slot
+from python_qt_binding.QtCore import Qt, QTimer, Slot
 from python_qt_binding.QtGui import QIcon
 from python_qt_binding.QtWidgets import QLabel, QTableWidgetItem, QTreeWidgetItem, QWidget, QCheckBox, QComboBox, QLineEdit, QDialog, QSizePolicy
 
 import skiros2_common.tools.logger as log
+import skiros2_common.core.utils as utils
 from skiros2_common.core.params import ParamTypes
 from skiros2_common.core.world_element import Element
 import skiros2_world_model.ros.world_model_interface as wmi
@@ -20,7 +21,20 @@ class SkirosAddObjectDialog(QDialog):
 #==============================================================================
 #  Modal dialog
 #==============================================================================
+
+    default_type = 'sumo:Object'
+
     def __init__(self, *args, **kwargs):
+        """Implements a dialog to create a new object for the world model.
+
+        Implementation of the modal dialog to select object types from the available ontology/world model.
+        Allows filtering of the objects by (sub)type.
+        The dialog saves the selection in the 'object' property.
+
+        Args:
+            *args: Description
+            **kwargs: Description
+        """
         super(SkirosAddObjectDialog, self).__init__(*args, **kwargs)
         self.setObjectName('SkirosAddObjectDialog')
         ui_file = os.path.join(rospkg.RosPack().get_path('skiros2_gui'), 'src/skiros2_gui/core', 'skiros_gui_add_object_dialog.ui')
@@ -29,47 +43,101 @@ class SkirosAddObjectDialog(QDialog):
         self._comboBoxes = []
         self.create_comboBox(label='Type')
         self.comboBox_individual.clear()
-        self.comboBox_individual.addItems(self.get_individuals())
+        [self.comboBox_individual.addItem(l,d) for l,d in self.get_individuals(self.default_type).iteritems()]
 
 
-    def get_types(self, subtype='sumo:Object'):
-        return self.parent()._wmi.getSubClasses(subtype, False)
+    @property
+    def object(self):
+        """Access to the currently selected object type.
+
+        Returns:
+            str: Selected (ontology) type (e.g. skiros:Product)
+        """
+        return self.comboBox_individual.itemData(self.comboBox_individual.currentIndex())
 
 
     def on_select_type(self, id, index):
+        """Callback for change selection in dropdown lists.
+
+        Adds and removes dropdown list to/from the dialog that are used to filter subtypes based on the current selection.
+
+        Args:
+            id (int): Number of the combobox that dispatched the callback
+            index (int): Number of the selected item in the current combobox (id)
+        """
         # log.debug(self.__class__.__name__, 'Selected {}: {}'.format(id, index))
+
+        # clear filters after selected
         while id < len(self._comboBoxes)-1:
             # log.debug(self.__class__.__name__, 'Delete {}'.format(id+1))
             label = self.formLayout.labelForField(self._comboBoxes[id+1])
             label.deleteLater()
             self._comboBoxes[id+1].deleteLater()
             del self._comboBoxes[id+1]
+
+        # get current selection
+        if index > 0: # if not 'All' is selected
+            selected = self._comboBoxes[id].itemData(self._comboBoxes[id].currentIndex())
+        elif id > 0: # if 'All' is selected and it is not the first combo box
+            selected = self._comboBoxes[id-1].itemData(self._comboBoxes[id-1].currentIndex())
+        else:  # if 'All' is selected and it is the first combo box
+            selected = self.default_type
+        # log.debug(self.__class__.__name__, 'Selected type {}'.format(selected))
+
+        # create new combo box if not 'All' is selected
         if index > 0:
-            selected = self._comboBoxes[id].currentText()
             self.create_comboBox(selected)
             # log.debug(self.__class__.__name__, 'Created {}'.format(len(self._comboBoxes)-1))
-        else:
-            selected = 'sumo:Object'
+
+        # update list of individuals
         self.comboBox_individual.clear()
-        self.comboBox_individual.addItems(self.get_individuals(selected))
+        if index > 0 or (id > 0 and index == 0):
+            self.comboBox_individual.addItem('new ' + utils.ontology_type2name(selected))
+        [self.comboBox_individual.addItem(l,d) for l,d in self.get_individuals(selected).iteritems()]
         QTimer.singleShot(0, self.adjustSize)
 
 
-    def create_comboBox(self, subtype='sumo:Object', label='Filter'):
-        types = self.get_types(subtype)
-        if not types: return None
+    def create_comboBox(self, subtype='sumo:Object', label='Subtype'):
+        """Inserts a new combobox in the dialog based on the subtype.
+
+        Helper function that creates a combobox and fills the list with filtered items from the ontology/world model.
+
+        Args:
+            subtype (str, optional): Type to be used to retrieve world model items for the dropdown list
+            label (str, optional): Label for the dropdown list
+        """
         comboBox = QComboBox()
         sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         comboBox.setSizePolicy(sizePolicy)
         comboBox.addItem('All')
-        comboBox.addItems(types)
+        [comboBox.addItem(l,d) for l,d in self.get_types(subtype).iteritems()]
         comboBox.currentIndexChanged.connect(partial(self.on_select_type, len(self._comboBoxes)))
         self.formLayout.insertRow(len(self._comboBoxes), label, comboBox)
         self._comboBoxes.append(comboBox)
 
 
-    def get_individuals(self, subtype='sumo:Object'):
-        return self.parent()._wmi.getIndividuals(subtype, True)
+    def get_types(self, subtype):
+        """Retrieves available subtype from the ontology.
+
+        Args:
+            subtype (str): Filter for object types
+
+        Returns:
+            dict(str, str): Keys: Short type name. Values: Type identifier (e.g. {'Product': 'skiros:Product'})
+        """
+        return utils.ontology_type2name_dict(self.parent()._wmi.getSubClasses(subtype, False))
+
+
+    def get_individuals(self, subtype):
+        """Retrieves available individuals from the world model.
+
+        Args:
+            subtype (str): Filter for object types
+
+        Returns:
+            dict(str, str): Keys: Short type name. Values: Type identifier (e.g. {'starter': 'skiros:starter'})
+        """
+        return utils.ontology_type2name_dict(self.parent()._wmi.getIndividuals(subtype, True))
 
 
 
@@ -83,7 +151,15 @@ class SkirosWidget(QWidget):
         self.setObjectName('SkirosWidget')
         ui_file = os.path.join(rospkg.RosPack().get_path('skiros2_gui'), 'src/skiros2_gui/core', 'skiros_gui.ui')
         loadUi(ui_file, self)
+
+        # self.wm_tree_widget.getStyleSheet('''
+        #     QTreeView::branch:has-children {image: url(folderclosed.png)}
+        #     QTreeView::branch:open {image: url(folderopened.png)}
+        # ''')
+        self.wm_tree_widget.itemSelectionChanged.connect( lambda : self.on_wm_tree_widget_item_selection_changed( self.wm_tree_widget.currentItem()) )
+
         self.reset()
+
 
     def reset(self):
         #The plugin should not call init_node as this is performed by rqt_gui_py.
@@ -92,6 +168,8 @@ class SkirosWidget(QWidget):
         self._wmi = wmi.WorldModelInterface()
         self._sli = sli.SkillLayerInterface(self._wmi)
         self._author_name = "skiros_gui"
+
+        self.generate_wm_tree()
 
         #Setup a timer to keep interface updated
         self.refresh_timer = QTimer()
@@ -147,26 +225,11 @@ class SkirosWidget(QWidget):
 #==============================================================================
 
     @Slot()
-    def on_add_object_button_clicked(self):
-        dialog = SkirosAddObjectDialog(self)
-        ret = dialog.exec_()
-        print(ret)
-
-
-    @Slot()
-    def on_modify_object_button_clicked(self):
-        print "modify_object_button"
-
-    @Slot()
-    def on_remove_object_button_clicked(self):
-        print "remove_object_button"
-
-
-    @Slot()
     def on_load_scene_button_clicked(self):
         file = self.scene_file_lineEdit.text()
         log.debug(self.__class__.__name__, 'Loading world model from <{}>'.format(file))
         self._wmi.load(file)
+        self.generate_wm_tree()
 
 
     @Slot()
@@ -174,6 +237,68 @@ class SkirosWidget(QWidget):
         file = self.scene_file_lineEdit.text()
         log.debug(self.__class__.__name__, 'Saving world model to <{}>'.format(file))
         self._wmi.save(file)
+
+
+    @Slot()
+    def on_add_object_button_clicked(self):
+        dialog = SkirosAddObjectDialog(self)
+        ret = dialog.exec_()
+        if not ret: return
+
+        print(dialog.object)
+
+
+    @Slot()
+    def on_remove_object_button_clicked(self):
+        print "remove_object_button"
+
+
+    @Slot()
+    def on_wm_tree_widget_item_selection_changed(self, item):
+        self.fill_property_table(item)
+
+
+
+    def generate_wm_tree(self):
+        scene = {elem.id: elem for elem in self._wmi.getScene()}
+        root = scene['skiros:Scene-0']
+        self.wm_tree_widget.clear()
+        self._generate_wm_tree(self.wm_tree_widget, scene, root)
+        self.wm_tree_widget.setCurrentIndex(self.wm_tree_widget.model().index(0, 0))
+        self.wm_tree_widget.expandAll()
+
+    def _generate_wm_tree(self, node, scene, elem):
+        item = QTreeWidgetItem(node, [utils.ontology_type2name(elem.id)])
+        item.setData(2, Qt.EditRole, elem.id)
+        for rel in elem.getRelations(subj='-1'):
+            self._generate_wm_tree(item, scene, scene[rel['dst']])
+
+
+    def fill_property_table(self, item):
+        id = item.data(2, Qt.EditRole)
+        elem = self._wmi.getElement(id)
+
+        self.wm_properties_widget.clear()
+
+        # print(elem.printState(True))
+        key = QTableWidgetItem('ID')
+        val = QTableWidgetItem(utils.ontology_type2name(elem.id))
+
+        self.wm_properties_widget.insertRow(self.wm_properties_widget.rowCount())
+        self.wm_properties_widget.setItem(self.wm_properties_widget.rowCount()-1, 0, key)
+        self.wm_properties_widget.setItem(self.wm_properties_widget.rowCount()-1, 1, val)
+        # print(item.properties)
+
+
+
+
+
+
+
+
+
+
+
 
 
     @Slot('QTreeWidgetItem*', 'QTreeWidgetItem*')
