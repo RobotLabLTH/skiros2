@@ -208,8 +208,8 @@ def decodeElement(json_string):
 registerClass("skiros_wm::Element", we.Element, encodeElement, decodeElement)
 registerClass("skiros_wm::Param", param.Param, encodeParam)
 registerClass("skiros_wm::Property", param.Property, encodeProperty)
-registerClass("std::string", unicode)
-registerCtype("std::string", str)
+#registerClass("std::string", unicode)
+#registerCtype("std::string", str)
 #registerClass("double", float)
 
 

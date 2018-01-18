@@ -49,9 +49,9 @@ class Element(object):
         self._type=etype
         self._label=elabel
         self._id=eid
-        self._properties={}
-        self._local_relations=[] #Reference to Elements
-        self._relations=[] #Reference to IDs
+        self._properties=dict()
+        self._local_relations=list() #Reference to Elements
+        self._relations=list() #Reference to IDs
         self._setLastUpdate()
 
     def __str__(self):
@@ -197,7 +197,7 @@ class Element(object):
             return self.getProperty(key).find(value)!=-1
         return self._properties.has_key(key)
 
-    def setProperty(self, key, value, datatype=None, is_list=False):
+    def setProperty(self, key, value, datatype=None, is_list=False, force_convertion=False):
         """
         @brief Set the property to a value. If datatype is specified tries to convert.
         """
@@ -230,6 +230,8 @@ class Element(object):
                 self._properties[key] = Property(key, value, is_list)
         else:
             if self.hasProperty(key):
+                if force_convertion:
+                    value = self._properties[key].dataType()(value)
                 self._properties[key].setValues(value)
             else:
                 self._properties[key] = Property(key, value, is_list)
