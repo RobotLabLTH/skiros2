@@ -83,7 +83,7 @@ class Element(object):
 
     @property
     def properties(self):
-        return self._properties
+        return self._properties.values()
 
 
 

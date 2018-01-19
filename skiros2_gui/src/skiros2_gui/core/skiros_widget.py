@@ -5,7 +5,7 @@ import rospkg
 from functools import partial
 
 from python_qt_binding import loadUi
-from python_qt_binding.QtCore import Qt, QTimer, Slot
+from python_qt_binding.QtCore import Qt, QTimer, Slot, QMetaObject, pyqtSignal
 from python_qt_binding.QtGui import QIcon
 from python_qt_binding.QtWidgets import QLabel, QTableWidgetItem, QTreeWidgetItem, QWidget, QCheckBox, QComboBox, QLineEdit, QDialog, QSizePolicy
 
@@ -92,7 +92,7 @@ class SkirosAddObjectDialog(QDialog):
         # update list of individuals
         self.comboBox_individual.clear()
         if index > 0 or (id > 0 and index == 0):
-            self.comboBox_individual.addItem('new ' + utils.ontology_type2name(selected))
+            self.comboBox_individual.addItem('new ' + utils.ontology_type2name(selected), selected)
         [self.comboBox_individual.addItem(l,d) for l,d in self.get_individuals(selected).iteritems()]
         QTimer.singleShot(0, self.adjustSize)
 
@@ -146,6 +146,7 @@ class SkirosWidget(QWidget):
 #==============================================================================
 #  General
 #==============================================================================
+
     def __init__(self):
         super(SkirosWidget, self).__init__()
         self.setObjectName('SkirosWidget')
@@ -157,7 +158,7 @@ class SkirosWidget(QWidget):
         #     QTreeView::branch:open {image: url(folderopened.png)}
         # ''')
         self.wm_tree_widget.itemSelectionChanged.connect( lambda : self.on_wm_tree_widget_item_selection_changed( self.wm_tree_widget.currentItem()) )
-
+        self.wm_relations_widget.resizeEvent = self.on_wm_relations_widget_resized
         self.reset()
 
 
@@ -209,6 +210,7 @@ class SkirosWidget(QWidget):
 #==============================================================================
 #  General
 #==============================================================================
+
     def refresh_timer_cb(self):
         """
         Keeps interface updated
@@ -245,7 +247,22 @@ class SkirosWidget(QWidget):
         ret = dialog.exec_()
         if not ret: return
 
-        print(dialog.object)
+        node = self.wm_tree_widget.currentItem()
+        parent_id = node.id
+
+        print('Current node: {}'.format(parent_id))
+        print('Add new element: {}'.format(dialog.object))
+
+        elem = self._wmi.getTemplateElement(dialog.object)
+        elem.label = utils.ontology_type2name(dialog.object)
+        elem.addRelation(parent_id, 'skiros:contain', '-1')
+        elem_id = self._wmi.addElement(elem)
+
+        print('New element: {}'.format(elem_id))
+
+        item = QTreeWidgetItem(node, [utils.ontology_type2name(elem.id)])
+        item.id = elem.id
+        self.wm_tree_widget.setCurrentItem(item)
 
 
     @Slot()
@@ -255,7 +272,18 @@ class SkirosWidget(QWidget):
 
     @Slot()
     def on_wm_tree_widget_item_selection_changed(self, item):
-        self.fill_property_table(item)
+        elem = self._wmi.getElement(item.id)
+        self.fill_properties_table(elem)
+        self.fill_relations_table(elem)
+
+
+    @Slot()
+    def on_wm_relations_widget_resized(self, event):
+        width = self.wm_relations_widget.size().width()-2
+        cols = self.wm_relations_widget.columnCount()
+        for i in range(cols):
+            self.wm_relations_widget.setColumnWidth(i, float(width)/cols)
+
 
 
 
@@ -269,26 +297,56 @@ class SkirosWidget(QWidget):
 
     def _generate_wm_tree(self, node, scene, elem):
         item = QTreeWidgetItem(node, [utils.ontology_type2name(elem.id)])
-        item.setData(2, Qt.EditRole, elem.id)
-        for rel in elem.getRelations(subj='-1'):
+        item.id = elem.id
+        for rel in sorted(elem.getRelations(subj='-1'), key=lambda r: r['dst']):
             self._generate_wm_tree(item, scene, scene[rel['dst']])
 
 
-    def fill_property_table(self, item):
-        id = item.data(2, Qt.EditRole)
-        elem = self._wmi.getElement(id)
+    def fill_properties_table(self, elem):
+        self.wm_properties_widget.setRowCount(0)
+        for p in sorted(elem.properties, key=lambda e: e.key):
+            key = QTableWidgetItem(utils.ontology_type2name(p.key))
+            key.setFlags(key.flags() & ~Qt.ItemIsEditable)
+            value = p.values if p.isList() else p.value
+            val = QTableWidgetItem(str(p.value) if value is not None else '')
+            key.id = val.id = p.key
 
-        self.wm_properties_widget.clear()
+            self.wm_properties_widget.insertRow(self.wm_properties_widget.rowCount())
+            self.wm_properties_widget.setItem(self.wm_properties_widget.rowCount()-1, 0, key)
+            self.wm_properties_widget.setItem(self.wm_properties_widget.rowCount()-1, 1, val)
 
-        # print(elem.printState(True))
-        key = QTableWidgetItem('ID')
-        val = QTableWidgetItem(utils.ontology_type2name(elem.id))
 
-        self.wm_properties_widget.insertRow(self.wm_properties_widget.rowCount())
-        self.wm_properties_widget.setItem(self.wm_properties_widget.rowCount()-1, 0, key)
-        self.wm_properties_widget.setItem(self.wm_properties_widget.rowCount()-1, 1, val)
-        # print(item.properties)
+    def fill_relations_table(self, elem):
+        self.wm_relations_widget.setRowCount(0)
+        for r in sorted(elem.getRelations(), key=lambda r: r['src']):
+            tsrc = r['src'] if r['src'] != '-1' else elem.id
+            trel = r['type']
+            tdst = r['dst'] if r['dst'] != '-1' else elem.id
 
+            src = QTableWidgetItem(utils.ontology_type2name(tsrc))
+            rel = QTableWidgetItem(utils.ontology_type2name(trel))
+            dst = QTableWidgetItem(utils.ontology_type2name(tdst))
+
+            src.id = tsrc
+            rel.id = trel
+            dst.id = tdst
+
+            src.setTextAlignment(Qt.AlignRight)
+            rel.setTextAlignment(Qt.AlignHCenter)
+            dst.setTextAlignment(Qt.AlignLeft)
+
+            if r['src'] == '-1': src.setFlags(src.flags() & ~Qt.ItemIsEditable)
+            if r['dst'] == '-1': dst.setFlags(dst.flags() & ~Qt.ItemIsEditable)
+
+            # value = p.values if p.isList() else p.value
+            # val = QTableWidgetItem(str(p.value) if value is not None else '')
+            # val.setData(3, p.key)
+
+            self.wm_relations_widget.insertRow(self.wm_relations_widget.rowCount())
+            # self.wm_relations_widget.setSpan(self.wm_relations_widget.rowCount()-1, 0, 1, 3)
+            self.wm_relations_widget.setItem(self.wm_relations_widget.rowCount()-1, 0, src)
+            self.wm_relations_widget.setItem(self.wm_relations_widget.rowCount()-1, 1, rel)
+            self.wm_relations_widget.setItem(self.wm_relations_widget.rowCount()-1, 2, dst)
 
 
 
