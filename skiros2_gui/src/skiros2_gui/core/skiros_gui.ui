@@ -400,6 +400,9 @@
             <property name="indentation">
              <number>15</number>
             </property>
+            <property name="rootIsDecorated">
+             <bool>false</bool>
+            </property>
             <property name="uniformRowHeights">
              <bool>true</bool>
             </property>

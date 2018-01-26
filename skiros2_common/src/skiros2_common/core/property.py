@@ -116,7 +116,7 @@ class Property(object):
                 self._values = value
             else:
                 log.error("setValuesList", "{}: Input {} != {} Debug: {}".format(self.key, type(value[0]), self._data_type, self.printState()))
-        elif isinstance(value, self._data_type):
+        elif value is None or isinstance(value, self._data_type):
             self._values = [value]
         else:
             log.error("setValues", "{}: Input {} != {}. Debug: {}".format(self.key, type(value), self._data_type, self.printState()))
