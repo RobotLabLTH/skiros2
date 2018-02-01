@@ -2,8 +2,8 @@
 Changelog for package skiros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.2 (2018-02-01)
+------------------
 * Merge pull request `#1 <https://github.com/ScalABLE40/skiros2/issues/1>`_ from RVMI/master
   Added robot discovery mechanism and execution monitor
 * Changed robot_description output
