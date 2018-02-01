@@ -5,6 +5,7 @@ project(skiros2_msgs)
 find_package(catkin REQUIRED COMPONENTS
 genmsg
 message_generation
+actionlib
 std_msgs
 actionlib_msgs
 trajectory_msgs
@@ -51,5 +52,5 @@ generate_messages(
 )
 
 catkin_package(
-    CATKIN_DEPENDS message_runtime genmsg std_msgs actionlib_msgs
+    CATKIN_DEPENDS message_runtime genmsg actionlib std_msgs actionlib_msgs trajectory_msgs sensor_msgs control_msgs
 )
