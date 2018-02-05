@@ -9,7 +9,7 @@ class Serial():
     """
     def printType(self):
         return '->'
-        
+
     def processChildren(self, children, visitor):
         """
         Serial processor - return on first fail, or return success
@@ -18,15 +18,15 @@ class Serial():
             state = c.visit(visitor)
             if state!=State.Success:
                 return state
-        return State.Success        
-    
+        return State.Success
+
 class Selector():
     """
     Process children sequentially.
     """
     def printType(self):
         return '?'
-        
+
     def processChildren(self, children, visitor):
         """
         Serial processor - return on first running/success, or return failure
@@ -37,20 +37,20 @@ class Selector():
                 if state==State.Success:
                     self.stopAll(children, visitor)
                 return state
-        return State.Failure 
-        
-    def stopAll(self, children, visitor): 
+        return State.Failure
+
+    def stopAll(self, children, visitor):
         for c in children:
             if c._state==State.Running:
                 c.preempt()
-                
+
 class ParallelFf():
     """
     Parallel First Fail - Process children in parallel. Stop all processes if a child fails.
     """
     def printType(self):
         return '|ff|'
-        
+
     def processChildren(self, children, visitor):
         state = State.Success
         for c in children:
@@ -60,71 +60,57 @@ class ParallelFf():
             if cstate==State.Failure:
                 self.stopAll(children, visitor)
                 return State.Failure
-        return state 
-    
-    def stopAll(self, children, visitor): 
+        return state
+
+    def stopAll(self, children, visitor):
         for c in children:
             if c._state==State.Running:
-                c.preempt() #TODO: the visitor should be included in the loop  
-        
+                c.preempt() #TODO: the visitor should be included in the loop
+
 class ParallelFs():
     """
     Parallel First Stop - Process children in parallel. Stop all processes if a child ends (success or fail).
     """
     def printType(self):
         return '|fs|'
-        
+
     def processChildren(self, children, visitor):
         for c in children:
             state = c.visit(visitor)
             if state!=State.Running:
                 self.stopAll(children, visitor)
                 return state
-        return State.Running    
-    
-    def stopAll(self, children, visitor): 
+        return State.Running
+
+    def stopAll(self, children, visitor):
         for c in children:
             if c._state==State.Running:
                 c.preempt()
 #Decorators
-class Loop():    
+class Loop():
     def __init__(self, processor):
         self._processor = processor
-        
+
     def printType(self):
         return 'Loop({})'.format(self._processor.printType())
-        
+
     def processChildren(self, children, visitor):
         """
         Repeat execution
         """
-        while True:
-            if not self._processor.processChildren(children, visitor):
-                return False
-        return True
-        
-class NoFail():   
+        self._processor.processChildren(children, visitor)
+        return State.Running
+
+class NoFail():
     def __init__(self, processor):
         self._processor = processor
-        
+
     def printType(self):
         return 'NoFail({})'.format(self._processor.printType())
-        
+
     def processChildren(self, children, visitor):
         """
         Ignore failed execution
         """
         self._processor.processChildren(children, visitor)
         return True
-
-class DecoratorSync():  
-    def __init__(self, processor):
-        self._processor = processor
-        
-    def processChildren(self, children, visitor):
-        """
-        Repeat execution
-        """
-        self._processor.processChildren(children, visitor)
-        return True
-      

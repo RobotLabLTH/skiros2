@@ -232,7 +232,7 @@ class NodeExecutor():
             log.info("[{}]".format(self.__class__.__name__), "Starting {}".format(skill.printState()))
         if not self._ground(skill):
             if not self.tryOther(skill):
-                return State.Failure
+                return State.Idle
         state = self._execute(skill)
         if state==State.Running:
             self.mergeParams(skill)#Update params

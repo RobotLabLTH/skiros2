@@ -1,53 +1,60 @@
 import params
 from world_element import Element
 from copy import deepcopy
+import operator
+
+operators = {'>': operator.gt,
+           '<': operator.lt,
+           '>=': operator.ge,
+           '<=': operator.le,
+           '=': operator.eq}
 
 class ConditionBase(object):
     """
-    """    
-    def __init__(self, clabel, subj, desired_state):            
-        self._desired_state=desired_state                           
-        self._subject_key=subj  
-        self._label=clabel  
-        self._description=""        
-          
+    """
+    def __init__(self, clabel, subj, desired_state):
+        self._desired_state=desired_state
+        self._subject_key=subj
+        self._label=clabel
+        self._description=""
+
     def __eq__(self, other):
         if self.isEqual(other):
             return True
         else:
             return False
-        
+
     def __ne__(self, other):
         if self.isEqual(other):
             return False
         else:
             return True
-        
+
     def remap(self, initial_key, target_key):
         if self._subject_key==initial_key:
             self._subject_key=target_key
             self._setDescription()
             #print "New description: " + self.getDescription()
-          
+
     def getParamIndex(self, key):
         l = [i for i, x in enumerate(self.getKeys()) if key==x]
         if l:
             return l[0]
         else:
             return -1
-    
+
     def getParamId(self, key):
         if self._params:
             return self._params.getParamValue(key)._id
         else:
             raise
-    
+
     def getKeys(self):
         return [self._subject_key]
-        
-    def getDescription(self):  
-        return self._description        
-        
+
+    def getDescription(self):
+        return self._description
+
     #Virtual functions
     def _setDescription(self):
         """ Not implemented in abstract class. """
@@ -67,55 +74,70 @@ class ConditionBase(object):
     def isEqual(self, other):
         """ Equality function. """
         raise NotImplementedError("Not implemented in abstract class")
-        
-    def toElement(self):    
+
+    def toElement(self):
         """ World model representation . """
         raise NotImplementedError("Not implemented in abstract class")
-    
-    
+
+
 class ConditionProperty(ConditionBase):
-    def __init__(self, clabel, olabel, subj, operator, value, desired_state):            
-        self._desired_state=desired_state                           
-        self._subject_key=subj          
-        self._value=value 
-        self._label=clabel    
-        self._operator=operator           
+    """
+    @brief Condition over an element property
+
+    >>> ph = params.ParamHandler()
+    >>> e = Element('Type')
+    >>> e.setProperty('Float', 0.0)
+    >>> ph.addParam('Param1', e, params.ParamTypes.World)
+    >>> equalZero = ConditionProperty('Example', 'Float', 'Param1', '=', 0.0, True)
+    >>> equalZero.evaluate(ph, None)
+    True
+    >>> majorZero = ConditionProperty('Example', 'Float', 'Param1', '>', 0.0, True)
+    >>> majorZero.evaluate(ph, None)
+    False
+    >>> majorMinusOne = ConditionProperty('Example', 'Float', 'Param1', '>', -1.0, True)
+    >>> majorMinusOne.evaluate(ph, None)
+    True
+    """
+    def __init__(self, clabel, olabel, subj, operator, value, desired_state):
+        self._desired_state=desired_state
+        self._subject_key=subj
+        self._value=value
+        self._label=clabel
+        self._operator=operator
         self._owl_label=olabel
         self._params = None
         self._setDescription()
-                 
+
     def isEqual(self, other):
         if isinstance(other, ConditionProperty):
-            return self._subject_key==other._subject_key and self._owl_label==other._owl_label and self._value==other._value and self._desired_state==other._desired_state 
+            return self._subject_key==other._subject_key and self._operator==other._operator and self._owl_label==other._owl_label and self._value==other._value and self._desired_state==other._desired_state
         else:
-            return False 
-            
+            return False
+
     def hasConflict(self, other):
         if isinstance(other, ConditionProperty):
             if self._owl_label==other._owl_label and self._value==other._value and self._desired_state!=other._desired_state:
                 return self.getParamId(self._subject_key)==other.getParamId(other._subject_key) or self._subject_key==other._subject_key
-        return False 
-            
-    def _setDescription(self):  
-        self._description = "[{}] {}-{}-{} ({})".format(self._label, 
-                              self._subject_key, 
-                              self._owl_label, 
-                              self._value, 
-                              self._desired_state) 
-        
+        return False
+
+    def _setDescription(self):
+        self._description = "[{}] {}-{}-{} ({})".format(self._label,
+                              self._subject_key,
+                              self._owl_label,
+                              self._value,
+                              self._desired_state)
+
     def evaluate(self, ph, wmi):
         self._params = ph
         self._wm = wmi
         subj = self._params.getParamValue(self._subject_key)
-        if subj.getIdNumber() < 0:
-            if self._params.getParam(self._subject_key).paramType==params.ParamTypes.Optional:#If optional return true, else return false
-                return True
-            else:
+        if self._operator=="=":
+            return subj.hasProperty(self._owl_label, self._value) == self._desired_state
+        else:
+            if not subj.hasProperty(self._owl_label):
                 return False
-        if subj.hasProperty(self._owl_label, self._value):
-            return self._desired_state
-        return not self._desired_state
-        
+            return operators[self._operator](subj.getProperty(self._owl_label).value, self._value)==self._desired_state
+
     def setTrue(self, ph, wmi):
         self._params = ph
         self._wm = wmi
@@ -133,7 +155,7 @@ class ConditionProperty(ConditionBase):
         self._params.specify(self._subject_key, subj)
         self._wm.updateElement(subj)
         return True
-        
+
     def revert(self, ph, wmi):
         if self._has_cache:
             self._params = ph
@@ -142,9 +164,9 @@ class ConditionProperty(ConditionBase):
             self._params.specify(self._subject_key, self._cache)
             self._wm.updateElement(self._cache)
             self._has_cache = False
-            return True            
+            return True
         return False
-        
+
     def setDesiredState(self, ph):
         e = ph.getParamValue(self._subject_key)
         if e.getIdNumber()>=0: return
@@ -154,7 +176,7 @@ class ConditionProperty(ConditionBase):
         else:
             if e.hasProperty(self._owl_label, self._value):
                 e.removePropertyValue(self._owl_label, self._value)
-                
+
     def toElement(self):
         to_ret = Element("skiros:" + self.__class__.__name__, self._label)
         to_ret.setProperty("skiros:hasSubject", self._subject_key)
@@ -163,48 +185,48 @@ class ConditionProperty(ConditionBase):
         to_ret.setProperty("skiros:desiredValue", self._value)
         to_ret.setProperty("skiros:desiredState", self._desired_state)
         return to_ret
-    
-           
+
+
 class ConditionRelation(ConditionBase):
-    def __init__(self, clabel, olabel, subj, obj, desired_state):  
-        self._desired_state=desired_state                           
-        self._subject_key=subj                                   
-        self._object_key=obj      
-        self._label=clabel          
+    def __init__(self, clabel, olabel, subj, obj, desired_state):
+        self._desired_state=desired_state
+        self._subject_key=subj
+        self._object_key=obj
+        self._label=clabel
         self._owl_label=olabel
         self._params = None
         self._setDescription()
-        
+
     def remap(self, initial_key, target_key):
         if self._subject_key==initial_key:
             self._subject_key=target_key
         elif self._object_key==initial_key:
             self._object_key=target_key
         self._setDescription()
-            
+
     def getKeys(self):
         return [self._subject_key, self._object_key]
-                         
+
     def isEqual(self, other):
         if isinstance(other, ConditionRelation):
-            return self._subject_key==other._subject_key and self._owl_label==other._owl_label and self._object_key==other._object_key and self._desired_state==other._desired_state 
+            return self._subject_key==other._subject_key and self._owl_label==other._owl_label and self._object_key==other._object_key and self._desired_state==other._desired_state
         else:
             return False
-            
+
     def hasConflict(self, other):
         if isinstance(other, ConditionRelation):
             if self._owl_label==other._owl_label and self._desired_state!=other._desired_state:
                 #print "{}=={} and {}=={}".format(self.getParamId(self._subject_key), other.getParamId(other._subject_key), self.getParamId(self._object_key), other.getParamId(other._object_key))
                 return (self.getParamId(self._subject_key)==other.getParamId(other._subject_key) and self.getParamId(self._object_key)==other.getParamId(other._object_key)) or (self._subject_key==other._subject_key and self._object_key==other._object_key)
         return False
-            
-    def _setDescription(self):  
-        self._description = "[{}] {}-{}-{} ({})".format(self._label, 
-                              self._subject_key, 
-                              self._owl_label, 
-                              self._object_key, 
-                              self._desired_state) 
-                                      
+
+    def _setDescription(self):
+        self._description = "[{}] {}-{}-{} ({})".format(self._label,
+                              self._subject_key,
+                              self._owl_label,
+                              self._object_key,
+                              self._desired_state)
+
     def evaluate(self, ph, wmi):
         self._params = ph
         self._wm = wmi
@@ -223,7 +245,7 @@ class ConditionRelation(ConditionBase):
             return self._desired_state
         else:
             return not self._desired_state
-        
+
     def setTrue(self, ph, wmi):
         self._params = ph
         self._wm = wmi
@@ -238,7 +260,7 @@ class ConditionRelation(ConditionBase):
         if not self._wm.setRelation(subj._id, self._owl_label, obj._id, self._desired_state):
             return False
         return True
-        
+
     def revert(self, ph, wmi):
         if self._has_cache:
             self._params = ph
@@ -249,10 +271,10 @@ class ConditionRelation(ConditionBase):
             self._wm.setRelation(subj._id, self._owl_label, obj._id, not self._desired_state)
             for edge in self._cache:
                 self._wm.setRelation(edge['src'], edge['type'], edge['dst'], True)
-            self._has_cache = False      
+            self._has_cache = False
             return True
         return False
-        
+
     def setDesiredState(self, ph):
         subj = ph.getParamValue(self._subject_key)
         obj = ph.getParamValue(self._object_key)
@@ -260,7 +282,7 @@ class ConditionRelation(ConditionBase):
             subj.addRelation("-1", self._owl_label, self._object_key, self._desired_state)
         if obj.getIdNumber()<0:
             obj.addRelation(self._subject_key, self._owl_label, "-1", self._desired_state)
-            
+
     def toElement(self):
         to_ret = Element("skiros:" + self.__class__.__name__, self._label)
         to_ret.setProperty("skiros:hasSubject", self._subject_key)
@@ -269,47 +291,47 @@ class ConditionRelation(ConditionBase):
         to_ret.setProperty("skiros:desiredState", self._desired_state)
         return to_ret
 
-           
+
 class AbsConditionRelation(ConditionBase):
-    def __init__(self, clabel, olabel, subj, obj, desired_state):  
-        self._desired_state=desired_state                           
-        self._subject_key=subj                                   
-        self._object_key=obj      
-        self._label=clabel          
+    def __init__(self, clabel, olabel, subj, obj, desired_state):
+        self._desired_state=desired_state
+        self._subject_key=subj
+        self._object_key=obj
+        self._label=clabel
         self._owl_label=olabel
         self._params = None
         self._setDescription()
-        
+
     def remap(self, initial_key, target_key):
         if self._subject_key==initial_key:
             self._subject_key=target_key
         elif self._object_key==initial_key:
             self._object_key=target_key
         self._setDescription()
-            
+
     def getKeys(self):
         return [self._subject_key, self._object_key]
-                         
+
     def isEqual(self, other):
         if isinstance(other, ConditionRelation):
-            return self._subject_key==other._subject_key and self._owl_label==other._owl_label and self._object_key==other._object_key and self._desired_state==other._desired_state 
+            return self._subject_key==other._subject_key and self._owl_label==other._owl_label and self._object_key==other._object_key and self._desired_state==other._desired_state
         else:
             return False
-            
+
     def hasConflict(self, other):
         if isinstance(other, ConditionRelation):
             if self._owl_label==other._owl_label and self._desired_state!=other._desired_state:
                 #print "{}=={} and {}=={}".format(self.getParamId(self._subject_key), other.getParamId(other._subject_key), self.getParamId(self._object_key), other.getParamId(other._object_key))
                 return (self.getParamId(self._subject_key)==other.getParamId(other._subject_key) and self.getParamId(self._object_key)==other.getParamId(other._object_key)) or (self._subject_key==other._subject_key and self._object_key==other._object_key)
         return False
-            
-    def _setDescription(self):  
-        self._description = "[{}] {}-{}-{} ({})".format(self._label, 
-                              self._subject_key, 
-                              self._owl_label, 
-                              self._object_key, 
-                              self._desired_state) 
-                                      
+
+    def _setDescription(self):
+        self._description = "[{}] {}-{}-{} ({})".format(self._label,
+                              self._subject_key,
+                              self._owl_label,
+                              self._object_key,
+                              self._desired_state)
+
     def evaluate(self, ph, wmi):
         self._params = ph
         self._wm = wmi
@@ -324,13 +346,13 @@ class AbsConditionRelation(ConditionBase):
             return self._desired_state
         else:
             return not self._desired_state
-        
+
     def setTrue(self, ph, wmi):
         return False
-        
+
     def revert(self, ph, wmi):
         return False
-        
+
     def setDesiredState(self, ph):
         subj = ph.getParamValue(self._subject_key)
         obj = ph.getParamValue(self._object_key)
@@ -338,7 +360,7 @@ class AbsConditionRelation(ConditionBase):
             subj.addRelation("-1", self._owl_label, self._object_key, self._desired_state)
         if obj.getIdNumber()<0:
             obj.addRelation(self._subject_key, self._owl_label, "-1", self._desired_state)
-            
+
     def toElement(self):
         to_ret = Element("skiros:" + self.__class__.__name__, self._label)
         to_ret.setProperty("skiros:hasSubject", self._subject_key)
@@ -348,32 +370,32 @@ class AbsConditionRelation(ConditionBase):
         return to_ret
 
 class ConditionHasProperty(ConditionBase):
-    def __init__(self, clabel, olabel, subj, desired_state):            
-        self._desired_state=desired_state                           
-        self._subject_key=subj      
-        self._label=clabel          
+    def __init__(self, clabel, olabel, subj, desired_state):
+        self._desired_state=desired_state
+        self._subject_key=subj
+        self._label=clabel
         self._owl_label=olabel
         self._params = None
         self._setDescription()
 
     def isEqual(self, other):
         if isinstance(other, ConditionHasProperty):
-            return self._subject_key==other._subject_key and self._owl_label==other._owl_label and self._desired_state==other._desired_state 
+            return self._subject_key==other._subject_key and self._owl_label==other._owl_label and self._desired_state==other._desired_state
         else:
             return False
-            
+
     def hasConflict(self, other):
         if isinstance(other, ConditionHasProperty):
             if self._owl_label==other._owl_label and self._desired_state!=other._desired_state:
                 return self.getParamId(self._subject_key)==other.getParamId(other._subject_key) or self._subject_key==other._subject_key
         return False
-        
-    def _setDescription(self):  
-        self._description = "[{}] {}-{} ({})".format(self._label, 
-                              self._subject_key, 
-                              self._owl_label, 
-                              self._desired_state) 
-        
+
+    def _setDescription(self):
+        self._description = "[{}] {}-{} ({})".format(self._label,
+                              self._subject_key,
+                              self._owl_label,
+                              self._desired_state)
+
     def evaluate(self, ph, wmi):
         self._params = ph
         self._wm = wmi
@@ -390,7 +412,7 @@ class ConditionHasProperty(ConditionBase):
             else:
                 return not self._desired_state
         return not self._desired_state
-        
+
     def setTrue(self, ph, wmi):
         self._params = ph
         self._wm = wmi
@@ -408,7 +430,7 @@ class ConditionHasProperty(ConditionBase):
         self._params.specify(self._subject_key, subj)
         self._wm.updateElement(subj)
         return True
-        
+
     def revert(self, ph, wmi):
         if self._has_cache:
             self._params = ph
@@ -417,9 +439,9 @@ class ConditionHasProperty(ConditionBase):
             #print self._description + " {}".format(self._cache.printState())
             self._wm.updateElement(self._cache)
             self._has_cache = False
-            return True            
+            return True
         return False
-        
+
     def setDesiredState(self, ph):
         e = ph.getParamValue(self._subject_key)
         if e.getIdNumber()>=0: return
@@ -429,39 +451,39 @@ class ConditionHasProperty(ConditionBase):
         else:
             if e.hasProperty(self._owl_label):
                 e.removeProperty(self._owl_label)
-        
+
     def toElement(self):
         to_ret = Element("skiros:" + self.__class__.__name__, self._label)
         to_ret.setProperty("skiros:hasSubject", self._subject_key)
         to_ret.setProperty("skiros:appliedOnType", self._owl_label)
         to_ret.setProperty("skiros:desiredState", self._desired_state)
         return to_ret
-      
-class ConditionIsSpecified(ConditionBase):  
+
+class ConditionIsSpecified(ConditionBase):
     def __init__(self, clabel, subj, desired_state):
-        self._subject_key=subj      
-        self._label=clabel   
-        self._desired_state=desired_state  
-        self._params = None 
+        self._subject_key=subj
+        self._label=clabel
+        self._desired_state=desired_state
+        self._params = None
         self._setDescription()
-              
+
     def isEqual(self, other):
         if isinstance(other, ConditionIsSpecified):
-            return self._subject_key==other._subject_key and self._desired_state==other._desired_state 
+            return self._subject_key==other._subject_key and self._desired_state==other._desired_state
         else:
             return False
-            
+
     def hasConflict(self, other):
         if isinstance(other, ConditionIsSpecified):
-            return self._subject_key==other._subject_key and self._desired_state!=other._desired_state 
+            return self._subject_key==other._subject_key and self._desired_state!=other._desired_state
         else:
             return False
-            
-    def _setDescription(self):  
-        self._description = "[{}] {} ({})".format(self._label, 
-                              self._subject_key, 
-                              self._desired_state) 
-                                  
+
+    def _setDescription(self):
+        self._description = "[{}] {} ({})".format(self._label,
+                              self._subject_key,
+                              self._desired_state)
+
     def evaluate(self, ph, wmi):
         self._params = ph
         self._wm = wmi
@@ -472,8 +494,8 @@ class ConditionIsSpecified(ConditionBase):
             return True
         else:
             return False
-        
-    def setTrue(self, ph, wmi):     
+
+    def setTrue(self, ph, wmi):
         self._params = ph
         self._wm = wmi
         subj = self._params.getParamValue(self._subject_key)
@@ -490,7 +512,7 @@ class ConditionIsSpecified(ConditionBase):
         else:
             self._cache_new = self._cache
         return True
-        
+
     def revert(self, ph, wmi):
         if self._has_cache:
             self._params = ph
@@ -498,44 +520,44 @@ class ConditionIsSpecified(ConditionBase):
             #print self._description + " {}".format(self._cache.printState())
             self._params.specify(self._subject_key, self._cache)
             self._has_cache = False
-            return True            
+            return True
         return False
-        
+
     def setDesiredState(self, ph):
         return
-        
+
     def toElement(self):
         to_ret = Element("skiros:" + self.__class__.__name__, self._label)
         to_ret.setProperty("skiros:hasSubject", self._subject_key)
         to_ret.setProperty("skiros:desiredState", self._desired_state)
         return to_ret
-              
-class ConditionGenerate(ConditionBase):  
+
+class ConditionGenerate(ConditionBase):
     #TODO: understand: any difference with isSpecified?
     def __init__(self, clabel, subj, desired_state):
-        self._subject_key=subj      
-        self._label=clabel   
-        self._desired_state=desired_state  
-        self._params = None 
+        self._subject_key=subj
+        self._label=clabel
+        self._desired_state=desired_state
+        self._params = None
         self._setDescription()
-               
+
     def isEqual(self, other):
         if isinstance(other, ConditionGenerate):
-            return self._subject_key==other._subject_key and self._desired_state==other._desired_state 
+            return self._subject_key==other._subject_key and self._desired_state==other._desired_state
         else:
             return False
-             
+
     def hasConflict(self, other):
         if isinstance(other, ConditionGenerate):
-            return self._subject_key==other._subject_key and self._desired_state!=other._desired_state 
+            return self._subject_key==other._subject_key and self._desired_state!=other._desired_state
         else:
             return False
-            
-    def _setDescription(self):  
-        self._description = "[{}] {} ({})".format(self._label, 
-                              self._subject_key, 
-                              self._desired_state) 
-                                  
+
+    def _setDescription(self):
+        self._description = "[{}] {} ({})".format(self._label,
+                              self._subject_key,
+                              self._desired_state)
+
     def evaluate(self, ph, wmi):
         self._params = ph
         self._wm = wmi
@@ -546,8 +568,8 @@ class ConditionGenerate(ConditionBase):
             return True
         else:
             return False
-        
-    def setTrue(self, ph, wmi):     
+
+    def setTrue(self, ph, wmi):
         self._params = ph
         self._wm = wmi
         subj = self._params.getParamValue(self._subject_key)
@@ -568,7 +590,7 @@ class ConditionGenerate(ConditionBase):
         else:
             self._cache_new = self._cache
         return True
-        
+
     def revert(self, ph, wmi):
         if self._has_cache:
             self._params = ph
@@ -580,43 +602,43 @@ class ConditionGenerate(ConditionBase):
                 self._wm.addElement(self._cache, ":Scene-0", "contain")
             self._params.specify(self._subject_key, self._cache)
             self._has_cache = False
-            return True            
+            return True
         return False
-        
+
     def setDesiredState(self, ph):
         return
-        
+
     def toElement(self):
         to_ret = Element("skiros:" + self.__class__.__name__, self._label)
         to_ret.setProperty("skiros:hasSubject", self._subject_key)
         to_ret.setProperty("skiros:desiredState", self._desired_state)
         return to_ret
-        
-class ConditionOnType(ConditionBase):  
+
+class ConditionOnType(ConditionBase):
     def __init__(self, clabel, subj, value):
-        self._subject_key=subj      
-        self._label=clabel   
-        self._value=value  
-        self._params = None 
+        self._subject_key=subj
+        self._label=clabel
+        self._value=value
+        self._params = None
         self._setDescription()
-               
+
     def isEqual(self, other):
         if isinstance(other, ConditionOnType):
-            return self._subject_key==other._subject_key and self._value==other._value 
+            return self._subject_key==other._subject_key and self._value==other._value
         else:
             return False
-             
+
     def hasConflict(self, other):
         if isinstance(other, ConditionOnType):
             return self._subject_key==other._subject_key
         else:
             return False
-            
-    def _setDescription(self):  
-        self._description = "[{}] {}-{}".format(self._label, 
-                              self._subject_key, 
-                              self._value) 
-                                  
+
+    def _setDescription(self):
+        self._description = "[{}] {}-{}".format(self._label,
+                              self._subject_key,
+                              self._value)
+
     def evaluate(self, ph, wmi):
         self._params = ph
         self._wm = wmi
@@ -625,18 +647,18 @@ class ConditionOnType(ConditionBase):
             return True
         else:
             return False
-        
-    def setTrue(self, ph, wmi):   
+
+    def setTrue(self, ph, wmi):
         return True
-        
-    def revert(self, ph, wmi):       
+
+    def revert(self, ph, wmi):
         return True
-        
+
     def setDesiredState(self, ph):
         e = ph.getParamValue(self._subject_key)
-        if e.getIdNumber()>=0: 
+        if e.getIdNumber()>=0:
             return
-        else: 
+        else:
             e._type = self._value
 
     def toElement(self):

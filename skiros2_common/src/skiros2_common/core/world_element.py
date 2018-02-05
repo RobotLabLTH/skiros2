@@ -129,6 +129,20 @@ class Element(object):
         self._setLastUpdate()
         self._id = "{}-{}".format(self._type, eid)
 
+    def setReasoner(self, name):
+        """
+        @brief Associate the element to a reasoner
+        @name the name of the reasoner
+        """
+        self._getReasoner(name).addProperties(self)
+
+    def unsetReasoner(self, name):
+        """
+        @brief Disassociate the element from a reasoner
+        @name the name of the reasoner
+        """
+        self._getReasoner(name).removeProperties(self)
+
     def hasData(self, get_code):
         """
         @brief Check if the element has data using a reasoner
