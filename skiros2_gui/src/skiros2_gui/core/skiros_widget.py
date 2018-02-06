@@ -148,6 +148,8 @@ class SkirosWidget(QWidget):
 #  General
 #==============================================================================
 
+    widget_id = 'skiros_gui'
+
     def __init__(self):
         super(SkirosWidget, self).__init__()
         self.setObjectName('SkirosWidget')
@@ -168,10 +170,8 @@ class SkirosWidget(QWidget):
         #The plugin should not call init_node as this is performed by rqt_gui_py.
         #Due to restrictions in Qt, you cannot manipulate Qt widgets directly within ROS callbacks,
         #because they are running in a different thread.
-        self._wmi = wmi.WorldModelInterface()
+        self._wmi = wmi.WorldModelInterface(SkirosWidget.widget_id)
         self._sli = sli.SkillLayerInterface(self._wmi)
-        self._author_name = "skiros_gui"
-
         self.create_wm_tree()
 
         #Setup a timer to keep interface updated
@@ -277,8 +277,8 @@ class SkirosWidget(QWidget):
 
 
     def remove_wm_tree_widget_item(self, item):
-        log.debug(self.__class__.__name__, 'Removing item: <{}>'.format(item.text(0)))
-        if not hasattr(item, 'id'):
+        if hasattr(item, 'id'):
+            log.debug(self.__class__.__name__, 'Removing item: <{}>'.format(item.text(0)))
             elem = self._wmi.getElement(item.id)
             self._wmi.removeElement(elem)
         else:
