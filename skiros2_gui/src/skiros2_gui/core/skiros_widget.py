@@ -18,6 +18,10 @@ import skiros2_world_model.ros.world_model_interface as wmi
 import skiros2_skill.ros.skill_layer_interface as sli
 from copy import deepcopy
 
+from interactive_markers.interactive_marker_server import InteractiveMarkerServer
+from visualization_msgs.msg import InteractiveMarker, InteractiveMarkerControl, Marker, InteractiveMarkerFeedback
+from numpy.linalg import norm
+
 class SkirosAddObjectDialog(QDialog):
 #==============================================================================
 #  Modal dialog
@@ -141,9 +145,124 @@ class SkirosAddObjectDialog(QDialog):
         return utils.ontology_type2name_dict(self.parent()._wmi.getIndividuals(subtype, True))
 
 
+class SkirosInteractiveMarkers:
+    default_box_size = 0.1
 
+    def on_marker_feedback(self, feedback):
+        s = "Feedback from marker '" + feedback.marker_name
+        s += "' / control '" + feedback.control_name + "'"
 
-class SkirosWidget(QWidget):
+        mp = ""
+        if feedback.mouse_point_valid:
+            mp = " at " + str(feedback.mouse_point.x)
+            mp += ", " + str(feedback.mouse_point.y)
+            mp += ", " + str(feedback.mouse_point.z)
+            mp += " in frame " + feedback.header.frame_id
+        print s
+        print mp
+
+    def _make_box(self, msg):
+        marker = Marker()
+        marker.type = Marker.CUBE
+        marker.scale.x = msg.scale * SkirosInteractiveMarkers.default_box_size
+        marker.scale.y = msg.scale * SkirosInteractiveMarkers.default_box_size
+        marker.scale.z = msg.scale * SkirosInteractiveMarkers.default_box_size
+        marker.color.r = 0.5
+        marker.color.g = 0.5
+        marker.color.b = 0.5
+        marker.color.a = 1.0
+        return marker
+
+    def _make_box_control(self, msg):
+        control =  InteractiveMarkerControl()
+        control.always_visible = True
+        control.markers.append( self._make_box(msg) )
+        msg.controls.append( control )
+        return control
+
+    def initInteractiveServer(self, name):
+        """
+        @brief Start the interactive marker server
+        """
+        self._server = InteractiveMarkerServer(name)
+
+    def clear_markers(self):
+        self._server.clear()
+
+    def make_6dof_marker(self, position, frame_id, base_frame_id, interaction_mode):
+        int_marker = InteractiveMarker()
+        int_marker.header.frame_id = base_frame_id
+        int_marker.pose.position.x = position[0]
+        int_marker.pose.position.y = position[1]
+        int_marker.pose.position.z = position[2]
+        int_marker.scale = 1
+
+        int_marker.name = frame_id
+        int_marker.description = frame_id
+
+        # insert a box
+        self._make_box_control(int_marker)
+        int_marker.controls[0].interaction_mode = interaction_mode
+
+        n = norm([1,1])
+        control = InteractiveMarkerControl()
+        control.orientation.w = 1/n
+        control.orientation.x = 1/n
+        control.orientation.y = 0
+        control.orientation.z = 0
+        control.name = "rotate_x"
+        control.interaction_mode = InteractiveMarkerControl.ROTATE_AXIS
+        int_marker.controls.append(control)
+
+        control = InteractiveMarkerControl()
+        control.orientation.w = 1/n
+        control.orientation.x = 1/n
+        control.orientation.y = 0
+        control.orientation.z = 0
+        control.name = "move_x"
+        control.interaction_mode = InteractiveMarkerControl.MOVE_AXIS
+        int_marker.controls.append(control)
+
+        control = InteractiveMarkerControl()
+        control.orientation.w = 1/n
+        control.orientation.x = 0
+        control.orientation.y = 1/n
+        control.orientation.z = 0
+        control.name = "rotate_y"
+        control.interaction_mode = InteractiveMarkerControl.ROTATE_AXIS
+        int_marker.controls.append(control)
+
+        control = InteractiveMarkerControl()
+        control.orientation.w = 1/n
+        control.orientation.x = 0
+        control.orientation.y = 1/n
+        control.orientation.z = 0
+        control.name = "move_y"
+        control.interaction_mode = InteractiveMarkerControl.MOVE_AXIS
+        int_marker.controls.append(control)
+
+        control = InteractiveMarkerControl()
+        control.orientation.w = 1/n
+        control.orientation.x = 0
+        control.orientation.y = 0
+        control.orientation.z = 1/n
+        control.name = "rotate_z"
+        control.interaction_mode = InteractiveMarkerControl.ROTATE_AXIS
+        int_marker.controls.append(control)
+
+        control = InteractiveMarkerControl()
+        control.orientation.w = 1/n
+        control.orientation.x = 0
+        control.orientation.y = 0
+        control.orientation.z = 1/n
+        control.name = "move_z"
+        control.interaction_mode = InteractiveMarkerControl.MOVE_AXIS
+        int_marker.controls.append(control)
+
+        self._server.insert(int_marker, self.on_marker_feedback)
+        self._server.applyChanges()
+
+class SkirosWidget(QWidget, SkirosInteractiveMarkers):
 #==============================================================================
 #  General
 #==============================================================================
@@ -170,6 +289,7 @@ class SkirosWidget(QWidget):
         #The plugin should not call init_node as this is performed by rqt_gui_py.
         #Due to restrictions in Qt, you cannot manipulate Qt widgets directly within ROS callbacks,
         #because they are running in a different thread.
+        self.initInteractiveServer(SkirosWidget.widget_id)
         self._wmi = wmi.WorldModelInterface(SkirosWidget.widget_id)
         self._sli = sli.SkillLayerInterface(self._wmi)
         self.create_wm_tree()
@@ -284,21 +404,28 @@ class SkirosWidget(QWidget):
         else:
             [self.remove_wm_tree_widget_item(child) for child in item.takeChildren()]
 
-
-
+    def on_marker_feedback(self, feedback):
+        if feedback.event_type == InteractiveMarkerFeedback.POSE_UPDATE:
+            elem = self._wmi.getElement(feedback.marker_name)
+            elem.setData(":PoseStampedMsg", feedback)
+            self._wmi.updateElement(elem)
 
     @Slot()
     def on_wm_tree_widget_item_selection_changed(self, item):
         self.wm_properties_widget.blockSignals(True)
+        self.clear_markers()
         if hasattr(item, 'id'):
             elem = self._wmi.getElement(item.id)
             self.fill_properties_table(elem)
             self.fill_relations_table(elem)
+            if elem.hasProperty("skiros:DiscreteReasoner", "AauSpatialReasoner"):
+                p = elem.getData(":Position")
+                if not None in p:
+                    self.make_6dof_marker(p, elem.id, elem.getProperty("skiros:BaseFrameId").value, InteractiveMarkerControl.MOVE_3D) # NONE,MOVE_3D, MOVe_ROTATE_3D
         else:
             self.wm_properties_widget.setRowCount(0)
             self.wm_relations_widget.setRowCount(0)
         self.wm_properties_widget.blockSignals(False)
-
 
 
     @Slot()
@@ -339,8 +466,6 @@ class SkirosWidget(QWidget):
         cols = self.wm_relations_widget.columnCount()
         for i in range(cols):
             self.wm_relations_widget.setColumnWidth(i, float(width)/cols)
-
-
 
 
     def create_wm_tree(self):
