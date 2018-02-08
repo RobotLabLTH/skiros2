@@ -232,7 +232,7 @@ class WorldModel(Ontology):
         """
         Load scene from file
         """
-        if not path.isfile(filename):
+        if not path.isfile(self._workspace+"/"+filename):
             log.error("[loadScene]", "Can't load scene {}. File not found. ".format(filename))
             return
         self._stopReasoners()
