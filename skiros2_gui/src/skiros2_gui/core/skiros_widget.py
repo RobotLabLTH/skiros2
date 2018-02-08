@@ -515,7 +515,10 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         key = QTableWidgetItem(utils.ontology_type2name(prop.key))
         if not editable_key: key.setFlags(key.flags() & ~Qt.ItemIsEditable)
         value = prop.values if prop.isList() else prop.value
-        val = QTableWidgetItem(str(prop.value) if value is not None else '')
+        if prop.dataTypeIs(float):
+            val = QTableWidgetItem(format(value, '.4f') if value is not None else '')
+        else:
+            val = QTableWidgetItem(str(value) if value is not None else '')
         if not editable_value: val.setFlags(val.flags() & ~Qt.ItemIsEditable)
 
         if prop.dataTypeIs(bool):

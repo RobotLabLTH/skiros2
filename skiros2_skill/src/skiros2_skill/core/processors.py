@@ -15,9 +15,10 @@ class Serial():
         Serial processor - return on first fail, or return success
         """
         for c in children:
-            state = c.visit(visitor)
-            if state!=State.Success:
-                return state
+            if c.state!=State.Success:
+                state = c.visit(visitor)
+                if state!=State.Success:
+                    return state
         return State.Success
 
 class Selector():
@@ -98,7 +99,9 @@ class Loop():
         """
         Repeat execution
         """
-        self._processor.processChildren(children, visitor)
+        state = self._processor.processChildren(children, visitor)
+        if state==State.Failure:
+            return state
         return State.Running
 
 class NoFail():

@@ -138,8 +138,6 @@ class VisitorExecutor(VisitorInterface, NodePrinter, NodeExecutor):
         self._verbose=verbose
 
     def processNode(self, procedure):
-        if procedure.hasState(State.Success):# or procedure.hasState(State.Failure):
-            return procedure.getState()
         if not procedure.hasState(State.Running):
             state = self.execute(procedure)
         else:
@@ -149,8 +147,6 @@ class VisitorExecutor(VisitorInterface, NodePrinter, NodeExecutor):
         return state
 
     def postProcessNode(self, procedure):
-        if procedure.hasState(State.Success):
-            return State.Success
         state = self.postExecute(procedure)
         self.unindend()
         return state

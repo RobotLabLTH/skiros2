@@ -93,6 +93,7 @@ class TaskManager:
                         finished_skill_ids.append(id)
                     if self._progress_cb is not None:
                         self._progress_cb(task_id=uid, id=id, **desc)
+            #log.info("", "Remaining: {}".format(rate.remaining()))#TODO: decrease the loop time.Optimize operations
             rate.sleep()
         #if result==State.Failure:
         print "===Final state==="
