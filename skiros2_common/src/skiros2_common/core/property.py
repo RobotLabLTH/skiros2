@@ -110,17 +110,18 @@ class Property(object):
         """
         if isinstance(value, list):
             if len(value)==0:
-                self._values = value
+                self._values = list()
                 return
             if isinstance(value[0], self._data_type):
                 self._values = value
             else:
-                log.error("setValuesList", "{}: Input {} != {} Debug: {}".format(self.key, type(value[0]), self._data_type, self.printState()))
-        elif value is None or isinstance(value, self._data_type):
+                log.error("setValuesList", "{}: Input {} != {} Debug: {}. Input: {}.".format(self.key, type(value[0]), self._data_type, self.printState(), value))
+        elif isinstance(value, self._data_type):
             self._values = [value]
+        elif value is None:
+            self._values = list()
         else:
             log.error("setValues", "{}: Input {} != {}. Debug: {}".format(self.key, type(value), self._data_type, self.printState()))
-            return
 
     def removeValue(self, value):
         """
