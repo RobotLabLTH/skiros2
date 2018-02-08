@@ -28,7 +28,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #################################################################################
 
-from os import walk
+from os import walk, path
 import rospy
 import skiros2_common.tools.logger as log
 import skiros2_common.ros.utils as utils
@@ -232,6 +232,9 @@ class WorldModel(Ontology):
         """
         Load scene from file
         """
+        if not path.isfile(filename):
+            log.error("[loadScene]", "Can't load scene {}. File not found. ".format(filename))
+            return
         self._stopReasoners()
         self._ontology = self._ontology - self._wm
         self._wm = rdflib.Graph()
@@ -246,7 +249,7 @@ class WorldModel(Ontology):
             if iid>=0:
                 self._id_gen.getId(iid)
         self._startReasoners()
-        print "[loadScene] Loaded scene {}. ".format(filename)
+        log.info("[loadScene]", "Loaded scene {}. ".format(filename))
 
     @synchronized
     def saveScene(self, filename):
