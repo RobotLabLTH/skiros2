@@ -16,7 +16,7 @@ class SkillInterface(SkillCore):
     """
     """
     #--------Class functions--------
-    def __init__(self, children_processor=Serial()):
+    def __init__(self, children_processor=Sequential()):
         super(SkillInterface, self).__init__()
         #Params
         self._remaps={}
@@ -496,7 +496,7 @@ class SkillBase(SkillInterface, object):
         self._instanciator = instanciator
         self.createDescription()
         self.generateDefParams()
-        self._children_processor = Serial()
+        self._children_processor = Sequential()
         self._setState(State.Idle)
         self.generateDefConditions()
 
@@ -531,6 +531,7 @@ class Root(SkillInterface):
         self._type=":Root"
         self._label=name
         self._instance = self#TODO: fix
+        self._children_processor = Sequential()
         if wmi:
             self.init(wmi)
 
@@ -541,7 +542,7 @@ class Skill(SkillInterface):
     """
     Generic skill node
     """
-    def __init__(self, name, children_processor=Serial(),wmi=None):
+    def __init__(self, name, children_processor=Sequential(),wmi=None):
         super(Skill, self).__init__()
         self._type=":Skill"
         self._label=name

@@ -5,7 +5,24 @@ Collection of processor, defining how a skill visits its children
 """
 class Serial():
     """
-    Process children sequentially.
+    @brief Process children serially. Also succeded one are re-executed
+    """
+    def printType(self):
+        return '->'
+
+    def processChildren(self, children, visitor):
+        """
+        Serial processor - return on first fail, or return success
+        """
+        for c in children:
+            state = c.visit(visitor)
+            if state!=State.Success:
+                return state
+        return State.Success
+        
+class Sequential():
+    """
+    @brief Process children sequentially. Succeded ones are skipped
     """
     def printType(self):
         return '->'
