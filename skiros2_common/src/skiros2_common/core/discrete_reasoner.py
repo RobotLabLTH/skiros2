@@ -35,11 +35,16 @@ class DiscreteReasoner(object):
         """
         Set an interface to the world model
         """
+        self._thread = None
         self._wmi = wmi
 
     def parse(self, element, action):
         """ Parse the action (add, remove,update) [element] """
         raise NotImplementedError("Not implemented in abstract class")
+
+    def stop(self):
+        """ Stop the reasoner """
+        self._thread.terminate()
 
     def execute(self):
         self._thread = Process(target=self.run)

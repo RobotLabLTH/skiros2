@@ -118,7 +118,7 @@ class WorldModel(Ontology):
 
     def _element2statements(self, e):
         to_ret = []
-        subject = self.lightstring2uri(e._id)
+        subject = self.lightstring2uri(e.id)
         to_ret.append((subject, RDF.type, OWL.NamedIndividual))
         to_ret.append((subject, RDF.type, self.lightstring2uri(e._type)))
         to_ret.append((subject, RDFS.label, rdflib.term.Literal(e._label)))
@@ -128,7 +128,7 @@ class WorldModel(Ontology):
                 value = rdflib.term.Literal(v)
                 to_ret.append((subject, predicate, value))
         for r in e._relations:
-            if r['src']=="-1" or r['src']==e._id:
+            if r['src']=="-1" or r['src']==e.id:
                 to_ret.append((subject, self.lightstring2uri(r['type']), self.lightstring2uri(r['dst'])))
             else:
                 to_ret.append((self.lightstring2uri(r['src']), self.lightstring2uri(r['type']), subject))
@@ -164,11 +164,18 @@ class WorldModel(Ontology):
                 if self._reasoners.has_key(v):
                     self._reasoners[v].addProperties(e)
 
+    def _stopReasoners(self):
+        for r in self._reasoners.items():
+            r.stop()
+
+    def _startReasoners(self):
+        for r in self._reasoners.items():
+            r.execute()
+
     def loadReasoner(self, reasoner_class):
         self._reasoners[reasoner_class.__name__] = reasoner_class()
         self._reasoners[reasoner_class.__name__].init(self)
         self._reasoners[reasoner_class.__name__].execute()
-        #TODO: run
         log.info("[loadReasoner] Loaded {}".format(reasoner_class.__name__))
 
     def hasIndividual(self, name):
@@ -225,11 +232,20 @@ class WorldModel(Ontology):
         """
         Load scene from file
         """
+        self._stopReasoners()
         self._ontology = self._ontology - self._wm
         self._wm = rdflib.Graph()
         self._wm.parse(self._workspace+"/"+filename, format='turtle')
         self._ontology = self._ontology + self._wm
         self._elements_cache = dict()
+        self._id_gen.clear()
+        individuals = self.query("SELECT ?x WHERE { ?x rdf:type <http://www.w3.org/2002/07/owl#NamedIndividual>. } ")
+        for i in individuals:
+            i = self.uri2lightstring(i[0])
+            iid = self._uri2id(i)
+            if iid>=0:
+                self._id_gen.getId(iid)
+        self._startReasoners()
         print "[loadScene] Loaded scene {}. ".format(filename)
 
     @synchronized
@@ -285,6 +301,7 @@ class WorldModel(Ontology):
             return self._elements_cache[uri]
         e = self.getIndividual(uri)
         e._id = uri
+        self._elements_cache[e.id] = e
         return e
 
     def _getDatatype(self, param):
@@ -309,7 +326,7 @@ class WorldModel(Ontology):
         for name, r in self._reasoners.iteritems():
             if not r.parse(e, "add"):
                 raise Exception("Reasoner {} rejected the element {} add".format(name, e))
-        subject = self.lightstring2uri(e._id)
+        subject = self.lightstring2uri(e.id)
         self._add((subject, RDF.type, OWL.NamedIndividual), author)
         self._add((subject, RDF.type, self.lightstring2uri(e._type)), author)
         self._add((subject, RDFS.label, rdflib.term.Literal(e._label, datatype=XSD.string)), author)
@@ -327,21 +344,21 @@ class WorldModel(Ontology):
                 self._add((self.lightstring2uri(r['src']), self.lightstring2uri(r['type']), subject), author)
                 if self._elements_cache.has_key(r['src']):
                     del self._elements_cache[r['src']]
-        self._elements_cache[e._id] = e
-        return e._id
+        self._elements_cache[e.id] = e
+        return e.id
 
     @synchronized
     def updateElement(self, e, author):
         """
         @brief Update an element in the scene
         """
-        if not self._id_gen.hasId(self._uri2id(e._id)):
-            log.error("[updateElement]", "Id {} is not present in the wm.".format(self._uri2id(e._id)))
+        if not self._id_gen.hasId(self._uri2id(e.id)):
+            log.error("[updateElement]", "Id {} is not present in the wm.".format(self._uri2id(e.id)))
             return
         for name, r in self._reasoners.iteritems():
             if not r.parse(e, "update"):
                 raise Exception("Reasoner {} rejected the element {} update".format(name, e))
-        prev = self.getContextStatements(e._id)
+        prev = self.getContextStatements(e.id)
         curr = self._element2statements(e)
         for s in prev:
             if not s in curr:
@@ -358,7 +375,7 @@ class WorldModel(Ontology):
             else:
                 if self._elements_cache.has_key(r['src']):
                     del self._elements_cache[r['src']]
-        self._elements_cache[e._id] = e
+        self._elements_cache[e.id] = e
 
     @synchronized
     def resolveElements(self, description):
@@ -396,21 +413,22 @@ class WorldModel(Ontology):
 
         If recursive, remove also all elements related to the initial one
         """
-        self._id_gen.removeId(self._uri2id(e._id))
+        self._id_gen.removeId(self._uri2id(e.id))
         for name, r in self._reasoners.iteritems():
             if not r.parse(e, "remove"):
                 raise Exception("Reasoner {} rejected the element {} removal".format(name, e))
-        statements = self.getContextStatements(e._id)
+        statements = self.getContextStatements(e.id)
         for s in statements:
             self._remove(s, author)
-        del self._elements_cache[e._id]
-        return e._id
+        if self._elements_cache.has_key(e.id):
+            del self._elements_cache[e.id]
+        return e.id
 
     def _getRecursive(self, e, rels_filter, types_filter, elist):
         """
         Get all elements related to the initial one. Anti-loop guarded
         """
-        elist[e._id] = e
+        elist[e.id] = e
         for r in e.getRelations("-1", rels_filter):
             if self.isSceneElement(r['dst']):
                 e2 = self.getElement(r['dst'])

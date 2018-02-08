@@ -171,6 +171,8 @@ class SkillManager:
         if res:
             log.info("[{}]".format(self.__class__.__name__), "Found robot {}, skipping registration.".format(res[0]))
             self._robot = res[0]
+            for r in self._robot.getRelations("-1", "skiros:hasSkill"):
+                self._wmi.removeElement(self._wmi.getElement(r['dst']))
         else:
             self._robot = self._wmi.instanciate(agent_name, True)
             startLocUri = self._wmi.getTemplateElement(agent_name).getRelations(pred="skiros:hasStartLocation")
@@ -244,7 +246,7 @@ class SkillManager:
         self.visitor.setVerbose(self._verbose)
         return self._tasks.start(uid, self.visitor)
 
-    def executeTask(self, uid, sim=False, track_params=list()):
+    def executeTask(self, uid, sim=False, track_params=list()):#[("MotionChange",)]
         self.visitor = visitors.VisitorExecutor(self._local_wm, self._instanciator)
         self.visitor.setSimulate(sim)
         for t in track_params:
