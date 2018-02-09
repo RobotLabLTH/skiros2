@@ -189,12 +189,16 @@ class SkirosInteractiveMarkers:
     def clear_markers(self):
         self._server.clear()
 
-    def make_6dof_marker(self, position, frame_id, base_frame_id, interaction_mode):
+    def make_6dof_marker(self, pose, frame_id, base_frame_id, interaction_mode):
         int_marker = InteractiveMarker()
         int_marker.header.frame_id = base_frame_id
-        int_marker.pose.position.x = position[0]
-        int_marker.pose.position.y = position[1]
-        int_marker.pose.position.z = position[2]
+        int_marker.pose.position.x = pose[0][0]
+        int_marker.pose.position.y = pose[0][1]
+        int_marker.pose.position.z = pose[0][2]
+        int_marker.pose.orientation.x = pose[1][0]
+        int_marker.pose.orientation.y = pose[1][1]
+        int_marker.pose.orientation.z = pose[1][2]
+        int_marker.pose.orientation.w = pose[1][3]
         int_marker.scale = 1
 
         int_marker.name = frame_id
@@ -419,8 +423,8 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
             self.fill_properties_table(elem)
             self.fill_relations_table(elem)
             if elem.hasProperty("skiros:DiscreteReasoner", "AauSpatialReasoner"):
-                p = elem.getData(":Position")
-                if not None in p:
+                p = elem.getData(":Pose")
+                if not None in p[0] and not None in p[1]:
                     self.make_6dof_marker(p, elem.id, elem.getProperty("skiros:BaseFrameId").value, InteractiveMarkerControl.MOVE_3D) # NONE,MOVE_3D, MOVe_ROTATE_3D
         else:
             self.wm_properties_widget.setRowCount(0)
