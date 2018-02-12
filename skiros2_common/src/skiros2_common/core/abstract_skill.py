@@ -117,6 +117,9 @@ class SkillDescription(object):
     def addPostCondition(self, condition):
         self._post_conditions.append(condition)
 
+    def getOrCond(self, desired_state):
+        return cond.ConditionOr(desired_state)
+        
     def getIsSpecifiedCond(self, clabel, subj, desired_state):
         return cond.ConditionIsSpecified(clabel, subj, desired_state)
 

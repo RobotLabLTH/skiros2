@@ -36,13 +36,6 @@ class ConditionBase(object):
             self._setDescription()
             #print "New description: " + self.getDescription()
 
-    def getParamIndex(self, key):
-        l = [i for i, x in enumerate(self.getKeys()) if key==x]
-        if l:
-            return l[0]
-        else:
-            return -1
-
     def getParamId(self, key):
         if self._params:
             return self._params.getParamValue(key)._id
@@ -79,6 +72,81 @@ class ConditionBase(object):
         """ World model representation . """
         raise NotImplementedError("Not implemented in abstract class")
 
+class ConditionOr(ConditionBase):
+    def __init__(self, desired_state):
+        self._desired_state=desired_state
+        self._label="or"
+        self._params = None
+        self._children = list()
+        self._setDescription()
+        
+    def addCondition(self, condition):
+        self._children.append(condition)
+        self._setDescription()
+        
+    def remap(self, initial_key, target_key):
+        for c in self._children:
+            c.remap(initial_key, target_key)
+        self._setDescription()
+
+    def getKeys(self):
+        keys = list()
+        for c in self._children:
+            keys += c.getKeys()
+        return keys
+        
+    def isEqual(self, other):
+        if isinstance(other, ConditionOr):
+            raise Exception("TODO")
+            return True
+        else:
+            return False
+
+    def hasConflict(self, other):
+        if isinstance(other, ConditionOr):
+            if self._desired_state!=other._desired_state:
+                raise Exception("TODO")
+                return True
+        return False
+
+    def _setDescription(self):
+        self._description = "[{}] ( ".format(self._label)        
+        for c in self._children:
+            self._description += " {} ".format(c.getDescription())
+        self._description += ")"
+        
+    def evaluate(self, ph, wmi):   
+        self._params = ph
+        self._wm = wmi  
+        for c in self._children:
+            if c.evaluate(ph, wmi):
+                return self._desired_state
+        return not self._desired_state
+
+    def setTrue(self, ph, wmi):
+        self._params = ph
+        self._wm = wmi
+        for c in self._children:
+            if not c.setTrue(ph, wmi):
+                return False
+        return True
+
+    def revert(self, ph, wmi):
+        self._params = ph
+        self._wm = wmi
+        for c in self._children:
+            if not c.revert(ph, wmi):
+                return False
+        return True
+
+    def setDesiredState(self, ph):
+        for c in self._children:
+            c.setDesiredState(ph)
+
+    def toElement(self):
+        to_ret = Element("skiros:" + self.__class__.__name__, self._label)
+        to_ret.setProperty("skiros:desiredState", self._desired_state)
+        return to_ret
 
 class ConditionProperty(ConditionBase):
     """
@@ -612,56 +680,4 @@ class ConditionGenerate(ConditionBase):
         to_ret = Element("skiros:" + self.__class__.__name__, self._label)
         to_ret.setProperty("skiros:hasSubject", self._subject_key)
         to_ret.setProperty("skiros:desiredState", self._desired_state)
-        return to_ret
-
-class ConditionOnType(ConditionBase):
-    def __init__(self, clabel, subj, value):
-        self._subject_key=subj
-        self._label=clabel
-        self._value=value
-        self._params = None
-        self._setDescription()
-
-    def isEqual(self, other):
-        if isinstance(other, ConditionOnType):
-            return self._subject_key==other._subject_key and self._value==other._value
-        else:
-            return False
-
-    def hasConflict(self, other):
-        if isinstance(other, ConditionOnType):
-            return self._subject_key==other._subject_key
-        else:
-            return False
-
-    def _setDescription(self):
-        self._description = "[{}] {}-{}".format(self._label,
-                              self._subject_key,
-                              self._value)
-
-    def evaluate(self, ph, wmi):
-        self._params = ph
-        self._wm = wmi
-        subj = self._params.getParamValue(self._subject_key)
-        if wmi.isOfType(subj, self._value):
-            return True
-        else:
-            return False
-
-    def setTrue(self, ph, wmi):
-        return True
-
-    def revert(self, ph, wmi):
-        return True
-
-    def setDesiredState(self, ph):
-        e = ph.getParamValue(self._subject_key)
-        if e.getIdNumber()>=0:
-            return
-        else:
-            e._type = self._value
-
-    def toElement(self):
-        to_ret = Element("skiros:" + self.__class__.__name__, self._label)
-        to_ret.setProperty("skiros:hasSubject", self._subject_key)
         return to_ret

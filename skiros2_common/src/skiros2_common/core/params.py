@@ -330,7 +330,8 @@ class ParamHandler(object):
     def printState(self):
         to_ret = ""
         for _, p in self._params.iteritems():
-            #if not p.hasDefaultValues():
-            #if p.paramTypeIs(ParamTypes.Online):
-            to_ret += p.printState() + " "
+            if not p.dataTypeIs(Element):
+                to_ret += p.printState() + " "
+            else:
+                to_ret += p.key + p.value.printState() + " "
         return to_ret
