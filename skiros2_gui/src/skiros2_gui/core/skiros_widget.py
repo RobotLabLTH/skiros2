@@ -161,22 +161,24 @@ class SkirosInteractiveMarkers:
         print s
         print mp
 
-    def _make_box(self, msg):
+    def _make_box(self, msg, size):
         marker = Marker()
         marker.type = Marker.CUBE
-        marker.scale.x = msg.scale * SkirosInteractiveMarkers.default_box_size
-        marker.scale.y = msg.scale * SkirosInteractiveMarkers.default_box_size
-        marker.scale.z = msg.scale * SkirosInteractiveMarkers.default_box_size
-        marker.color.r = 0.5
-        marker.color.g = 0.5
+        if None in size:
+            size = [SkirosInteractiveMarkers.default_box_size, SkirosInteractiveMarkers.default_box_size, SkirosInteractiveMarkers.default_box_size]
+        marker.scale.x = msg.scale * size[0]
+        marker.scale.y = msg.scale * size[1]
+        marker.scale.z = msg.scale * size[2]
+        marker.color.r = 0.0
+        marker.color.g = 0.0
         marker.color.b = 0.5
-        marker.color.a = 1.0
+        marker.color.a = 0.5
         return marker
 
-    def _make_box_control(self, msg):
+    def _make_box_control(self, msg, size):
         control =  InteractiveMarkerControl()
         control.always_visible = True
-        control.markers.append( self._make_box(msg) )
+        control.markers.append( self._make_box(msg, size) )
         msg.controls.append( control )
         return control
 
@@ -189,7 +191,7 @@ class SkirosInteractiveMarkers:
     def clear_markers(self):
         self._server.clear()
 
-    def make_6dof_marker(self, pose, frame_id, base_frame_id, interaction_mode):
+    def make_6dof_marker(self, pose, size, frame_id, base_frame_id, interaction_mode):
         int_marker = InteractiveMarker()
         int_marker.header.frame_id = base_frame_id
         int_marker.pose.position.x = pose[0][0]
@@ -205,7 +207,7 @@ class SkirosInteractiveMarkers:
         int_marker.description = frame_id
 
         # insert a box
-        self._make_box_control(int_marker)
+        self._make_box_control(int_marker, size)
         int_marker.controls[0].interaction_mode = interaction_mode
 
         n = norm([1,1])
@@ -424,8 +426,9 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
             self.fill_relations_table(elem)
             if elem.hasProperty("skiros:DiscreteReasoner", "AauSpatialReasoner"):
                 p = elem.getData(":Pose")
+                size = elem.getData(":Size")
                 if not None in p[0] and not None in p[1]:
-                    self.make_6dof_marker(p, elem.id, elem.getProperty("skiros:BaseFrameId").value, InteractiveMarkerControl.MOVE_3D) # NONE,MOVE_3D, MOVe_ROTATE_3D
+                    self.make_6dof_marker(p, size, elem.id, elem.getProperty("skiros:BaseFrameId").value, InteractiveMarkerControl.NONE) # NONE,MOVE_3D, MOVe_ROTATE_3D
         else:
             self.wm_properties_widget.setRowCount(0)
             self.wm_relations_widget.setRowCount(0)
@@ -647,22 +650,21 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
 #==============================================================================
     def _getParameters(self, layout, params):
         i = -1
-        for k, param in params.iteritems():
-            if not self.modality_checkBox.isChecked() and (param.paramTypeIs(ParamTypes.Optional) or param.paramTypeIs(ParamTypes.System)):
-                continue
-            i += 1
+        for i in range(0, layout.count()/2):
+            key = layout.itemAtPosition(i, 0).widget().text()
             widget = layout.itemAtPosition(i, 1).widget()
-            if param.dataTypeIs(bool):
-                param.setValue(widget.isChecked())
-            elif param.dataTypeIs(Element):
+            if params[key].dataTypeIs(bool):
+                params[key].setValue(widget.isChecked())
+            elif params[key].dataTypeIs(Element):
                 data = widget.itemData(widget.currentIndex())
                 if data:
-                    param.setValue(self._wmi.getElement(data))
+                    params[key].setValue(self._wmi.getElement(data))
+                    print "Set param {} to {}".format(params[key].key, params[key].value.printState())
             else:
                 try:
-                    param.setValueFromStr(widget.text())
+                    params[key].setValueFromStr(widget.text())
                 except ValueError:
-                    log.error("getParameters", "Failed to set param {}".format(param._key))
+                    log.error("getParameters", "Failed to set param {}".format(params[key].key))
                     return False
         return True
 
