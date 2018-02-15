@@ -154,26 +154,24 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         if(res):
             return [utils.msg2element(x) for x in res.elements]
 
-    def instanciate(self, uri, recursive=False, relations=list(), relation_filter="skiros:hasA", antiloop_bind=dict()):
+    def instanciate(self, uri, recursive=False, relations=list(), relation_filter="skiros:hasA", antiloop_bind=set()):
         """
         Gets a template individual, adds it to the scene and returns a corresponding element
 
         If recursive, instanciate all individuals related to the starting individual
         """
-        template = self.getTemplateElement(uri)
+        if isinstance(uri, basestring):
+            template = self.getTemplateElement(uri)
+        else:
+            template = uri
         relcopy = copy.deepcopy(template._relations)
         template._relations = relations
         self.addElement(template)
         if recursive:
-            antiloop_bind[template._label] = template._id
+            antiloop_bind.add(template._id)
             for r in relcopy:
                 if (r['type']==relation_filter or relation_filter=="") and r['src']=="-1":
-                    if r['dst'] in antiloop_bind:
-                        rcopy = copy.deepcopy(r)
-                        rcopy['src'] = template._id
-                        rcopy['dst'] = antiloop_bind[r['dst']]
-                        self.setRelations([rcopy])
-                    else:
+                    if not r['dst'] in antiloop_bind:
                         rcopy = copy.deepcopy(r)
                         rcopy['src'] = template._id
                         rcopy['dst'] = "-1"

@@ -379,8 +379,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
 
         elem = self._wmi.getTemplateElement(dialog.object)
         elem.label = utils.ontology_type2name(dialog.object)
-        elem.addRelation(parent_id, 'skiros:contain', '-1')
-        elem_id = self._wmi.addElement(elem)
+        elem_id = self._wmi.instanciate(elem, recursive=True, relations=[{'src': parent_id, 'type': 'skiros:contain', 'dst': '-1'}])
 
         # parent = self.wm_tree_widget.currentItem()
         # parent_id = parent.text(1)
@@ -394,9 +393,10 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
     def on_remove_object_button_clicked(self):
         item = self.wm_tree_widget.currentItem()
         item_id = item.text(1)
+        parent = item.parent()
+        self.wm_tree_widget.setCurrentItem(parent)
 
         elem = self._wmi.getElement(item_id)
-
         self._wmi.removeElement(elem)
 
         # parent = self.wm_tree_widget.currentItem()
@@ -404,11 +404,9 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         log.debug(self.__class__.__name__, 'Removed element {}'.format(item_id))
 
 
-        # item = self.wm_tree_widget.currentItem()
-        # parent = item.parent()
+        #item = self.wm_tree_widget.currentItem()
         # self.remove_wm_tree_widget_item(item)
         # parent.removeChild(item)
-        # self.wm_tree_widget.setCurrentItem(parent)
 
     # def remove_wm_tree_widget_item(self, item):
     #     if hasattr(item, 'id'):
