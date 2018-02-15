@@ -39,7 +39,7 @@ from skiros2_world_model.ros.ontology_server import OntologyServer
 from skiros2_world_model.core.world_model import WorldModel
 import uuid
 from time import sleep
-            
+
 class WorldModelServer(OntologyServer):
     def __init__(self, anonymous=False):
         rospy.init_node("wm", anonymous=anonymous)
@@ -48,7 +48,6 @@ class WorldModelServer(OntologyServer):
         self._ontology = self._wm
         self._plug_loader = PluginLoader()
         self._loadReasoners()
-        self.initOntologyServices()
         #================Snapshot======================
         self._curr_snapshot = uuid.uuid4() # random UUID
         #self._snapshots_log = []
@@ -59,11 +58,12 @@ class WorldModelServer(OntologyServer):
         self._modify = rospy.Service('~scene/modify', srvs.WmModify, self._wmModifyCb)
         self._get = rospy.Service('~scene/load_and_save', srvs.WmLoadAndSave, self._wmLoadAndSaveCb)
         self._monitor = rospy.Publisher("~monitor", msgs.WmMonitor, queue_size=20)
-        
+        self.initOntologyServices()
+
     def _waitClientsDisconnection(self):
         while self._monitor.get_num_connections()>0:
             sleep(0.1)
-        
+
     def _publishChange(self, author, action, elements=None, relation=None):
         msg =  msgs.WmMonitor()
         msg.prev_snapshot_id = self._curr_snapshot.hex
@@ -76,7 +76,7 @@ class WorldModelServer(OntologyServer):
         if relation:
             msg.relation = relation
         self._monitor.publish(msg)
-        
+
     def _loadReasoners(self):
         """
         Load reasoner plugins
@@ -86,7 +86,7 @@ class WorldModelServer(OntologyServer):
             self._plug_loader.load(package, DiscreteReasoner)
         for p in self._plug_loader:
             self._wm.loadReasoner(p)
-        
+
     def _wmLoadAndSaveCb(self, msg):
         with self._times:
             if msg.action==msg.SAVE:
@@ -95,7 +95,7 @@ class WorldModelServer(OntologyServer):
                 self._wm.loadScene(msg.filename)
         log.info("[wmLoadAndSave]", "{} file {}. Time: {:0.3f} secs".format(msg.action, msg.filename, self._times.getLast()))
         return srvs.WmLoadAndSaveResponse(True)
-        
+
     def _wmQueryRelCb(self, msg):
         to_ret = srvs.WmQueryRelationsResponse()
         with self._times:
@@ -136,7 +136,7 @@ class WorldModelServer(OntologyServer):
                 self._publishChange(msg.author, "remove", relation=msg.relation)
         log.info("[wmSetRelCb]", "[{}] {} Time: {:0.3f} secs".format(temp, msg.relation, self._times.getLast()))
         return srvs.WmSetRelationResponse(True)
-        
+
     def _wmModifyCb(self, msg):
         to_ret = srvs.WmModifyResponse()
         with self._times:

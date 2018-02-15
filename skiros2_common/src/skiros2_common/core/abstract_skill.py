@@ -26,7 +26,7 @@ class SkillDescription(object):
     """
     def __init__(self):
         #Description
-        self._type=""
+        self._type= ":" + self.__class__.__name__
         #Params
         self._params=params.ParamHandler()
         #Conditions
@@ -117,6 +117,9 @@ class SkillDescription(object):
     def addPostCondition(self, condition):
         self._post_conditions.append(condition)
 
+    def getOrCond(self, desired_state):
+        return cond.ConditionOr(desired_state)
+        
     def getIsSpecifiedCond(self, clabel, subj, desired_state):
         return cond.ConditionIsSpecified(clabel, subj, desired_state)
 

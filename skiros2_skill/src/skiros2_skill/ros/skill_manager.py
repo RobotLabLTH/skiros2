@@ -46,6 +46,8 @@ from multiprocessing.dummy import Process
 import skiros2_skill.core.visitors as visitors
 from skiros2_resource.ros.resource_layer_interface import *
 
+log.setLevel(log.INFO)
+
 def skill2msg(skill):
     msg = msgs.ResourceDescription()
     msg.type = skill._type
@@ -82,7 +84,7 @@ class TaskManager:
         while result==State.Running:
             iteration += 1
             result = visitor.traverse(TaskManager._tasks[uid])
-            log.info("[{}]".format(visitor.__class__.__name__), "Iteration {} result: {}".format(iteration, result.name))
+            log.debug("[{}]".format(visitor.__class__.__name__), "Iteration {} result: {}".format(iteration, result.name))
             progress.reset()
             progress.traverse(TaskManager._tasks[uid])
             for (id,desc) in progress.snapshot():
@@ -91,6 +93,7 @@ class TaskManager:
                         finished_skill_ids.append(id)
                     if self._progress_cb is not None:
                         self._progress_cb(task_id=uid, id=id, **desc)
+            #log.info("", "Remaining: {}".format(rate.remaining()))#TODO: decrease the loop time.Optimize operations
             rate.sleep()
         #if result==State.Failure:
         print "===Final state==="
@@ -169,6 +172,8 @@ class SkillManager:
         if res:
             log.info("[{}]".format(self.__class__.__name__), "Found robot {}, skipping registration.".format(res[0]))
             self._robot = res[0]
+            for r in self._robot.getRelations("-1", "skiros:hasSkill"):
+                self._wmi.removeElement(self._wmi.getElement(r['dst']))
         else:
             self._robot = self._wmi.instanciate(agent_name, True)
             startLocUri = self._wmi.getTemplateElement(agent_name).getRelations(pred="skiros:hasStartLocation")
@@ -243,7 +248,7 @@ class SkillManager:
         self.visitor.setVerbose(self._verbose)
         return self._tasks.start(uid, self.visitor)
 
-    def executeTask(self, uid, sim=False, track_params=list()):
+    def executeTask(self, uid, sim=False, track_params=list()):#[("MotionChange",)]
         self.visitor = visitors.VisitorExecutor(self._local_wm, self._instanciator)
         self.visitor.setSimulate(sim)
         for t in track_params:
