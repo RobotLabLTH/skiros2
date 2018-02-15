@@ -103,18 +103,26 @@ class WorldModel(Ontology):
         Remove a statement from the scene and from ontology
         """
         if self._verbose:
-            log.ok("[-] ({}) - ({}) - ({}) by: {}".format(self.uri2lightstring(statement[0]), self.uri2lightstring(statement[1]), self.uri2lightstring(statement[2]), author))
+            log.info(author, log.logColor.RED + log.logColor.BOLD  + "[-] ({}) - ({}) - ({})".format(self.uri2lightstring(statement[0]), self.uri2lightstring(statement[1]), self.uri2lightstring(statement[2])))
         self._ontology.remove(statement)
         self._wm.remove(statement)
+        if self._elements_cache.has_key(self.uri2lightstring(statement[0])):
+            del self._elements_cache[self.uri2lightstring(statement[0])]
+        if self._elements_cache.has_key(self.uri2lightstring(statement[2])):
+            del self._elements_cache[self.uri2lightstring(statement[2])]
 
     def _add(self, statement, author, time=None, probability=1.0):
         """
         Add a statement to the scene and the ontology
         """
         if self._verbose:
-            log.ok("[+] ({}) - ({}) - ({}) by: {}".format(self.uri2lightstring(statement[0]), self.uri2lightstring(statement[1]), self.uri2lightstring(statement[2]), author))
+            log.info(author, log.logColor.GREEN + log.logColor.BOLD  + "[+] ({}) - ({}) - ({})".format(self.uri2lightstring(statement[0]), self.uri2lightstring(statement[1]), self.uri2lightstring(statement[2])))
         self._ontology.add(statement)
         self._wm.add(statement)
+        if self._elements_cache.has_key(self.uri2lightstring(statement[0])):
+            del self._elements_cache[self.uri2lightstring(statement[0])]
+        if self._elements_cache.has_key(self.uri2lightstring(statement[2])):
+            del self._elements_cache[self.uri2lightstring(statement[2])]
 
     def _element2statements(self, e):
         to_ret = []
@@ -271,10 +279,6 @@ class WorldModel(Ontology):
         s = self.lightstring2uri(r['src'])
         o = self.lightstring2uri(r['dst'])
         self._add((s, self.lightstring2uri(r['type']), o), author)
-        if self._elements_cache.has_key(self.uri2lightstring(s)):
-            del self._elements_cache[self.uri2lightstring(s)]
-        if self._elements_cache.has_key(self.uri2lightstring(o)):
-            del self._elements_cache[self.uri2lightstring(o)]
 
     @synchronized
     def removeRelation(self, r, author):
@@ -284,10 +288,6 @@ class WorldModel(Ontology):
         s = self.lightstring2uri(r['src'])
         o = self.lightstring2uri(r['dst'])
         self._remove((s, self.lightstring2uri(r['type']), o), author)
-        if self._elements_cache.has_key(self.uri2lightstring(s)):
-            del self._elements_cache[self.uri2lightstring(s)]
-        if self._elements_cache.has_key(self.uri2lightstring(o)):
-            del self._elements_cache[self.uri2lightstring(o)]
 
     def getRelations(self, r):
         to_ret = []
@@ -341,12 +341,8 @@ class WorldModel(Ontology):
         for r in e._relations:
             if r['src']=="-1":
                 self._add((subject, self.lightstring2uri(r['type']), self.lightstring2uri(r['dst'])), author)
-                if self._elements_cache.has_key(r['dst']):
-                    del self._elements_cache[r['dst']]
             else:
                 self._add((self.lightstring2uri(r['src']), self.lightstring2uri(r['type']), subject), author)
-                if self._elements_cache.has_key(r['src']):
-                    del self._elements_cache[r['src']]
         self._elements_cache[e.id] = e
         return e.id
 
@@ -371,13 +367,6 @@ class WorldModel(Ontology):
             if not s in prev:
                 #print "Adding {}".format(s)
                 self._add(s, author)
-        for r in e._relations: #Clear cache
-            if r['src']=="-1":
-                if self._elements_cache.has_key(r['dst']):
-                    del self._elements_cache[r['dst']]
-            else:
-                if self._elements_cache.has_key(r['src']):
-                    del self._elements_cache[r['src']]
         self._elements_cache[e.id] = e
 
     @synchronized
@@ -423,8 +412,6 @@ class WorldModel(Ontology):
         statements = self.getContextStatements(e.id)
         for s in statements:
             self._remove(s, author)
-        if self._elements_cache.has_key(e.id):
-            del self._elements_cache[e.id]
         return e.id
 
     def _getRecursive(self, e, rels_filter, types_filter, elist):
