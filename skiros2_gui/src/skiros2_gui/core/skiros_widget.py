@@ -12,6 +12,7 @@ from python_qt_binding.QtWidgets import QLabel, QTableWidgetItem, QTreeWidgetIte
 
 import skiros2_common.tools.logger as log
 import skiros2_common.core.utils as utils
+import skiros2_common.ros.utils as rosutils
 from skiros2_common.core.params import ParamTypes
 from skiros2_common.core.world_element import Element
 from skiros2_common.core.property import Property
@@ -419,14 +420,22 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
 
     @Slot()
     def on_wm_update(self, data):
-        # if data.action == 'remove_recursive_to_fix': return
-        # for now, I'm just doing a lazy update by recreating the whole tree
-        log.debug(self.__class__.__name__, '{} scene elements: {}'.format(data.action.capitalize(), [elem.id for elem in data.elements]))
-        cur_item_id = self.wm_tree_widget.currentItem().text(1)
-        self.create_wm_tree()
-        items = self.wm_tree_widget.findItems(cur_item_id, Qt.MatchRecursive | Qt.MatchFixedString, 1)
-        if items:
-            self.wm_tree_widget.setCurrentItem(items[0])
+        if data.action == 'update':
+            cur_item_id = self.wm_tree_widget.currentItem().text(1)
+            elems = [e for e in data.elements if e.id == cur_item_id]
+            if elems:
+                elem = rosutils.msg2element(elems[0])
+                self.wm_properties_widget.blockSignals(True)
+                self.fill_properties_table(elem)
+                self.wm_properties_widget.blockSignals(False)
+        else:
+            # for now, I'm just doing a lazy update by recreating the whole tree
+            log.debug(self.__class__.__name__, '{} scene elements: {}'.format(data.action.capitalize(), [elem.id for elem in data.elements]))
+            cur_item_id = self.wm_tree_widget.currentItem().text(1)
+            self.create_wm_tree()
+            items = self.wm_tree_widget.findItems(cur_item_id, Qt.MatchRecursive | Qt.MatchFixedString, 1)
+            if items:
+                self.wm_tree_widget.setCurrentItem(items[0])
 
 
     def on_marker_feedback(self, feedback):
