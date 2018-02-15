@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>skiros2_resource</name>
-  <version>0.0.1</version>
+  <version>0.0.2</version>
   <description>SkiROS for python</description>
 
   <maintainer email="francesco@m-tech.aau.dk">Francesco Rovida</maintainer>
