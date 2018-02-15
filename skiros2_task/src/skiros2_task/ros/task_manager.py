@@ -104,6 +104,7 @@ class TaskManagerNode(PrettyObject):
 
 
     def _onMonitorMsg(self, msg):
+        msg.robot = self._author_name
         self._monitor.publish(msg)
         
     def _onRobotDiscovery(self, msg):

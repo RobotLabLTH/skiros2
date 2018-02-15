@@ -228,12 +228,12 @@ class NodeExecutor():
 
     def execute(self, skill):
         self.init(skill)
-        if self._verbose:
-            log.info("[{}]".format(self.__class__.__name__), "Starting {}".format(skill.printState()))
         if not self._ground(skill):
             if not self.tryOther(skill):
-                return State.Failure
+                return State.Idle
         state = self._execute(skill)
+        if self._verbose:
+            log.info("[{}]".format(self.__class__.__name__), "Started {}".format(skill.printState()))
         if state==State.Running:
             self.mergeParams(skill)#Update params
         return state
@@ -247,9 +247,9 @@ class NodeExecutor():
     def postExecute(self, skill):
         skill.specifyParams(self._params)#Re-apply parameters.... Important!
         self._printTracked(skill._params, "[{}Params] ".format(skill._type))
-        if self._verbose:
-            log.info("[{}]".format(self.__class__.__name__), "Executing {}".format(skill.printState()))
         state = self._postExecute(skill)
+        if self._verbose:
+            log.info("[{}]".format(self.__class__.__name__), "Executed {}".format(skill.printState()))
         self.mergeParams(skill)#Update params
         return state
 

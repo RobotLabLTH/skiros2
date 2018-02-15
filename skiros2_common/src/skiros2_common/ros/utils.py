@@ -86,15 +86,15 @@ ctype_map = {}
 class StrEncoder(json.JSONEncoder):
     def default(self, obj):
         if name in complex_types_names:
-            return complex_types_encoders[complex_types_names.index(name)](self, obj)        
+            return complex_types_encoders[complex_types_names.index(name)](self, obj)
         # Let the base class default method raise the TypeError
         return json.JSONEncoder.default(self, obj)
-        
+
 class ParamsEncoder(json.JSONEncoder):
     def default(self, obj):
         name = obj.__class__.__name__
         if name in complex_types_names:
-            return complex_types_encoders[complex_types_names.index(name)](self, obj)        
+            return complex_types_encoders[complex_types_names.index(name)](self, obj)
         # Let the base class default method raise the TypeError
         return json.JSONEncoder.default(self, obj)
 
@@ -102,7 +102,7 @@ class UnicodeDecoder(json.JSONDecoder):
     def default(self, obj):
         name = obj.__class__.__name__
         if name in complex_types_names:
-            return complex_types_encoders[complex_types_names.index(name)](self, obj)        
+            return complex_types_encoders[complex_types_names.index(name)](self, obj)
         # Let the base class default method raise the TypeError
         return json.JSONEncoder.default(self, obj)
 
@@ -116,7 +116,7 @@ def registerDecoder(name, func):
         return
     complex_types_string.append(name)
     complex_types_decoders.append(func)
-    
+
 def registerEncoder(ctype, func):
     class_name = ctype.__name__
     if class_name in complex_types_names:
@@ -125,14 +125,14 @@ def registerEncoder(ctype, func):
     complex_types.append(ctype)
     complex_types_names.append(class_name)
     complex_types_encoders.append(func)
-    
+
 def registerClass(name, class_type, encoder=json.JSONEncoder.default, decoder=defaultDecoder):
     """
     Class registration is used to translate a complex type to C element and vice-versa
     """
-    registerDecoder(name, decoder) 
+    registerDecoder(name, decoder)
     registerEncoder(class_type, encoder)
-    
+
 def registerCtype(name, class_type):
     """
     C types are used to translate a type to a C type string. To use when the C string is already used by a registered class
@@ -142,8 +142,8 @@ def registerCtype(name, class_type):
         print "{} already registered as encoder, can t be registered as a C type".format(class_name)
         return
     ctype_map[class_name] = name
-    
-    
+
+
 def getStrFromType(obj):
     """
     Get the string given an object
@@ -155,7 +155,7 @@ def getStrFromType(obj):
         return ctype_map[name]
     else:
         return name
-        
+
 
 def getTypeFromStr(name):
     """
@@ -165,11 +165,11 @@ def getTypeFromStr(name):
         return complex_types[complex_types_string.index(name)]()
     else:
         return locate(name)()
-    
+
 def encodeParam(encoder, obj):
     return {"key": obj._key, "description": obj._description, "specType": int(obj._param_type)-1, "type": getStrFromType(obj._data_type),
             "values": obj._values}
-    
+
 def decodeParam(p):
     if isinstance(p, str):
         v = json_loads_byteified(p)
@@ -179,10 +179,10 @@ def decodeParam(p):
         return param.Param(v['key'], v['description'], decode(v['values'], v['type']), v['specType'])
     else:
         return param.Param(v['key'], v['description'], getTypeFromStr(v['type']).__class__, v['specType'])
-        
+
 def encodeProperty(encoder, obj):
     return {"key": obj._key, "type": getStrFromType(obj._data_type), "values": obj._values}
-    
+
 def decodeProperty(p):
     if isinstance(p, str):
         v = json_loads_byteified(p)
@@ -192,26 +192,26 @@ def decodeProperty(p):
         return param.Property(v['key'], decode(v['values'], v['type']))
     else:
         return param.Property(v['key'], getTypeFromStr(v['type']).__class__)
-        
+
 def encodeElement(encoder, obj):
-    return {"id": obj._id, "label": obj._label, "type": obj._type, "last_update": 0.0, 
+    return {"id": obj._id, "label": obj._label, "type": obj._type, "last_update": 0.0,
     "properties": {k: encoder.default(v) for k, v in obj._properties.iteritems() }, "relations": obj._relations}
-    
+
 def decodeElement(json_string):
-    #TODO json_string['last_update']    
+    #TODO json_string['last_update']
     e = we.Element(json_string['type'], json_string['label'], json_string['id'])
     for k, p in json_string['properties'].iteritems():
         e._properties[k] = decodeProperty(p)
     e._relations = json_string['relations']
     return e
-    
-registerClass("skiros_wm::Element", we.Element, encodeElement, decodeElement) 
-registerClass("skiros_wm::Param", param.Param, encodeParam) 
-registerClass("skiros_wm::Property", param.Property, encodeProperty) 
-#registerClass("std::string", unicode) 
-#registerCtype("std::string", str) 
-#registerClass("double", float) 
-    
+
+registerClass("skiros_wm::Element", we.Element, encodeElement, decodeElement)
+registerClass("skiros_wm::Param", param.Param, encodeParam)
+registerClass("skiros_wm::Property", param.Property, encodeProperty)
+#registerClass("std::string", unicode)
+#registerCtype("std::string", str)
+#registerClass("double", float)
+
 
 def decode(values, data_type):
     if data_type in complex_types_string:
@@ -260,7 +260,7 @@ def deserializeParamMap(params):
         if dp!=None:
             param_map[dp._key] = dp
     return param_map
-    
+
 def deserializePropertyMap(params):
     """
     >>> params = {}
@@ -307,9 +307,9 @@ def relation2msg(r):
 
 def msg2relation(msg):
     return json_loads_byteified(msg.relation)
-    
+
 def makeRelation(subj, pred, obj):
     return {'src': subj, 'type': pred, 'dst': obj}
-    
+
 def makeRelationMsg(subj, pred, obj):
     return relation2msg({'src': subj, 'type': pred, 'dst': obj})

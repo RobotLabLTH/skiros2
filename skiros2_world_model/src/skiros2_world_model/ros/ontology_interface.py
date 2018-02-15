@@ -42,8 +42,8 @@ class OntologyInterface(OntologyAbstractInterface):
     """
     def __init__(self, author_name="test"):
         self._author_name = author_name
-        self._ontology_query = rospy.ServiceProxy('/skiros_wm/ontology/query', srvs.WoQuery)
-        self._ontology_modify = rospy.ServiceProxy('/skiros_wm/ontology/modify', srvs.WoModify)
+        self._ontology_query = rospy.ServiceProxy('wm/ontology/query', srvs.WoQuery)
+        self._ontology_modify = rospy.ServiceProxy('wm/ontology/modify', srvs.WoModify)
         log.info("[{}] ".format(self.__class__.__name__), "Waiting wm communications...")
         self._ontology_modify.wait_for_service()
         log.info("[{}] ".format(self.__class__.__name__), "Wm communications active.")
@@ -120,6 +120,22 @@ class OntologyInterface(OntologyAbstractInterface):
         else:
             return parent_class
         
+    def getIndividuals(self, parent_class, recursive=True):
+        """
+        @brief Return a list of all individuals of the type of the parent_class
+        @parent_class The class of individuals
+        @recursive If recursive, returns also individuals of subclasses
+        """
+        if recursive:
+            to_ret = list()
+            sub_classes = self.queryOntology("SELECT ?x WHERE { ?x rdfs:subClassOf+ " + self.addPrefix(parent_class) + " . } ")
+            for c in sub_classes:
+                to_ret += self.queryOntology("SELECT ?x where {?x rdf:type+ "+self.addPrefix(c)+"}")
+            to_ret += self.queryOntology("SELECT ?x where {?x rdf:type+ "+self.addPrefix(parent_class)+"}")
+            return to_ret
+        else:
+            return self.queryOntology("SELECT ?x where {?x rdf:type+ "+self.addPrefix(parent_class)+"}")
+            
     def getType(self, uri):
         return self.queryOntology("SELECT ?x where {"+self.addPrefix(uri)+" rdf:type ?x}")
     
