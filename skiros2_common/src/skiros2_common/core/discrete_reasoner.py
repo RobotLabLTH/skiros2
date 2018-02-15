@@ -35,6 +35,7 @@ class DiscreteReasoner(object):
         """
         Set an interface to the world model
         """
+        self._stop_requested = False
         self._thread = None
         self._wmi = wmi
 
@@ -42,9 +43,13 @@ class DiscreteReasoner(object):
         """ Parse the action (add, remove,update) [element] """
         raise NotImplementedError("Not implemented in abstract class")
 
+    @property
+    def stopRequested(self):
+        return self._stop_requested
+
     def stop(self):
-        """ Stop the reasoner """
-        self._thread.terminate()
+        """ Request to stop the reasoner """
+        self._stop_requested = True
 
     def execute(self):
         self._thread = Process(target=self.run)
