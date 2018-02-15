@@ -173,11 +173,11 @@ class WorldModel(Ontology):
                     self._reasoners[v].addProperties(e)
 
     def _stopReasoners(self):
-        for r in self._reasoners.items():
+        for _, r in self._reasoners.iteritems():
             r.stop()
 
     def _startReasoners(self):
-        for r in self._reasoners.items():
+        for _, r in self._reasoners.iteritems():
             r.execute()
 
     def loadReasoner(self, reasoner_class):
