@@ -198,8 +198,10 @@ class Element(object):
         self._setLastUpdate()
         if isinstance(obj, Element):
             self._local_relations.append({'src': "-1", 'type': predicate, 'dst': obj})
-        elif isinstance(subj, str) and isinstance(obj, str):
+        elif isinstance(subj, basestring) and isinstance(obj, basestring):
             self._relations.append({'src': subj, 'type': predicate, 'dst': obj, 'state': value})
+        else:
+            raise ValueError('Subject/Object must be of type string: subject type is {}. object type is {}'.format(type(subj), type(obj)))
 
     def hasProperty(self, key, value=None):
         """

@@ -103,7 +103,7 @@ class WorldModel(Ontology):
         Remove a statement from the scene and from ontology
         """
         if self._verbose:
-            print log.msgError("[-] ({}) - ({}) - ({}) by: {}".format(self.uri2lightstring(statement[0]), self.uri2lightstring(statement[1]), self.uri2lightstring(statement[2]), author))
+            log.ok("[-] ({}) - ({}) - ({}) by: {}".format(self.uri2lightstring(statement[0]), self.uri2lightstring(statement[1]), self.uri2lightstring(statement[2]), author))
         self._ontology.remove(statement)
         self._wm.remove(statement)
 
@@ -112,7 +112,7 @@ class WorldModel(Ontology):
         Add a statement to the scene and the ontology
         """
         if self._verbose:
-            print log.msgOk("[+] ({}) - ({}) - ({}) by: {}".format(self.uri2lightstring(statement[0]), self.uri2lightstring(statement[1]), self.uri2lightstring(statement[2]), author))
+            log.ok("[+] ({}) - ({}) - ({}) by: {}".format(self.uri2lightstring(statement[0]), self.uri2lightstring(statement[1]), self.uri2lightstring(statement[2]), author))
         self._ontology.add(statement)
         self._wm.add(statement)
 

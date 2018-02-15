@@ -2,6 +2,7 @@ import os
 import rospy
 import rospkg
 
+import time
 from functools import partial
 
 from python_qt_binding import loadUi
@@ -14,6 +15,7 @@ import skiros2_common.core.utils as utils
 from skiros2_common.core.params import ParamTypes
 from skiros2_common.core.world_element import Element
 from skiros2_common.core.property import Property
+import skiros2_msgs.msg as msgs
 import skiros2_world_model.ros.world_model_interface as wmi
 import skiros2_skill.ros.skill_layer_interface as sli
 from copy import deepcopy
@@ -275,19 +277,18 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
 
     widget_id = 'skiros_gui'
 
+    wm_update_signal = pyqtSignal(msgs.WmMonitor)
+
     def __init__(self):
         super(SkirosWidget, self).__init__()
         self.setObjectName('SkirosWidget')
         ui_file = os.path.join(rospkg.RosPack().get_path('skiros2_gui'), 'src/skiros2_gui/core', 'skiros_gui.ui')
         loadUi(ui_file, self)
 
-        # self.wm_tree_widget.getStyleSheet('''
-        #     QTreeView::branch:has-children {image: url(folderclosed.png)}
-        #     QTreeView::branch:open {image: url(folderopened.png)}
-        # ''')
         self.wm_tree_widget.itemSelectionChanged.connect( lambda : self.on_wm_tree_widget_item_selection_changed( self.wm_tree_widget.currentItem()) )
         self.wm_properties_widget.itemChanged.connect( lambda p: self.on_properties_table_item_changed( self.wm_tree_widget.currentItem(), p.row() ) )
         self.wm_relations_widget.resizeEvent = self.on_wm_relations_widget_resized
+        self.wm_update_signal.connect(lambda d: self.on_wm_update(d))
         self.reset()
 
 
@@ -298,20 +299,16 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         self.initInteractiveServer(SkirosWidget.widget_id)
         self._wmi = wmi.WorldModelInterface(SkirosWidget.widget_id)
         self._sli = sli.SkillLayerInterface(self._wmi)
-        self.create_wm_tree()
 
         #Setup a timer to keep interface updated
         self.refresh_timer = QTimer()
         self.refresh_timer.timeout.connect(self.refresh_timer_cb)
         self.refresh_timer.start(1000)
+
         #World model tab
-        #node_name = "Whatever"
-        #top_level_item = self._recursive_create_widget_items(None, node_name)
+        self._wmi.setMonitorCallback(lambda d: self.wm_update_signal.emit(d))
+        self.create_wm_tree()
 
-        # add top level item to tree widget
-        #self.wm_tree_widget.addTopLevelItem(top_level_item)
-
-        #self.wm_tree_widget.currentItemChanged.connect(self.wm_tree_widget_currentItemChanged)
 
     def shutdown_plugin(self):
         # TODO unregister all publishers here
@@ -375,40 +372,64 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         ret = dialog.exec_()
         if not ret: return
 
-        parent = self.wm_tree_widget.currentItem()
-        parent_id = parent.id
+        log.debug(self.__class__.__name__, 'Create element based on {}'.format(dialog.object))
 
-        print('Item: {}'.format(parent_id))
-        print('Add new element: {}'.format(dialog.object))
+        parent = self.wm_tree_widget.currentItem()
+        parent_id = parent.text(1)
 
         elem = self._wmi.getTemplateElement(dialog.object)
         elem.label = utils.ontology_type2name(dialog.object)
         elem.addRelation(parent_id, 'skiros:contain', '-1')
         elem_id = self._wmi.addElement(elem)
 
-        print('New element: {}'.format(elem_id))
+        # parent = self.wm_tree_widget.currentItem()
+        # parent_id = parent.text(1)
+        log.debug(self.__class__.__name__, 'Added element {} to {}'.format(elem_id, parent_id))
 
-        item = QTreeWidgetItem(parent, [utils.ontology_type2name(elem.id)])
-        item.id = elem.id
-        self.wm_tree_widget.setCurrentItem(item)
+        # item = QTreeWidgetItem(parent, [utils.ontology_type2name(elem_id), elem_id])
+        # self.wm_tree_widget.setCurrentItem(item)
 
 
     @Slot()
     def on_remove_object_button_clicked(self):
         item = self.wm_tree_widget.currentItem()
-        parent = item.parent()
-        self.remove_wm_tree_widget_item(item)
-        parent.removeChild(item)
-        self.wm_tree_widget.setCurrentItem(parent)
+        item_id = item.text(1)
+
+        elem = self._wmi.getElement(item_id)
+
+        self._wmi.removeElement(elem)
+
+        # parent = self.wm_tree_widget.currentItem()
+        # parent_id = parent.text(1)
+        log.debug(self.__class__.__name__, 'Removed element {}'.format(item_id))
 
 
-    def remove_wm_tree_widget_item(self, item):
-        if hasattr(item, 'id'):
-            log.debug(self.__class__.__name__, 'Removing item: <{}>'.format(item.text(0)))
-            elem = self._wmi.getElement(item.id)
-            self._wmi.removeElement(elem)
-        else:
-            [self.remove_wm_tree_widget_item(child) for child in item.takeChildren()]
+        # item = self.wm_tree_widget.currentItem()
+        # parent = item.parent()
+        # self.remove_wm_tree_widget_item(item)
+        # parent.removeChild(item)
+        # self.wm_tree_widget.setCurrentItem(parent)
+
+    # def remove_wm_tree_widget_item(self, item):
+    #     if hasattr(item, 'id'):
+    #         log.debug(self.__class__.__name__, 'Removing item: <{}>'.format(item.text(0)))
+    #         elem = self._wmi.getElement(item.text(1))
+    #         self._wmi.removeElement(elem)
+    #     else:
+    #         [self.remove_wm_tree_widget_item(child) for child in item.takeChildren()]
+
+
+    @Slot()
+    def on_wm_update(self, data):
+        # if data.action == 'remove_recursive_to_fix': return
+        # for now, I'm just doing a lazy update by recreating the whole tree
+        log.debug(self.__class__.__name__, '{} scene elements: {}'.format(data.action.capitalize(), [elem.id for elem in data.elements]))
+        cur_item_id = self.wm_tree_widget.currentItem().text(1)
+        self.create_wm_tree()
+        items = self.wm_tree_widget.findItems(cur_item_id, Qt.MatchRecursive | Qt.MatchFixedString, 1)
+        if items:
+            self.wm_tree_widget.setCurrentItem(items[0])
+
 
     def on_marker_feedback(self, feedback):
         if feedback.event_type == InteractiveMarkerFeedback.POSE_UPDATE:
@@ -420,8 +441,8 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
     def on_wm_tree_widget_item_selection_changed(self, item):
         self.wm_properties_widget.blockSignals(True)
         self.clear_markers()
-        if hasattr(item, 'id'):
-            elem = self._wmi.getElement(item.id)
+        if item.text(1):
+            elem = self._wmi.getElement(item.text(1))
             self.fill_properties_table(elem)
             self.fill_relations_table(elem)
             if elem.hasProperty("skiros:DiscreteReasoner", "AauSpatialReasoner"):
@@ -441,7 +462,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         item_val = self.wm_properties_widget.item(row, 1)
         key = item_key.id
         value = item_val.text()
-        elem = self._wmi.getElement(item.id)
+        elem = self._wmi.getElement(item.text(1))
 
         if elem.hasProperty(key):
             prop = elem.getProperty(key)
@@ -449,17 +470,17 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
             if prop.dataTypeIs(bool): value = item_val.checkState() == Qt.Checked
             try:
                 elem.setProperty(prop.key, value, is_list=prop.isList(), force_convertion=value is not None)
-                log.debug(self.__class__.__name__, '<{}> property {} to {}'.format(item.id, prop.key, value))
+                log.debug(self.__class__.__name__, '<{}> property {} to {}'.format(item.text(1), prop.key, value))
             except ValueError:
-                log.error(self.__class__.__name__, 'Changing <{}> property {} to {} failed'.format(item.id, prop.key, value))
+                log.error(self.__class__.__name__, 'Changing <{}> property {} to {} failed'.format(item.text(1), prop.key, value))
                 item_val.setText(str(prop.value))
         elif hasattr(elem, key.lower()):
             key = key.lower()
             attr = getattr(elem, key)
             setattr(elem, key, type(attr)(value))
-            log.debug(self.__class__.__name__, '<{}> attribute {} to {}'.format(item.id, key, value))
+            log.debug(self.__class__.__name__, '<{}> attribute {} to {}'.format(item.text(1), key, value))
         else:
-            log.error(self.__class__.__name__, 'Changing <{}> property {} to {} failed'.format(item.id, key, val))
+            log.error(self.__class__.__name__, 'Changing <{}> property {} to {} failed'.format(item.text(1), key, val))
 
         self._wmi.updateElement(elem)
         name = utils.ontology_type2name(elem.id) if not elem.label else utils.ontology_type2name(elem.label)
@@ -479,13 +500,14 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         scene = {elem.id: elem for elem in self._wmi.getScene()}
         root = scene['skiros:Scene-0']
         self.wm_tree_widget.clear()
+        self.wm_tree_widget.setColumnCount(2)
+        self.wm_tree_widget.hideColumn(1)
         self._create_wm_tree(self.wm_tree_widget, scene, root)
         self.wm_tree_widget.setCurrentIndex(self.wm_tree_widget.model().index(0, 0))
 
     def _create_wm_tree(self, item, scene, elem):
         name = utils.ontology_type2name(elem.id) if not elem.label else utils.ontology_type2name(elem.label)
-        item = QTreeWidgetItem(item, [name])
-        item.id = elem.id
+        item = QTreeWidgetItem(item, [name, elem.id])
 
         spatialRel = sorted(elem.getRelations(subj='-1', pred=self._wmi.getSubProperties('skiros:spatiallyRelated')), key=lambda r: r['dst'])
         for rel in spatialRel:
