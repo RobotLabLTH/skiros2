@@ -377,6 +377,8 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
 
         parent = self.wm_tree_widget.currentItem()
         parent_id = parent.text(1)
+        if not parent_id: return
+
 
         elem = self._wmi.getTemplateElement(dialog.object)
         elem.label = utils.ontology_type2name(dialog.object)
@@ -394,6 +396,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
     def on_remove_object_button_clicked(self):
         item = self.wm_tree_widget.currentItem()
         item_id = item.text(1)
+        if not item_id: return
         parent = item.parent()
         self.wm_tree_widget.setCurrentItem(parent)
 
