@@ -714,6 +714,8 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
             combobox = QComboBox()
             layout.addWidget(combobox, row, 1)
             matches = self._wmi.resolveElements(param.getValue())
+            if param.paramTypeIs(ParamTypes.Optional):
+                combobox.addItem("", None)
             for e in matches:
                 combobox.addItem(e.printState(), e._id)
         else:
@@ -733,7 +735,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
             #Add params
             i = 0
             for _, p in skill.ph.iteritems():
-                if self.modality_checkBox.isChecked() or not (p.paramTypeIs(ParamTypes.Optional) or p.paramTypeIs(ParamTypes.System)):
+                if self.modality_checkBox.isChecked() or not p.paramTypeIs(ParamTypes.Optional):
                     self._addParameter(self.skill_params_layout, i, p)
                     i += 1
 
