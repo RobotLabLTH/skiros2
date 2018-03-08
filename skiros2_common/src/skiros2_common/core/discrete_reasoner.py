@@ -45,7 +45,9 @@ class DiscreteReasoner(object):
 
     @property
     def stopRequested(self):
-        return self._stop_requested
+        to_ret = self._stop_requested
+        self._stop_requested = False
+        return to_ret
 
     def stop(self):
         """ Request to stop the reasoner """
