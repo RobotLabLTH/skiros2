@@ -48,7 +48,7 @@ class DiscreteReasoner(object):
         to_ret = self._stop_requested
         self._stop_requested = False
         return to_ret
-
+      
     def stop(self):
         """ Request to stop the reasoner """
         self._stop_requested = True
