@@ -85,7 +85,11 @@ class Element(object):
     def properties(self):
         return self._properties.values()
 
-
+    def isAbstract(self):
+        """
+        @brief Return True if the element is abstract, or False if it is instanciated in the world model
+        """
+        return self.id==""
 
     def _setLastUpdate(self):
         self._last_update = datetime.now()
@@ -254,8 +258,11 @@ class Element(object):
 
         if key == 'skiros:DiscreteReasoner':
             new_reasoners = self._properties[key].values
-            [self._getReasoner(r).removeProperties(self) for r in old_reasoners if r not in new_reasoners]
-            [self._getReasoner(r).addProperties(self)    for r in new_reasoners if r not in old_reasoners]
+            try:
+                [self._getReasoner(r).removeProperties(self) for r in old_reasoners if r not in new_reasoners]
+                [self._getReasoner(r).addProperties(self)    for r in new_reasoners if r not in old_reasoners]
+            except KeyError, e:
+                log.error("WorldElement", e.message)
 
 
     def removeProperty(self, key):

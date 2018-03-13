@@ -219,8 +219,8 @@ class SkillCore(SkillDescription):
         self._state = state
         self._state_change.set()
 
-    def _setProgress(self, msg, code=-1):
-        if code==-1:
+    def _setProgress(self, msg, code=None):
+        if code==None:
             code = self._progress_code+1
         self._progress_code=code
         self._progress_msg=msg

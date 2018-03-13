@@ -428,11 +428,8 @@ class SkillWrapper(SkillInterface):
         return p
 
     def hasState(self, state):
-        #TODO: fix
-#        if self._has_instance:
-#            if self.getState() != self._instance.getState():
-#                print "{}: {} to {}".format(self._label, self.getState(), self._instance.getState())
-#                self._setState(self._instance.getState())
+        if self._has_instance:
+            self._setState(self._instance.getState())
         return super(SkillWrapper, self).hasState(state)
 
     def hasInstance(self):
@@ -451,6 +448,7 @@ class SkillWrapper(SkillInterface):
         self._instance = instance
         self._has_instance = True
         self._wmi = instance._wmi
+        self._setState(self._instance.getState())
         instance.expand(self)
 
     def getInstance(self):
