@@ -119,7 +119,7 @@ class SkillDescription(object):
 
     def getOrCond(self, desired_state):
         return cond.ConditionOr(desired_state)
-        
+
     def getIsSpecifiedCond(self, clabel, subj, desired_state):
         return cond.ConditionIsSpecified(clabel, subj, desired_state)
 
@@ -171,7 +171,7 @@ class SkillDescription(object):
         to_ret = Element(self._type)
         to_ret._label = self._label
         for _, p in self.params.iteritems():
-            if not p.paramTypeIs(params.ParamTypes.Config):
+            if p.dataTypeIs(Element):
                 to_ret.addRelation(self, "skiros:hasParam", p.toElement())
         for c in self._pre_conditions:
             to_ret.addRelation(self, "skiros:hasPreCondition", c.toElement())

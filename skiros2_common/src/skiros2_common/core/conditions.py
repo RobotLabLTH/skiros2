@@ -79,11 +79,11 @@ class ConditionOr(ConditionBase):
         self._params = None
         self._children = list()
         self._setDescription()
-        
+
     def addCondition(self, condition):
         self._children.append(condition)
         self._setDescription()
-        
+
     def remap(self, initial_key, target_key):
         for c in self._children:
             c.remap(initial_key, target_key)
@@ -94,7 +94,7 @@ class ConditionOr(ConditionBase):
         for c in self._children:
             keys += c.getKeys()
         return keys
-        
+
     def isEqual(self, other):
         if isinstance(other, ConditionOr):
             raise Exception("TODO")
@@ -110,14 +110,14 @@ class ConditionOr(ConditionBase):
         return False
 
     def _setDescription(self):
-        self._description = "[{}] ( ".format(self._label)        
+        self._description = "[{}] ( ".format(self._label)
         for c in self._children:
             self._description += " {} ".format(c.getDescription())
         self._description += ")"
-        
-    def evaluate(self, ph, wmi):   
+
+    def evaluate(self, ph, wmi):
         self._params = ph
-        self._wm = wmi  
+        self._wm = wmi
         for c in self._children:
             if c.evaluate(ph, wmi):
                 return self._desired_state
@@ -155,7 +155,7 @@ class ConditionProperty(ConditionBase):
     >>> ph = params.ParamHandler()
     >>> e = Element('Type')
     >>> e.setProperty('Float', 0.0)
-    >>> ph.addParam('Param1', e, params.ParamTypes.World)
+    >>> ph.addParam('Param1', e, params.ParamTypes.Required)
     >>> equalZero = ConditionProperty('Example', 'Float', 'Param1', '=', 0.0, True)
     >>> equalZero.evaluate(ph, None)
     True
