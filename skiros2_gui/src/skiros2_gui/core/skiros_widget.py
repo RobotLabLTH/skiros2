@@ -691,10 +691,11 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
                 data = widget.itemData(widget.currentIndex())
                 if data:
                     params[key].setValue(self._wmi.getElement(data))
-                    print "Set param {} to {}".format(params[key].key, params[key].value.printState())
+                    #print "Set param {} to {}".format(params[key].key, params[key].value.printState())
             else:
                 try:
-                    params[key].setValueFromStr(widget.text())
+                    if widget.text():
+                        params[key].setValueFromStr(widget.text())
                 except ValueError:
                     log.error("getParameters", "Failed to set param {}".format(params[key].key))
                     return False
