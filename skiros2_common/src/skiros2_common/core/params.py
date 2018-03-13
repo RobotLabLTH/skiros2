@@ -6,12 +6,10 @@ from skiros2_common.core.world_element import Element
 from datetime import datetime, timedelta
 
 """
-World: shared parameters, related to world model
+Required: parameters that must be specified
 Optional: optional parameters
-Config: a configuration parameter
-System: parameters managed automatically
 """
-ParamTypes = Enum('ParamTypes', 'Required Optional System')
+ParamTypes = Enum('ParamTypes', 'Required Optional')
 
 class Param(Property):
     """
