@@ -106,7 +106,7 @@ class TaskManagerNode(PrettyObject):
     def _onMonitorMsg(self, msg):
         msg.robot = self._author_name
         self._monitor.publish(msg)
-        
+
     def _onRobotDiscovery(self, msg):
         """Callback for robot discovery messages.
 
@@ -219,8 +219,8 @@ class TaskManagerNode(PrettyObject):
                 elements[supertype] += elements[t]
 
         params = skirosp.ParamHandler()
-        params.addParam("x", wm.Element(), skirosp.ParamTypes.World)
-        params.addParam("y", wm.Element(), skirosp.ParamTypes.World)
+        params.addParam("x", wm.Element(), skirosp.ParamTypes.Required)
+        params.addParam("y", wm.Element(), skirosp.ParamTypes.Required)
         for p in self._pddl_interface._predicates:
             if len(p.params)==1:
                 c = cond.ConditionProperty("", p.name, "x", p.operator, p.value, True)

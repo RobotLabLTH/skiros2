@@ -24,14 +24,14 @@ class PrimitiveBase(SkillCore):
             if self.hasState(State.Success) or self.hasState(State.Failure):
                 self.onEnd()
             return self._state
-                
+
     def init(self, wmi, _=None):
         self._wmi = wmi
         self.createDescription()
         self.generateDefParams()
         self.generateDefConditions()
         return self.onInit()
-    
+
     def _updateRoutine(self, time):
         """
         @brief Sync the modified parameters elements with wm
@@ -41,23 +41,23 @@ class PrimitiveBase(SkillCore):
             vs = p.values
             if p.dataTypeIs(Element()) and p.hasChanges(time):
                 for e in vs:
-                    if e._id:
+                    if not e.isAbstract():
                         self._wmi.updateElement(e)
-                    elif self.hasState(State.Success):
+                    else:
                         self._wmi.addElement(e)
-        
-    #-------- User's functions--------        
+
+    #-------- User's functions--------
     def step(self, msg=""):
-        """ 
-        @brief Set a running breakpoint 
+        """
+        @brief Set a running breakpoint
         """
         self._setProgress(msg)
         return State.Running
         #print '[{}:{}]'.format(self._label, self._progress)
-        
+
     def fail(self, msg, code):
-        """ 
-        @brief Set a failure state 
+        """
+        @brief Set a failure state
         """
         if code > 0:
             code *= -1
@@ -65,8 +65,8 @@ class PrimitiveBase(SkillCore):
         return State.Failure
 
     def success(self, msg=""):
-        """ 
-        @brief Set a success state 
+        """
+        @brief Set a success state
         """
         self._setProgress(msg)
         return State.Success
@@ -75,7 +75,7 @@ class PrimitiveBase(SkillCore):
     def onInit(self):
         """Called once when loading the primitive. If return False, the primitive is not loaded"""
         return True
-        
+
     def onEnd(self):
         """Called just after last execute"""
         pass

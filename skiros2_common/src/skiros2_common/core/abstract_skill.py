@@ -84,9 +84,9 @@ class SkillDescription(object):
         Some default params are added automatically
         """
         if not self._params.hasParam('Robot'):
-            self._params.addParam("Robot", Element("sumo:Agent"), params.ParamTypes.System)
+            self._params.addParam("Robot", Element("sumo:Agent"), params.ParamTypes.Required)
         #if not self._params.hasParam('Skill'):
-        #    self._params.addParam("Skill", self.toElement(), params.ParamTypes.System)
+        #    self._params.addParam("Skill", self.toElement(), params.ParamTypes.Required)
 
     def generateDefConditions(self):
         """
@@ -119,7 +119,7 @@ class SkillDescription(object):
 
     def getOrCond(self, desired_state):
         return cond.ConditionOr(desired_state)
-        
+
     def getIsSpecifiedCond(self, clabel, subj, desired_state):
         return cond.ConditionIsSpecified(clabel, subj, desired_state)
 
@@ -171,7 +171,7 @@ class SkillDescription(object):
         to_ret = Element(self._type)
         to_ret._label = self._label
         for _, p in self.params.iteritems():
-            if not p.paramTypeIs(params.ParamTypes.Config):
+            if p.dataTypeIs(Element):
                 to_ret.addRelation(self, "skiros:hasParam", p.toElement())
         for c in self._pre_conditions:
             to_ret.addRelation(self, "skiros:hasPreCondition", c.toElement())
@@ -219,8 +219,8 @@ class SkillCore(SkillDescription):
         self._state = state
         self._state_change.set()
 
-    def _setProgress(self, msg, code=-1):
-        if code==-1:
+    def _setProgress(self, msg, code=None):
+        if code==None:
             code = self._progress_code+1
         self._progress_code=code
         self._progress_msg=msg

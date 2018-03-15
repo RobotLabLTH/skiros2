@@ -317,19 +317,21 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
 
     def save_settings(self, plugin_settings, instance_settings):
         # TODO save intrinsic configuration, usually using:
-        # instance_settings.set_value(k, v)
-        pass
+        instance_settings.set_value("scene_name", self.scene_file_lineEdit.text())
+
 
     def restore_settings(self, plugin_settings, instance_settings):
         # TODO restore intrinsic configuration, usually using:
-        # v = instance_settings.value(k)
-        pass
+        if self._wmi.getSceneName()!="":
+            self.scene_file_lineEdit.setText(self._wmi.getSceneName())
+        elif instance_settings.value("scene_name")!=None and instance_settings.value("scene_name")!="":
+            self.scene_file_lineEdit.setText(instance_settings.value("scene_name"))
 
-    def trigger_configuration(self):
-        # Comment in to signal that the plugin has a way to configure
-        # This will enable a setting button (gear icon) in each dock widget title bar
-        # Usually used to open a modal configuration dialog
-        pass
+#    def trigger_configuration(self):
+#        # Comment in to signal that the plugin has a way to configure
+#        # This will enable a setting button (gear icon) in each dock widget title bar
+#        # Usually used to open a modal configuration dialog
+#        pass
 
 
 
@@ -691,10 +693,11 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
                 data = widget.itemData(widget.currentIndex())
                 if data:
                     params[key].setValue(self._wmi.getElement(data))
-                    print "Set param {} to {}".format(params[key].key, params[key].value.printState())
+                    #print "Set param {} to {}".format(params[key].key, params[key].value.printState())
             else:
                 try:
-                    params[key].setValueFromStr(widget.text())
+                    if widget.text():
+                        params[key].setValueFromStr(widget.text())
                 except ValueError:
                     log.error("getParameters", "Failed to set param {}".format(params[key].key))
                     return False

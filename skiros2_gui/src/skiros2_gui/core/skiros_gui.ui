@@ -467,7 +467,7 @@
              <item>
               <widget class="QLineEdit" name="scene_file_lineEdit">
                <property name="text">
-                <string>my_world_state.xml</string>
+                <string>my_world_state.owl</string>
                </property>
               </widget>
              </item>
@@ -566,7 +566,7 @@
               <string>Relations</string>
              </property>
              <property name="textAlignment">
-              <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+              <set>AlignCenter</set>
              </property>
             </column>
             <column>

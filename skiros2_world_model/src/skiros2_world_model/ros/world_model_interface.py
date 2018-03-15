@@ -50,6 +50,12 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         if monitor_callback:
             self._monitor = rospy.Subscriber("wm/monitor", msgs.WmMonitor, monitor_callback)
 
+    def getSceneName(self):
+        """
+        @brief Return the name of the scene
+        """
+        return rospy.get_param('wm/init_scene', "")
+
     def getScene(self):
         """
         Return all elements in the scene

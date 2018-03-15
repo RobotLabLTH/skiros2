@@ -6,12 +6,10 @@ from skiros2_common.core.world_element import Element
 from datetime import datetime, timedelta
 
 """
-World: shared parameters, related to world model
+Required: parameters that must be specified
 Optional: optional parameters
-Config: a configuration parameter
-System: parameters managed automatically
 """
-ParamTypes = Enum('ParamTypes', 'World Optional Config System')
+ParamTypes = Enum('ParamTypes', 'Required Optional')
 
 class Param(Property):
     """
@@ -19,7 +17,7 @@ class Param(Property):
         *a default value and a parameter type
         *functions to handle World Elements and possibility to be converted in a World Element
 
-    >>> p = Param("MyProp", "", 0, ParamTypes.Config)
+    >>> p = Param("MyProp", "", 0, ParamTypes.Required)
     >>> p.value
     0
     >>> t = p.last_update
@@ -166,7 +164,7 @@ class Param(Property):
 class ParamHandler(object):
     """
     >>> ph = ParamHandler()
-    >>> ph.addParam("Trajectory", dict, ParamTypes.Config)
+    >>> ph.addParam("Trajectory", dict, ParamTypes.Required)
     >>> ph.printState()
     'Trajectory:[] '
     >>> ph.specify("Trajectory", {"MyTraj": "Ue"})

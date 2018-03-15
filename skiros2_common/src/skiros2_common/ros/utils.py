@@ -222,10 +222,10 @@ def decode(values, data_type):
 def serializeParamMap(param_map):
     """
     >>> ph = param.ParamHandler()
-    >>> ph.addParam("MyDict", dict, param.ParamTypes.Config)
+    >>> ph.addParam("MyDict", dict, param.ParamTypes.Required)
     >>> serializeParamMap(ph._params)
     [param: {"values": [], "specType": 2, "type": "dict", "description": "", "key": "MyDict"}]
-    >>> ph.addParam("MyList", list, param.ParamTypes.Config)
+    >>> ph.addParam("MyList", list, param.ParamTypes.Required)
     >>> serializeParamMap(ph._params)
     [param: {"values": [], "specType": 2, "type": "list", "description": "", "key": "MyList"}, param: {"values": [], "specType": 2, "type": "dict", "description": "", "key": "MyDict"}]
     >>> params = {}
@@ -247,10 +247,10 @@ def serializeParamMap(param_map):
 def deserializeParamMap(params):
     """
     >>> ph = param.ParamHandler()
-    >>> ph.addParam("MyDict", dict, param.ParamTypes.Config)
+    >>> ph.addParam("MyDict", dict, param.ParamTypes.Required)
     >>> param.ParamHandler(deserializeParamMap(serializeParamMap(ph._params))).printState()
     'MyDict:[] '
-    >>> ph.addParam("MyList", list, param.ParamTypes.Config)
+    >>> ph.addParam("MyList", list, param.ParamTypes.Required)
     >>> param.ParamHandler(deserializeParamMap(serializeParamMap(ph._params))).printState()
     'MyDict:[] MyList:[] '
     """
