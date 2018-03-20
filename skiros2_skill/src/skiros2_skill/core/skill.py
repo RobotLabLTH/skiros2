@@ -467,7 +467,8 @@ class SkillWrapper(SkillInterface):
         return self._instance.preempt()
 
     def onStart(self):
-        self._setState(self._instance.start(self.getParamsNoRemaps()))
+        state = self._instance.start(self.getParamsNoRemaps())
+        return state==State.Running
 
     def execute(self):
         #print '{}:{}'.format(self._label, self._instance)
