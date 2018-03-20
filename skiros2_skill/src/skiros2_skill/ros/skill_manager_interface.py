@@ -55,7 +55,7 @@ class SkillManagerInterface:
         if monitor_cb:
             self._monitor_sub = rospy.Subscriber(self._skill_mgr_name + '/monitor', msgs.SkillProgress, monitor_cb)
         self._get_skills = rospy.ServiceProxy(self._skill_mgr_name + '/get_skills', srvs.ResourceGetDescriptions)
-        self._skill_set = self._wmi.getSubClasses("Skill")
+        self._skill_set = self._wmi.getSubClasses("skiros:Skill")
         self.getSkillList(True)
 
     def printState(self):
