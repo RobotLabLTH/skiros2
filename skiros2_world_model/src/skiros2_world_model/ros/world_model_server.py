@@ -42,6 +42,7 @@ from time import sleep
 
 class WorldModelServer(OntologyServer):
     def __init__(self, anonymous=False):
+        self._monitor = None
         rospy.init_node("wm", anonymous=anonymous)
         rospy.on_shutdown(self._waitClientsDisconnection)
         self._wm = WorldModel(rospy.get_param('~verbose', False))
@@ -61,8 +62,9 @@ class WorldModelServer(OntologyServer):
         self.initOntologyServices()
 
     def _waitClientsDisconnection(self):
-        while self._monitor.get_num_connections()>0:
-            sleep(0.1)
+        if self._monitor:
+            while self._monitor.get_num_connections()>0:
+                sleep(0.1)
 
     def _publishChange(self, author, action, elements=None, relation=None):
         msg =  msgs.WmMonitor()

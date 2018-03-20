@@ -151,9 +151,10 @@ class SkillManager:
     """
     The skill manager manage a sub-system of the robot
     """
-    def __init__(self, agent_name, verbose=True):
+    def __init__(self, prefix, agent_name, verbose=True):
         self._agent_name = agent_name
         self._wmi = wmi.WorldModelInterface(agent_name)
+        self._wmi.setDefaultPrefix(prefix)
         self._local_wm = self._wmi
         #self._local_wm._verbose = False
         self._plug_loader = PluginLoader()
@@ -174,6 +175,7 @@ class SkillManager:
             self._robot = res[0]
             for r in self._robot.getRelations("-1", "skiros:hasSkill"):
                 self._wmi.removeElement(self._wmi.getElement(r['dst']))
+            self._robot = self._wmi.getElement(self._robot.id)
         else:
             self._robot = self._wmi.instanciate(agent_name, True)
             startLocUri = self._wmi.getTemplateElement(agent_name).getRelations(pred="skiros:hasStartLocation")
@@ -313,7 +315,7 @@ class SkillManagerNode(object):
         robot_name = rospy.get_name()
         prefix = ""
         full_name = rospy.get_param('~prefix', prefix) + ':' + robot_name[robot_name.rfind("/")+1:]
-        self._sm = SkillManager(full_name, verbose=rospy.get_param('~verbose', True))
+        self._sm = SkillManager(rospy.get_param('~prefix', prefix), full_name, verbose=rospy.get_param('~verbose', True))
         self._sm.observeTaskProgress(self._onProgressUpdate)
         self._rli = ResourceLayerInterface()
         self._rli.printState()

@@ -57,20 +57,20 @@ class OntologyInterface(OntologyAbstractInterface):
             return True
         except rospy.ROSException, e:
             return False
-        
+
     def queryOntology(self, query, cut_prefix=True):
         """
         Direct SPARQL interface. query should be a string in SPARQL syntax
-        
+
         Returns a list of strings
-        
+
         If cut_prefix = True the prefix in returned values is removed
         """
         req = srvs.WoQueryRequest()
         req.query_string = query
         req.cut_prefix = cut_prefix
         return self._call(self._ontology_query, req).answer
-        
+
     def addClass(self, class_uri, parent_uri):
         #print query
         req = srvs.WoModifyRequest()
@@ -87,9 +87,9 @@ class OntologyInterface(OntologyAbstractInterface):
             if res.ok:
                 return True
         return False
-        
+
     def setDefaultPrefix(self, default_prefix):
-        self._def_prefix = default_prefix 
+        self._def_prefix = default_prefix
 
     def addIndividual(self, element, ontology_name):
         """
@@ -100,18 +100,20 @@ class OntologyInterface(OntologyAbstractInterface):
 
     def addPrefix(self, uri):
         """
-        Formats the uri for a SPARQL query        
-        
+        Formats the uri for a SPARQL query
+
         Adds prefix to uri or does nothing if uri has already the prefix
-        
+
         Adds < > brakets, if necessary
         """
         if uri.find("#") is -1 and uri.find(":") is -1:
-            uri = self._def_prefix + uri
-        if not uri.find("#") is -1 and uri.find("<") is -1:
+            uri = self._def_prefix + ":" + uri
+        elif not uri.find("#") is -1 and uri.find("<") is -1:
             uri = "<" + uri + ">"
+        elif not uri.find(":") is -1 and uri.find(":") is 0:
+            uri = self._def_prefix + uri
         return uri
-        
+
     def removePrefix(self, parent_class):
         if parent_class.find("#")>=0:
             return parent_class.split("#")[-1]
@@ -119,7 +121,7 @@ class OntologyInterface(OntologyAbstractInterface):
             return parent_class.split(":")[-1]
         else:
             return parent_class
-        
+
     def getIndividuals(self, parent_class, recursive=True):
         """
         @brief Return a list of all individuals of the type of the parent_class
@@ -135,14 +137,14 @@ class OntologyInterface(OntologyAbstractInterface):
             return to_ret
         else:
             return self.queryOntology("SELECT ?x where {?x rdf:type+ "+self.addPrefix(parent_class)+"}")
-            
+
     def getType(self, uri):
         return self.queryOntology("SELECT ?x where {"+self.addPrefix(uri)+" rdf:type ?x}")
-    
+
     def getTriples(self, subj=None, pred=None, obj=None):
         """
-        Return matching triples. 
-        
+        Return matching triples.
+
         Note: at least one between subj, pred or obj must left blank for this function to work.
         """
         if subj: subj = self.addPrefix(subj)
@@ -152,14 +154,14 @@ class OntologyInterface(OntologyAbstractInterface):
         if obj:  obj = self.addPrefix(obj)
         else:  obj = "?z"
         return self.queryOntology("SELECT * WHERE { "+ "{} {} {}".format(subj, pred, obj)+" . } ")
-        
+
     def getSuperClass(self, child_class):
         """
         Return the parent class of child_class
         """
         to_ret = self.queryOntology("SELECT ?x WHERE { "+ self.addPrefix(child_class) +" rdfs:subClassOf ?x. } ")
         return to_ret[0]
-        
+
     def getSubClasses(self, parent_class, recursive=True):
         """
         Return the child classes of parent_class. If recursive=True, returns also sub childs classes
@@ -172,7 +174,7 @@ class OntologyInterface(OntologyAbstractInterface):
             to_ret = self.queryOntology("SELECT ?x WHERE { ?x rdfs:subClassOf " + self.addPrefix(parent_class) + " . } ")
         self._sub_classes_cache[parent_class] = to_ret
         return to_ret
-        
+
     def getSubProperties(self, parent_property, recursive=True):
         """
         Return the child properties of parent_property. If recursive=True, returns also sub childs properties
@@ -185,7 +187,7 @@ class OntologyInterface(OntologyAbstractInterface):
             to_ret = self.queryOntology("SELECT ?x WHERE { ?x rdfs:subPropertyOf " + self.addPrefix(parent_property) + " . } ")
         self._sub_properties_cache[parent_property] = to_ret
         return to_ret
-        
+
     def _call(self, service, msg):
         try:
             resp1 = service(msg)

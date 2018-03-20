@@ -40,10 +40,10 @@ class Ontology:
 
     def setDefaultPrefix(self, prefix, uri):
         self._default_uri = self.addPrefix(prefix, uri)
-        
+
     def addDefaultPrefix(self, uri):
         return rdflib.term.URIRef(self._default_uri[uri])
-        
+
     def uri2lightstring(self, uri):
         if not uri:
             return uri
@@ -58,7 +58,7 @@ class Ontology:
             if tokens[0] == uri1[:-1]:
                 return "{}:{}".format(prefix, tokens[1])
         return uri
-            
+
     def lightstring2uri(self, name):
         if type(name)==rdflib.URIRef:
             return name
@@ -75,7 +75,7 @@ class Ontology:
             if tokens[0] == prefix:
                 return rdflib.term.URIRef("{}{}".format(uri, tokens[1]))
         return rdflib.term.URIRef(name)
-                
+
     def createOntology(self, uri):
         new = rdflib.Graph()
         rdfterm = rdflib.URIRef(uri.split('.')[0])
@@ -86,7 +86,10 @@ class Ontology:
 
     def load(self, ontology_uri):
         log.info("[{}]".format(self.__class__.__name__), "Loading ontology: {}".format(ontology_uri))
-        return self._ontology.parse(ontology_uri)
+        try:
+            return self._ontology.parse(ontology_uri)
+        except:
+            log.error("[{}]".format(self.__class__.__name__), "Error: file not valid.".format(ontology_uri))
 
     def save(self, file):
         self._ontology.serialize(destination=file, format='turtle')
@@ -105,7 +108,7 @@ class Ontology:
         for p, o in self._ontology.predicate_objects(uri):
             to_ret.append((uri, p, o))
         return to_ret
-        
+
     def storeIndividual(self, e, file):
         if os.path.isfile(file):
             new = rdflib.Graph()
@@ -118,16 +121,16 @@ class Ontology:
         for k, p in e._properties.iteritems():
             predicate = rdflib.URIRef(self.lightstring2uri(k))
             value = rdflib.Literal(p.getValues())
-            new.add((subject, predicate, value))        
+            new.add((subject, predicate, value))
         new.serialize(destination=file, format='turtle')
         self._ontology += new
-   
+
     def addRelation(self, r, author):
         self._ontology.add((self.lightstring2uri(r['src']), self.lightstring2uri(r['type']), self.lightstring2uri(r['dst'])))
-        
+
     def removeRelation(self, r, author):
         self._ontology.remove((self.lightstring2uri(r['src']), self.lightstring2uri(r['type']), self.lightstring2uri(r['dst'])))
-        
+
     def addPrefix(self, prefix, namespace):
         self._ontology.bind(prefix, namespace)
         return rdflib.Namespace(namespace)
