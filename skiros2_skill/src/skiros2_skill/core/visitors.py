@@ -47,7 +47,7 @@ class VisitorInterface:
         #Process children
         if procedure.hasChildren():
             state = self.processChildren(procedure)
-            if state!=State.Success:
+            if state==State.Running:
                 return state
         #Post-process node
         return self.postProcessNode(procedure)

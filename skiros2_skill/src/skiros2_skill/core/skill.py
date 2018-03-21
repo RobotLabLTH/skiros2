@@ -288,13 +288,16 @@ class SkillInterface(SkillCore):
         return deepcopy(self._input_cache.pop())
 
     def tick(self):
-        if not self.hasState(State.Running):
-            raise Exception("Node must be started before ticking. Curr state: {}".format(self._state))
-        self._setState(self.execute())
-        #TODO: Removing this has consequences... I will see them in the optimization
-        #if input_params != None:
-        #    input_params.specifyParams(self._params, False)
-        return self._state
+#        if not self.hasState(State.Running):
+#            raise Exception("Node must be started before ticking. Curr state: {}".format(self._state))
+        res = self.execute()
+#        print "{} {}".format(self, res)
+        if res==None:
+            self._setState(State.Idle)
+            return None
+        else:
+            self._setState(res)
+            return self._state
 
     #--------User functions--------
     def setChildrenProcessor(self, processor):
@@ -339,8 +342,11 @@ class SkillInterface(SkillCore):
 
     def processChildren(self, visitor):
         """
+        TODO: this function has to be removed and embedded into the tick
         """
-        return self._children_processor.processChildren(self._children, visitor)
+        self._setState(self._children_processor.processChildren(self._children, visitor))
+#        print "{} {}".format(self, self._state)
+        return self._state
 
     def setProcessor(self, processor_type):
         """
@@ -356,7 +362,7 @@ class SkillInterface(SkillCore):
         """
             Optional
         """
-        return State.Success
+        return None
 
 class SkillWrapper(SkillInterface):
     """
@@ -427,11 +433,6 @@ class SkillWrapper(SkillInterface):
             p._wmi = self._wmi
         return p
 
-    def hasState(self, state):
-        if self._has_instance:
-            self._setState(self._instance.getState())
-        return super(SkillWrapper, self).hasState(state)
-
     def hasInstance(self):
         return self._has_instance
 
@@ -467,15 +468,17 @@ class SkillWrapper(SkillInterface):
         return self._instance.preempt()
 
     def onStart(self):
-        state = self._instance.start(self.getParamsNoRemaps())
-        return state==State.Running
+        return self._instance.start(self.getParamsNoRemaps())==State.Running
 
     def execute(self):
         #print '{}:{}'.format(self._label, self._instance)
         self._instance.specifyParams(self.getParamsNoRemaps(), False)
-        self._setState(self._instance.tick())
+        res = self._instance.tick()
         self._copyInstanceParams()
-        return self._state
+        if res!=None:
+            return res
+        else:
+            return self._state
 
 class SkillBase(SkillInterface, object):
     """
@@ -537,6 +540,9 @@ class Root(SkillInterface):
     def createDescription(self):
         return
 
+    def execute(self):
+        return self._state
+
 class Skill(SkillInterface):
     """
     Generic skill node
@@ -552,3 +558,6 @@ class Skill(SkillInterface):
 
     def createDescription(self):
         return
+
+    def execute(self):
+        return self._state
