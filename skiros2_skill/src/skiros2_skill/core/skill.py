@@ -432,7 +432,7 @@ class SkillWrapper(SkillInterface):
             p._state = copy(self._state)
             p._wmi = self._wmi
         return p
-
+      
     def hasInstance(self):
         return self._has_instance
 
