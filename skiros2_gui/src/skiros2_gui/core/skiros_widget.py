@@ -19,6 +19,7 @@ from skiros2_common.core.property import Property
 import skiros2_msgs.msg as msgs
 import skiros2_world_model.ros.world_model_interface as wmi
 import skiros2_skill.ros.skill_layer_interface as sli
+from skiros2_common.core.abstract_skill import State
 from copy import deepcopy
 
 from interactive_markers.interactive_marker_server import InteractiveMarkerServer
@@ -279,6 +280,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
     widget_id = 'skiros_gui'
 
     wm_update_signal = pyqtSignal(msgs.WmMonitor)
+    sl_progress_signal = pyqtSignal(msgs.SkillProgress)
 
     def __init__(self):
         super(SkirosWidget, self).__init__()
@@ -290,6 +292,12 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         self.wm_properties_widget.itemChanged.connect( lambda p: self.on_properties_table_item_changed( self.wm_tree_widget.currentItem(), p.row() ) )
         self.wm_relations_widget.resizeEvent = self.on_wm_relations_widget_resized
         self.wm_update_signal.connect(lambda d: self.on_wm_update(d))
+        self.sl_progress_signal.connect(lambda d: self.on_progress_update(d))
+
+        self.tableWidget_output.setColumnWidth(0, 120)
+        self.tableWidget_output.setColumnWidth(1, 120)
+        self.tableWidget_output.setColumnWidth(2,  80)
+        self.tableWidget_output.setColumnWidth(3,  50)
         self.reset()
 
 
@@ -308,6 +316,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
 
         #World model tab
         self._wmi.setMonitorCallback(lambda d: self.wm_update_signal.emit(d))
+        self._sli.setMonitorCallback(lambda d: self.sl_progress_signal.emit(d))
         self.create_wm_tree()
 
 
@@ -338,6 +347,15 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
 #==============================================================================
 #  General
 #==============================================================================
+
+    def on_progress_update(self, msg):
+        self.tableWidget_output.insertRow(self.tableWidget_output.rowCount())
+        self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 0, QTableWidgetItem(msg.label))
+        self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 1, QTableWidgetItem(msg.type))
+        self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 2, QTableWidgetItem(State(msg.state).name))
+        self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 3, QTableWidgetItem(str(msg.progress_code)))
+        self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 4, QTableWidgetItem(msg.progress_message))
+
 
     def refresh_timer_cb(self):
         """

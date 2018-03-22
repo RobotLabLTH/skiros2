@@ -28,9 +28,12 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #################################################################################
 
+import rospy
+
+import skiros2_msgs.msg as msgs
 import skiros2_world_model.ros.world_model_interface as wm
-import skiros2_common.ros.utils as utils 
-import skiros2_common.tools.logger as log 
+import skiros2_common.ros.utils as utils
+import skiros2_common.tools.logger as log
 from skiros2_skill.ros.skill_manager_interface import SkillManagerInterface
 
 class SkillLayerInterface:
@@ -42,12 +45,16 @@ class SkillLayerInterface:
         self._agent_classes = self._wmi.getSubClasses("sumo:Agent")
         self._agents = {}
         self._new_changes = True
-        #print self._agent_classes    
+        #print self._agent_classes
         v = self._wmi.resolveElement(wm.Element("sumo:Agent"))
         for e in v:
             log.info("[SkillLayerInterface] Detected robot: {}".format(e))
             self._agents[e.getProperty("skiros:SkillMgr").value] = SkillManagerInterface(self._wmi, e, skill_monitor_cb)
         self._wmi.setMonitorCallback(self._wmMonitorCB)
+
+        self._monitor_sub = rospy.Subscriber("skill_managers/monitor", msgs.SkillProgress, self._smProgressCB)
+        self._monitor_cb = None
+
 
     def getAgent(self, agent):
         if isinstance(agent, str):
@@ -58,13 +65,20 @@ class SkillLayerInterface:
     def printState(self):
         for k, a in self._agents.iteritems():
             print k + ":" + a.printState()
-    
+
     def hasChanges(self):
         if self._new_changes:
             self._new_changes = False
             return True
         return False
-        
+
+    def setMonitorCallback(self, cb):
+        self._monitor_cb = cb
+
+    def _smProgressCB(self, msg):
+        if self._monitor_cb is not None:
+            self._monitor_cb(msg)
+
     def _wmMonitorCB(self, msg):
         """
         Update agents list

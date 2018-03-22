@@ -330,7 +330,7 @@ class SkillManagerNode(object):
         #self._sm._local_wm.printModel()
         #Start communications
         self._command = rospy.Service('~command', srvs.SkillCommand, self._commandCb)
-        self._monitor = rospy.Publisher("~monitor", msgs.SkillProgress, queue_size=20)
+        self._monitor = rospy.Publisher("skill_managers/monitor", msgs.SkillProgress, queue_size=20)
         rospy.on_shutdown(self._sm.shutdown)
         rospy.sleep(0.5)
 
