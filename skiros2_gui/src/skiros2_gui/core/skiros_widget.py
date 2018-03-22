@@ -355,6 +355,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 2, QTableWidgetItem(State(msg.state).name))
         self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 3, QTableWidgetItem(str(msg.progress_code)))
         self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 4, QTableWidgetItem(msg.progress_message))
+        self.tableWidget_output.scrollToBottom()
 
 
     def refresh_timer_cb(self):
