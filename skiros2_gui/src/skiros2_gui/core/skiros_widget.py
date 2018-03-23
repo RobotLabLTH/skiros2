@@ -445,13 +445,43 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
     @Slot()
     def on_wm_update(self, data):
         if data.action == 'update':
-            cur_item_id = self.wm_tree_widget.currentItem().text(1)
-            elems = [e for e in data.elements if e.id == cur_item_id]
-            if elems:
-                elem = rosutils.msg2element(elems[0])
-                self.wm_properties_widget.blockSignals(True)
-                self.fill_properties_table(elem)
-                self.wm_properties_widget.blockSignals(False)
+
+            cur_item = self.wm_tree_widget.currentItem()
+            cur_item_id = cur_item.text(1)
+
+            elem_has_moved = False
+            for elem in data.elements:
+
+                elem = rosutils.msg2element(elem)
+
+                # check if element is already in tree
+                items = self.wm_tree_widget.findItems(elem.id, Qt.MatchRecursive | Qt.MatchFixedString, 1)
+                if not items: continue
+
+                # check if updated item is selected
+                if elem.id == cur_item_id:
+                    # update properties table if selected item has changed
+                    self.wm_properties_widget.blockSignals(True)
+                    self.fill_properties_table(elem)
+                    self.wm_properties_widget.blockSignals(False)
+
+                # get parent node in tree
+                parent = items[0].parent()
+                if not parent: continue
+
+                # check if the old parent is still parent of the updated element
+                has_child = elem.getRelations(subj=parent.text(1), pred=self._wmi.getSubProperties('skiros:spatiallyRelated'), obj='-1')
+                if has_child: continue
+                # elem moved spatially, update whole tree for simplicity
+                elem_has_moved = True
+                break
+
+            if elem_has_moved:
+                self.create_wm_tree()
+                # reselect current item
+                items = self.wm_tree_widget.findItems(cur_item_id, Qt.MatchRecursive | Qt.MatchFixedString, 1)
+                if items:
+                    self.wm_tree_widget.setCurrentItem(items[0])
         else:
             # for now, I'm just doing a lazy update by recreating the whole tree
             log.debug(self.__class__.__name__, '{} scene elements: {}'.format(data.action.capitalize(), [elem.id for elem in data.elements]))
@@ -556,8 +586,6 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         for rel in skillPropRel:
             self._create_wm_tree(item, scene, scene[rel['dst']])
 
-
-    # def update_wm_tree_item(self, item)
 
 
     def fill_properties_table(self, elem):
