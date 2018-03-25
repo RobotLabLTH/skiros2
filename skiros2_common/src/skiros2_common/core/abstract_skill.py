@@ -132,8 +132,8 @@ class SkillDescription(object):
     def getPropCond(self, clabel, olabel, subj, operator, value, desired_state):
         return cond.ConditionProperty(clabel, olabel, subj, operator, value, desired_state)
 
-    def getAbsRelationCond(self, clabel, olabel, subj, obj, desired_state):
-        return cond.AbsConditionRelation(clabel, olabel, subj, obj, desired_state)
+    def getAbstractRelationCond(self, clabel, olabel, subj, obj, desired_state):
+        return cond.AbstractConditionRelation(clabel, olabel, subj, obj, desired_state)
 
     def getRelationCond(self, clabel, olabel, subj, obj, desired_state):
         return cond.ConditionRelation(clabel, olabel, subj, obj, desired_state)

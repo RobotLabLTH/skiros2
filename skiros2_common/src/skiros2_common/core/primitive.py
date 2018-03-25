@@ -7,7 +7,7 @@ class PrimitiveBase(SkillCore):
     """
     @brief Base class for primitive skills
     """
-    #--------Control functions-------- 
+    #--------Control functions--------
     def tick(self):
         if self.hasState(State.Success) or self.hasState(State.Failure):
             log.error("tick", "Reset required before ticking.")
@@ -47,6 +47,13 @@ class PrimitiveBase(SkillCore):
                         self._wmi.addElement(e)
 
     #-------- User's functions--------
+    def startError(self, msg, code):
+        """
+        @brief signal an error during the starting routine
+        """
+        self.fail(msg, code)
+        return False
+
     def step(self, msg=""):
         """
         @brief Set a running breakpoint

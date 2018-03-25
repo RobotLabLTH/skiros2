@@ -360,7 +360,7 @@ class ConditionRelation(ConditionBase):
         return to_ret
 
 
-class AbsConditionRelation(ConditionBase):
+class AbstractConditionRelation(ConditionBase):
     def __init__(self, clabel, olabel, subj, obj, desired_state):
         self._desired_state=desired_state
         self._subject_key=subj

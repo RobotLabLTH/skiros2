@@ -231,7 +231,7 @@ class TaskManagerNode(PrettyObject):
                         init_state.append(pddl.GroundPredicate(p.name, [xe._id], p.operator, p.value))
             else:
                 if p.abstracts:
-                    c = cond.AbsConditionRelation("", p.name, "x", "y", True)
+                    c = cond.AbstractConditionRelation("", p.name, "x", "y", True)
                 else:
                     c = cond.ConditionRelation("", p.name, "x", "y", True)
                 xtype = p.params[0]["valueType"]
