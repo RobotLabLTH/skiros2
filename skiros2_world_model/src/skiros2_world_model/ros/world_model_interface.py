@@ -105,6 +105,19 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
                     log.error("[{}]".format(self.__class__.__name__), "Failed to update local element {}".format(sub_e))
         e._local_relations = list()
 
+    def addElements(self, es):
+        msg = srvs.WmModifyRequest()
+        msg.author = self._author_name
+        for e in es:
+            msg.elements.append(utils.element2msg(e))
+        msg.action = msg.ADD
+        res = self._call(self._modify, msg)
+        if(res):
+            for e in es:
+                self._resolveLocalRelations(e)
+            return res.ids
+        return -1
+
     def addElement(self, e):
         msg = srvs.WmModifyRequest()
         msg.author = self._author_name
