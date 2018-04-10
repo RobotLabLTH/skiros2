@@ -31,12 +31,12 @@
 import subprocess
 from os import walk, remove
 
-class PddlTypes(object): 
+class PddlTypes(object):
     __slots__ = '_types'
-    
+
     def __init__(self):
         self._types = {}
-        
+
     def addType(self, name, supertype):
         if name==supertype:
             return
@@ -44,7 +44,7 @@ class PddlTypes(object):
             self._types[supertype] = []
         if not name in self._types[supertype]:
             self._types[supertype].append(name)
-        
+
     def toPddl(self):
         string = "(:types \n"
         for supertype, types in self._types.iteritems():
@@ -53,18 +53,18 @@ class PddlTypes(object):
             string += " - {}\n".format(supertype)
         string += ")"
         return string
-        
-class Predicate(object): 
+
+class Predicate(object):
     __slots__ = 'name', 'params', 'negated', 'operator', 'value', 'abstracts'
-    
+
     def __eq__(self, other):
         if self.name!=other.name:
             return False
         return True
-        
+
     def __ne__(self, other):
         return not self.__eq__(other)
-        
+
     def __init__(self, predicate, params, abstracts):
         self.name = predicate.getProperty("skiros:appliedOnType").value
         self.operator = None
@@ -80,10 +80,10 @@ class Predicate(object):
         if predicate.hasProperty("skiros:operator"):
             self.operator = predicate.getProperty("skiros:operator").value
             self.value = predicate.getProperty("skiros:desiredValue").value
-                
+
     def isFunction(self):
-        return self.operator!=None and not isinstance(self.value, str)       
-        
+        return self.operator!=None and not isinstance(self.value, str)
+
     def toActionPddl(self):
         string = ''
         if self.negated:
@@ -102,7 +102,7 @@ class Predicate(object):
             string += ')'
         string += ")"
         return string
-        
+
     def toUngroundPddl(self):
         if isinstance(self.value, str):
             string = '({}'.format(self.value)
@@ -112,19 +112,19 @@ class Predicate(object):
             string += ' ?{} - {} '.format(p["paramType"], p["valueType"])
         string += ")"
         return string
-        
-class GroundPredicate(object): 
+
+class GroundPredicate(object):
     __slots__ = 'name', 'params', 'operator', 'value'
-    
+
     def __init__(self, name, params, operator=None, value=None):
         self.name = name
         self.params = params
         self.operator = operator
         self.value = value
-        
+
     def isFunction(self):
-        return self.operator!=None and not isinstance(self.value, str) 
-        
+        return self.operator!=None and not isinstance(self.value, str)
+
     def toPddl(self):
         string = ''
         if self.isFunction():
@@ -139,25 +139,33 @@ class GroundPredicate(object):
             string += ') {}'.format(self.value)
         string += ")"
         return string
-          
-        
-class Action(object): 
+
+class ForallPredicate(object):
+    __slots__ = 'predicate'
+
+    def __init__(self, predicate):
+        self.predicate = predicate
+
+    def toPddl(self):
+        return self.predicate
+
+class Action(object):
     __slots__ = 'name', 'params', 'preconditions', 'effects'
-    
+
     def __init__(self, skill, params, precons, postcons):
         self.name = skill._label
         self.params = params
         self.preconditions = precons
         self.effects = postcons
-        
+
     def __eq__(self, other):
         if self.name!=other.name:
             return False
         return True
-        
+
     def __ne__(self, other):
         return not self.__eq__(other)
-        
+
     def toPddl(self):
         string = '(:durative-action {}\n'.format(self.name)
         string += "\t:parameters ("
@@ -175,20 +183,20 @@ class Action(object):
         string += "\t)\n"
         string += ")\n"
         return string
-                  
-                  
+
+
 class PddlInterface:
     """
     Class to manage a pddl domain and do task planning
-    
+
     It generates a pddl definition and invoke a task planner
     """
     def __init__(self, workspace, title="untitled"):
         self._title = title
         self._workspace = workspace
         self.clear()
-    
-    def clear(self):    
+
+    def clear(self):
         self._types = PddlTypes()
         self._objects = {}
         self._functions = []
@@ -196,8 +204,8 @@ class PddlInterface:
         self._actions = []
         self._init_state = []
         self._goal = []
-    
-    def _addSuperTypes(self, predicate):    
+
+    def _addSuperTypes(self, predicate):
         lookuplist = self._predicates
         if predicate.isFunction():
             lookuplist = self._functions
@@ -210,11 +218,11 @@ class PddlInterface:
                         self._types.addType(param2["valueType"], supertypeId)
                         param1["valueType"] = supertypeId
                 return
-    
+
     def addType(self, name, supertype):
         self._types.addType(name, supertype)
-        
-    def addUngroundPredicate(self, predicate): 
+
+    def addUngroundPredicate(self, predicate):
         if predicate.isFunction():
             self.addFunction(predicate)
             return
@@ -222,13 +230,13 @@ class PddlInterface:
             self._predicates.append(predicate)
         else:
             self._addSuperTypes(predicate)
-        
+
     def addFunction(self, function):
         if not function in self._functions:
             self._functions.append(function)
         else:
             self._addSuperTypes(function)
-        
+
     def addAction(self, action):
         if not action in self._actions and action.preconditions and action.effects:
             for k, p in action.params.iteritems():
@@ -238,19 +246,19 @@ class PddlInterface:
             for c in action.effects:
                 self.addUngroundPredicate(c)
             self._actions.append(action)
-        
+
     def setObjects(self, objects):
-        self._objects = objects        
-        
+        self._objects = objects
+
     def setInitState(self, init):
         self._init_state = init
-        
+
     def addGoal(self, g):
         self._goal.append(g)
 
     def printDomain(self, to_file=False):
         string = "(define (domain {})\n".format(self._title)
-        string += "(:requirements :typing :fluents)\n" #TODO: make this dynamic?
+        string += "(:requirements :typing :fluents :universal-preconditions)\n" #TODO: make this dynamic?
         string += self._types.toPddl()
         string += "\n"
         string += "(:predicates \n"
@@ -271,8 +279,8 @@ class PddlInterface:
             with open(self._workspace+"/domain.pddl", 'w') as f:
                 f.write(string)
         else:
-            print string       
-        
+            return string
+
     def printProblem(self, to_file=False):
         string = "(define (problem {}) (:domain {})\n".format("1", self._title)
         string += "(:objects \n"
@@ -299,8 +307,8 @@ class PddlInterface:
             with open(self._workspace+"/p01.pddl", 'w') as f:
                 f.write(string)
         else:
-            print string         
-      
+            return string
+
     def invokePlanner(self, generate_pddl=True):
         #subprocess.call(["plan.py", "y+Y+a+T+10+t+5+e+r+O+1+C+1", self._workspace+"/domain.pddl", self._workspace+"/p01.pddl", "mypddlplan"])
         if generate_pddl:
@@ -320,7 +328,6 @@ class PddlInterface:
             remove("variables.groups")
             remove("output.sas")
             remove(outpath)
-            return data        
-        else: 
+            return data
+        else:
             return None
-   

@@ -1,5 +1,0 @@
-string author
-string[] goals #PDDL format
----
-bool ok
-

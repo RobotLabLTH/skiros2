@@ -40,13 +40,13 @@ add_service_files(
   WmQueryRelations.srv
   WmModify.srv
   SkillCommand.srv
-  TmSetGoals.srv
   )
 
-#add_action_files(
-#  FILES
-  #Gripper.action
-#  )
+add_action_files(
+  FILES
+  AssignTask.action
+  )
+
 generate_messages(
   DEPENDENCIES std_msgs actionlib_msgs
 )

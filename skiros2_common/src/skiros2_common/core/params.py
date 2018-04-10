@@ -314,6 +314,13 @@ class ParamHandler(object):
         else:
             log.error('getParamValues', 'Param {} is not in the map. Debug: {}'.format(key, self.printState()))
 
+    def getElementParams(self):
+        to_ret = {}
+        for key, param in self._params.iteritems():
+            if isinstance(param.value, Element):
+                to_ret[key] = param
+        return to_ret
+
     def getParamMapFiltered(self, type_filter):
         to_ret = {}
         for key, param in self._params.iteritems():

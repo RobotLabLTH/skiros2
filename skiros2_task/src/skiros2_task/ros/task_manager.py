@@ -1,33 +1,3 @@
-#################################################################################
-# Software License Agreement (BSD License)
-#
-# Copyright (c) 2016, Francesco Rovida
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-#
-# * Redistributions of source code must retain the above copyright
-#   notice, this list of conditions and the following disclaimer.
-# * Redistributions in binary form must reproduce the above copyright
-#   notice, this list of conditions and the following disclaimer in the
-#   documentation and/or other materials provided with the distribution.
-# * Neither the name of the copyright holder nor the
-#   names of its contributors may be used to endorse or promote products
-#   derived from this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
-# ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#################################################################################
-
 import rospy
 import rospkg
 
@@ -36,6 +6,7 @@ from std_msgs.msg import Empty
 
 import skiros2_msgs.srv as srvs
 import skiros2_msgs.msg as msgs
+import actionlib
 import skiros2_common.core.params as skirosp
 import skiros2_common.core.conditions as cond
 
@@ -43,6 +14,7 @@ from skiros2_common.tools.decorators import PrettyObject
 import skiros2_common.tools.logger as log
 import skiros2_common.tools.time_keeper as tk
 
+from copy import deepcopy
 import skiros2_world_model.core.local_world_model as wm
 import skiros2_world_model.ros.world_model_interface as wmi
 import skiros2_skill.ros.skill_layer_interface as sli
@@ -77,8 +49,9 @@ class TaskManagerNode(PrettyObject):
         self._sli = sli.SkillLayerInterface(self._wmi, self._onMonitorMsg)
         self._pddl_interface = pddl.PddlInterface(rospkg.RosPack().get_path("skiros2_task"))
 
-        self._goal_modify = rospy.Service('~set_goals', srvs.TmSetGoals, self._setGoalsCb)
-        self._monitor = rospy.Publisher("~monitor", msgs.SkillProgress, queue_size=20)
+        self._verbose=rospy.get_param('~verbose', True)
+        self._assign_task_action = actionlib.SimpleActionServer('~assign_task', msgs.AssignTaskAction, execute_cb = self._assign_task_cb, auto_start = False)
+        self._assign_task_action.start()
 
         self._sub_robot_discovery = rospy.Subscriber('/skiros/robot_discovery', Empty, self._onRobotDiscovery)
         self._pub_robot_description = rospy.Publisher('/skiros/robot_description', RobotDescription, queue_size=10)
@@ -104,8 +77,13 @@ class TaskManagerNode(PrettyObject):
 
 
     def _onMonitorMsg(self, msg):
-        msg.robot = self._author_name
-        self._monitor.publish(msg)
+        if msg.type=="Task":
+            self._done = True
+            self._result = msgs.AssignTaskResult(msg.state, msg.progress_message)
+            self._assign_task_action.set_succeeded(self._result)
+        else:
+            self._feedback = msgs.AssignTaskFeedback(msg.state, msg.progress_message)
+            self._assign_task_action.publish_feedback(self._feedback)
 
     def _onRobotDiscovery(self, msg):
         """Callback for robot discovery messages.
@@ -120,7 +98,7 @@ class TaskManagerNode(PrettyObject):
 
 
 
-    def _setGoalsCb(self, msg):
+    def _assign_task_cb(self, msg):
         """Callback for setting new goals.
 
         Executed whenever we receive a service call to set a new goal.
@@ -129,6 +107,8 @@ class TaskManagerNode(PrettyObject):
             msg (skiros2_msgs.srv.TmSetGoals): Service message containing the goals
         """
         self._pddl_interface.clear()
+        self._done = False
+        rate = rospy.Rate(10.0)
         with tk.Timer(self.class_name) as timer:
             self.initDomain()
             timer.toc("Init domain")
@@ -139,10 +119,19 @@ class TaskManagerNode(PrettyObject):
             timer.toc("Planning sequence")
             log.assertWarn(plan, self.class_name, "Planning failed!")
             if plan:
+                if self._verbose:
+                    log.info("[Plan]", plan)
+                self._feedback = msgs.AssignTaskFeedback(0, plan)
+                self._assign_task_action.publish_feedback(self._feedback)
                 self.buildTask(plan)
                 self.execute()
-        return srvs.TmSetGoalsResponse()
-
+            else:
+                self._assign_task_action.set_aborted()
+        while (not self._assign_task_action.is_preempt_requested()) and (not rospy.is_shutdown()) and not self._done:
+            rate.sleep()
+        if not self._done:
+            self.preempt()
+            self._assign_task_action.set_preempted()
 
     def buildTask(self, plan):
         """
@@ -153,8 +142,8 @@ class TaskManagerNode(PrettyObject):
         for s in skills:
             s = s[s.find('(')+1: s.find(')')]
             tokens = s.split(' ')
-            skill = self.skills[tokens.pop(0)]
-            map(lambda t,p: t.setValue(self.getElement(p)), skill.ph._params.values(), tokens)
+            skill = deepcopy(self.skills[tokens.pop(0)])
+            map(lambda t,p: t.setValue(self.getElement(p)), skill.ph.getElementParams().values(), tokens)
             # params is a dict? how to preserve order? -> tokens?
             # for _, t in  skill.ph._params.iteritems():
             #     t.setValue(self.getElement(tokens.pop(0)))
@@ -167,19 +156,21 @@ class TaskManagerNode(PrettyObject):
             params = {}
             preconds = []
             postconds = []
+            #Note: Only skills with pre AND post conditions are considered for planning
             for p in skill.getRelations(pred="skiros:hasParam"):
                 e = self._wmi.getElement(p['dst'])
                 params[e._label] = e.getProperty("skiros:DataType").value
             for p in skill.getRelations(pred="skiros:hasPreCondition"):
                 e = self._wmi.getElement(p['dst'])
-                if e._type.find("ConditionRelation")!=-1 or e._type == "skiros:ConditionProperty":
+                if e._type.find("ConditionRelation")!=-1 or e._type == "skiros:ConditionProperty" or e._type == "skiros:ConditionHasProperty":
                     preconds.append(pddl.Predicate(e, params, e._type.find("Abs")!=-1))
             for p in skill.getRelations(pred="skiros:hasPostCondition"):
                 e = self._wmi.getElement(p['dst'])
-                if e._type.find("ConditionRelation")!=-1 or e._type == "skiros:ConditionProperty":
+                if e._type.find("ConditionRelation")!=-1 or e._type == "skiros:ConditionProperty" or e._type == "skiros:ConditionHasProperty":
                     postconds.append(pddl.Predicate(e, params, e._type.find("Abs")!=-1))
             self._pddl_interface.addAction(pddl.Action(skill, params, preconds, postconds))
-        #self._pddl_interface.printDomain(False)
+        if self._verbose:
+            log.info("[Domain]", self._pddl_interface.printDomain(False))
 
 
     def getElement(self, uid):
@@ -203,7 +194,7 @@ class TaskManagerNode(PrettyObject):
                 self._elements[e._id[e._id.find("-")+1:]] = e
         for e in self._abstract_objects:
             ctype = self._wmi.getSuperClass(e._type)
-            if not objects.has_key(e._type):
+            if not objects.has_key(ctype):
                  objects[ctype] = []
                  elements[ctype] = []
             e._id = e._label
@@ -223,7 +214,10 @@ class TaskManagerNode(PrettyObject):
         params.addParam("y", wm.Element(), skirosp.ParamTypes.Required)
         for p in self._pddl_interface._predicates:
             if len(p.params)==1:
-                c = cond.ConditionProperty("", p.name, "x", p.operator, p.value, True)
+                if p.value!=None:
+                    c = cond.ConditionProperty("", p.name, "x", p.operator, p.value, True)
+                else:
+                    c = cond.ConditionHasProperty("", p.name, "x", True)
                 xtype = p.params[0]["valueType"]
                 for xe in elements[xtype]:
                     params.specify("x", xe)
@@ -250,17 +244,24 @@ class TaskManagerNode(PrettyObject):
                 if c.evaluate(params, self._wmi):
                     init_state.append(pddl.GroundPredicate(p.name, [xe._id], p.operator, p.value))
         self._pddl_interface.setInitState(init_state)
-
+        if self._verbose:
+            log.info("[Problem]", self._pddl_interface.printProblem(False))
 
     def setGoal(self, goal):
-        for g in goal:
-            g = g[1:-1]
-            tokens = g.split(" ")
-            self._pddl_interface.addGoal(pddl.GroundPredicate(tokens[0], [tokens[1], tokens[2]]))
-            if tokens[1].find("-")==-1: #If isAbstractObject
-                self._abstract_objects.append(self._wmi.getTemplateElement(tokens[1]))
-            if tokens[2].find("-")==-1: #If isAbstractObject
-                self._abstract_objects.append(self._wmi.getTemplateElement(tokens[2]))
+        try:
+            for g in goal:
+                if g.find("forall")!=-1:
+                    self._pddl_interface.addGoal(pddl.ForallPredicate(g))
+                else:
+                    g = g[1:-1]
+                    tokens = g.split(" ")
+                    self._pddl_interface.addGoal(pddl.GroundPredicate(tokens[0], [tokens[1], tokens[2]]))
+                    if tokens[1].find("-")==-1: #If isAbstractObject
+                        self._abstract_objects.append(self._wmi.getTemplateElement(tokens[1]))
+                    if tokens[2].find("-")==-1: #If isAbstractObject
+                        self._abstract_objects.append(self._wmi.getTemplateElement(tokens[2]))
+        except:
+            raise Exception("Error while parsing input goal: {}".format(goal))
 
 
     def plan(self):
@@ -268,8 +269,10 @@ class TaskManagerNode(PrettyObject):
 
 
     def execute(self):
-        self._sli.getAgent(self._task[0].manager).execute(self._task, self._author_name)
+        self._curr_task = (self._task[0].manager, self._sli.getAgent(self._task[0].manager).execute(self._task, self._author_name))
 
+    def preempt(self):
+        self._sli.getAgent(self._curr_task[0]).preempt(self._curr_task[1], self._author_name)
 
     def run(self):
         rospy.spin()
