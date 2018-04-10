@@ -9,6 +9,7 @@ import skiros2_common.tools.logger as log
 class TaskManagerInterface(PrettyObject):
     def __init__(self):
         self._assign_task_client =  actionlib.SimpleActionClient('/tm/assign_task', msgs.AssignTaskAction)
+        self._assign_task_client.wait_for_server()
 
     def start_task(self, goals, done_cb=None, feedback_cb=None):
         """
@@ -17,7 +18,7 @@ class TaskManagerInterface(PrettyObject):
         req = msgs.AssignTaskGoal()
         req.goals = goals
         if not self._assign_task_client.wait_for_server(rospy.Duration(0.1)):
-            log.error("[{}]".format(self._label), "Action server is not available.")
+            log.error("[TaskManagerInterface]", "Action server is not available.")
             return False
         self._assign_task_client.send_goal(req, done_cb= done_cb, feedback_cb = feedback_cb)
         return True
