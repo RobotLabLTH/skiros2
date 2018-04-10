@@ -113,7 +113,9 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         msg.action = msg.ADD
         res = self._call(self._modify, msg)
         if(res):
-            for e in es:
+            for i, e in enumerate(es):
+                e._id = res.ids[i]
+                print e.printState()
                 self._resolveLocalRelations(e)
             return res.ids
         return -1
