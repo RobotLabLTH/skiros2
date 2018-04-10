@@ -19,7 +19,7 @@ class Serial():
             if state!=State.Success:
                 return state
         return State.Success
-        
+
 class Sequential():
     """
     @brief Process children sequentially. Succeded ones are skipped

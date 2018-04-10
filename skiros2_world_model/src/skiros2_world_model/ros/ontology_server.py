@@ -48,18 +48,21 @@ class OntologyServer(object):
 
     def _woQueryCb(self, msg):
         to_ret = srvs.WoQueryResponse()
-        with self._times:
-            for s in self._ontology.query(msg.query_string):
-                temp = ""
-                for r in s:
-                    if msg.cut_prefix:
-                        temp += self._ontology.uri2lightstring(r)
-                    else:
-                        temp += r.n3()
-                    if len(s)>1:
-                        temp += " "
-                to_ret.answer.append(temp)
-        log.info("[WoQuery]", "Query: {}. Answer: {}. Time: {:0.3f} sec".format(msg.query_string, to_ret.answer, self._times.getLast()))
+        try:
+            with self._times:
+                for s in self._ontology.query(msg.query_string):
+                    temp = ""
+                    for r in s:
+                        if msg.cut_prefix:
+                            temp += self._ontology.uri2lightstring(r)
+                        else:
+                            temp += r.n3()
+                        if len(s)>1:
+                            temp += " "
+                    to_ret.answer.append(temp)
+            log.info("[WoQuery]", "Query: {}. Answer: {}. Time: {:0.3f} sec".format(msg.query_string, to_ret.answer, self._times.getLast()))
+        except:
+            log.error("[WoQuery]", "Parse error with following query: {}. ".format(msg.query_string))
         return to_ret
 
     def _woModifyCb(self, msg):
@@ -68,7 +71,7 @@ class OntologyServer(object):
                 if s.value:
                     self._ontology.addRelation(utils.msg2relation(s), msg.author)
                 else:
-                    self._ontology.removeRelation(utils.msg2relation(s), msg.author)    
+                    self._ontology.removeRelation(utils.msg2relation(s), msg.author)
         log.info("[WoModify]", "Done in {} sec".format(self._times.getLast()))
         return srvs.WoModifyResponse(True)
 
