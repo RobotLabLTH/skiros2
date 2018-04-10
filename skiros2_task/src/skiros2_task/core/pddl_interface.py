@@ -315,9 +315,6 @@ class PddlInterface:
         if generate_pddl:
             self.printDomain(True)
             self.printProblem(True)
-        print("Workspace: {}".format(self._workspace))
-        print("Environ: {}".format(os.environ['PATH']))
-        print("CWD: {}".format(os.getcwd()))
 
         output = subprocess.Popen(["plan.py", "y+Y+a+T+10+t+5+e+r+O+1+C+1", self._workspace+"/domain.pddl", self._workspace+"/p01.pddl", self._workspace+"/pddlplan"], stdout=subprocess.PIPE).communicate()[0]
         outpath = None
