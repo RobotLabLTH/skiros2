@@ -37,23 +37,21 @@ import skiros2_common.tools.logger as log
 from multiprocessing import Lock, Event
 
 class SkillManagerInterface:
-    def __init__(self, wmi, robot, monitor_cb=None):
+    def __init__(self, wmi, robot):
         self._wmi = wmi
         self._robot = robot
         self._robot_uri = robot._label
         self._monitored_tasks = dict()
         self._module_list = dict()
         self._skill_list = dict()
-        self.init(monitor_cb)
+        self.init()
         self._msg_lock = Lock()
         self._msg_rec = Event()
 
-    def init(self, monitor_cb):
+    def init(self):
         self._skill_mgr_name = self._robot.getProperty('skiros:SkillMgr').getValue()
         rospy.wait_for_service(self._skill_mgr_name + '/get_skills')
         self._skill_exe_client = rospy.ServiceProxy(self._skill_mgr_name + '/command', srvs.SkillCommand)
-        if monitor_cb:
-            self._monitor_sub = rospy.Subscriber(self._skill_mgr_name + '/monitor', msgs.SkillProgress, monitor_cb)
         self._get_skills = rospy.ServiceProxy(self._skill_mgr_name + '/get_skills', srvs.ResourceGetDescriptions)
         self._skill_set = self._wmi.getSubClasses("skiros:Skill")
         self.getSkillList(True)

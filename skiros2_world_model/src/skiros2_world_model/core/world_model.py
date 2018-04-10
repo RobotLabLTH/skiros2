@@ -188,7 +188,7 @@ class WorldModel(Ontology):
 
     def hasIndividual(self, name):
         """
-        Returns true if the individual exists in the ontology
+        @brief Returns true if the individual exists in the ontology
         """
         subject = self.lightstring2uri(name)
         if self._ontology.value(subject, RDF.type):
@@ -198,7 +198,7 @@ class WorldModel(Ontology):
     @synchronized
     def getIndividual(self, name):
         """
-        Builds an element from a long-term memory individual
+        @brief Builds an element from a long-term memory individual
         """
         subject = self.lightstring2uri(name)
         if not self._ontology.value(subject, RDF.type):
@@ -224,7 +224,7 @@ class WorldModel(Ontology):
 
     def getTemplateIndividual(self, name):
         """
-        Builds an element from a long-term memory individual
+        @brief Builds an element from an individual
         """
         e = self.getIndividual(name)
         if e:
@@ -238,7 +238,7 @@ class WorldModel(Ontology):
     @synchronized
     def loadScene(self, filename):
         """
-        Load scene from file
+        @brief Load scene from file
         """
         if not path.isfile(self._workspace+"/"+filename):
             log.error("[loadScene]", "Can't load scene {}. File not found. ".format(filename))
@@ -262,7 +262,7 @@ class WorldModel(Ontology):
     @synchronized
     def saveScene(self, filename):
         """
-        Save scene to file
+        @brief Save scene to file
         """
         #ontology_id = rdflib.URIRef(filename)
         #self._wm.add((ontology_id, RDF.type, OWL.Ontology))

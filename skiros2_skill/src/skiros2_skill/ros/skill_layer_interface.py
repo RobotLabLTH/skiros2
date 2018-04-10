@@ -49,11 +49,13 @@ class SkillLayerInterface:
         v = self._wmi.resolveElement(wm.Element("sumo:Agent"))
         for e in v:
             log.info("[SkillLayerInterface] Detected robot: {}".format(e))
-            self._agents[e.getProperty("skiros:SkillMgr").value] = SkillManagerInterface(self._wmi, e, skill_monitor_cb)
+            self._agents[e.getProperty("skiros:SkillMgr").value] = SkillManagerInterface(self._wmi, e)
         self._wmi.setMonitorCallback(self._wmMonitorCB)
 
         self._monitor_sub = rospy.Subscriber("skill_managers/monitor", msgs.SkillProgress, self._smProgressCB)
         self._monitor_cb = None
+        if skill_monitor_cb:
+            self.setMonitorCallback(skill_monitor_cb)
 
 
     def getAgent(self, agent):
@@ -76,7 +78,7 @@ class SkillLayerInterface:
         self._monitor_cb = cb
 
     def _smProgressCB(self, msg):
-        if self._monitor_cb is not None:
+        if self._monitor_cb:
             self._monitor_cb(msg)
 
     def _wmMonitorCB(self, msg):

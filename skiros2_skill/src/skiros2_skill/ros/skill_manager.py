@@ -99,6 +99,7 @@ class TaskManager:
         print "===Final state==="
         printer = visitors.VisitorPrint(visitor._wm, visitor._instanciator)
         printer.traverse(TaskManager._tasks[uid])
+        self._progress_cb(task_id=uid, id=uid, **{"type":"Task", "label": "-", "state": TaskManager._tasks[uid].state, "msg": "Terminated.", "code": 0})
         if clear:
             self.removeTask(uid)
 

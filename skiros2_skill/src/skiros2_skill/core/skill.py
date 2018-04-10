@@ -376,43 +376,17 @@ class SkillWrapper(SkillInterface):
         self._type=ptype
         self._label=plabel
         self._has_instance=False
+        self._progress_code = 0
+        self._progress_msg = ""
         if instanciator:
             instanciator.assignDescription(self)
 
-
     ## HACK for accessing progress member variable due to shitty implementation -.-
-
-    @property
-    def id(self):
-        if not self._has_instance: return super(SkillWrapper, self).id
-        return self._instance.id
-
-    @property
-    def progress_code(self):
-        if not self._has_instance: return super(SkillWrapper, self).progress_code
-        return self._instance.progress_code
-
-    @property
-    def progress_msg(self):
-        if not self._has_instance: return super(SkillWrapper, self).progress_msg
-        return self._instance.progress_msg
-
     @property
     def label(self):
         if not self._has_instance: return super(SkillWrapper, self).label
         return self._instance.label
-
-    @property
-    def type(self):
-        if not self._has_instance: return super(SkillWrapper, self).type
-        return self._instance.type
-
-    @property
-    def state(self):
-        if not self._has_instance: return super(SkillWrapper, self).state
-        return self._instance.state
     ### END of hacky stuff
-
 
     def getLightCopy(self):
         """
@@ -432,7 +406,7 @@ class SkillWrapper(SkillInterface):
             p._state = copy(self._state)
             p._wmi = self._wmi
         return p
-      
+
     def hasInstance(self):
         return self._has_instance
 
@@ -468,6 +442,8 @@ class SkillWrapper(SkillInterface):
         return self._instance.preempt()
 
     def onStart(self):
+        self._progress_code = 0
+        self._progress_msg = ""
         return self._instance.start(self.getParamsNoRemaps())==State.Running
 
     def execute(self):
@@ -475,6 +451,8 @@ class SkillWrapper(SkillInterface):
         self._instance.specifyParams(self.getParamsNoRemaps(), False)
         res = self._instance.tick()
         self._copyInstanceParams()
+        self._progress_msg = self._instance.progress_msg
+        self._progress_code = self._instance.progress_code
         if res!=None:
             return res
         else:
