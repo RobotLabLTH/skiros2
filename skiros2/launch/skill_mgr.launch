@@ -1,6 +1,10 @@
 <launch>
+  <arg name="deploy" default="false"/>
+  <arg if="$(arg deploy)" name="term" value="" />
+  <arg unless="$(arg deploy)" name="term" value="xterm -geometry 100x60+1280+0 -hold -e " />
+
   <arg name="debug" default="false"/>
-  <arg unless="$(arg debug)" name="prefix" value="xterm -geometry 100x60+670+0 -hold -e " />
+  <arg unless="$(arg debug)" name="prefix" value="$(arg term)" />
   <arg if="$(arg debug)" name="prefix" value="xterm -e python -m pdb" />
   <arg name="robot_ontology_prefix" default="skiros"/>
   <arg name="robot_name" default=""/>
@@ -8,8 +12,6 @@
   <arg name="libraries_list" default="[]"/>
   <arg name="primitive_list" default="[]"/>
   <arg name="skill_list" default="[]"/>
-  <arg name="deploy" default="false"/>
-  <arg if="$(arg deploy)" name="prefix" value="" />
 
   <node launch-prefix="$(arg prefix)" name="$(arg robot_name)" pkg="skiros2_skill" type="skill_manager_node" respawn="true">
     <param name="prefix" value="$(arg robot_ontology_prefix)" />

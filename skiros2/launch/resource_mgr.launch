@@ -1,12 +1,14 @@
 <launch>
+  <arg name="deploy" default="false"/>
+  <arg if="$(arg deploy)" name="term" value="" />
+  <arg unless="$(arg deploy)" name="term" value="xterm -geometry 100x60+1280+0 -hold -e " />
+
   <arg name="debug" default="false"/>
-  <arg unless="$(arg debug)" name="prefix" value="xterm -geometry 100x60+1280+0 -hold -e " />
+  <arg unless="$(arg debug)" name="prefix" value="$(arg term)" />
   <arg if="$(arg debug)" name="prefix" value="xterm -e python -m pdb" />
   <arg name="verbose" default="false"/>
   <arg name="libraries_list" default="[]"/>
   <arg name="resource_list" default="[]"/>
-  <arg name="deploy" default="false"/>
-  <arg if="$(arg deploy)" name="prefix" value="" />
 
   <node launch-prefix="$(arg prefix)" name="test_mgr" pkg="skiros2_resource" type="resource_manager_node" respawn="true">
     <param name="verbose" value="$(arg verbose)" />
