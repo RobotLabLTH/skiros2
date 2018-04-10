@@ -8,12 +8,14 @@
   <arg name="libraries_list" default="[]"/>
   <arg name="primitive_list" default="[]"/>
   <arg name="skill_list" default="[]"/>
+  <arg name="deploy" default="false"/>
+  <arg if="$(arg deploy)" name="prefix" value="" />
 
-  <node launch-prefix="$(arg prefix)" name="$(arg robot_name)" pkg="skiros2_skill" type="skill_manager_node" respawn="true">   
-    <param name="prefix" value="$(arg robot_ontology_prefix)" /> 
-    <param name="verbose" value="$(arg verbose)" /> 
-    <rosparam param = "libraries_list" subst_value="True">$(arg libraries_list)</rosparam>  
-    <rosparam param = "primitive_list" subst_value="True">$(arg primitive_list)</rosparam> 
-    <rosparam param = "skill_list" subst_value="True">$(arg skill_list)</rosparam> 
+  <node launch-prefix="$(arg prefix)" name="$(arg robot_name)" pkg="skiros2_skill" type="skill_manager_node" respawn="true">
+    <param name="prefix" value="$(arg robot_ontology_prefix)" />
+    <param name="verbose" value="$(arg verbose)" />
+    <rosparam param = "libraries_list" subst_value="True">$(arg libraries_list)</rosparam>
+    <rosparam param = "primitive_list" subst_value="True">$(arg primitive_list)</rosparam>
+    <rosparam param = "skill_list" subst_value="True">$(arg skill_list)</rosparam>
   </node>
 </launch>

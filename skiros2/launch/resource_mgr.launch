@@ -5,10 +5,12 @@
   <arg name="verbose" default="false"/>
   <arg name="libraries_list" default="[]"/>
   <arg name="resource_list" default="[]"/>
+  <arg name="deploy" default="false"/>
+  <arg if="$(arg deploy)" name="prefix" value="" />
 
-  <node launch-prefix="$(arg prefix)" name="test_mgr" pkg="skiros2_resource" type="resource_manager_node" respawn="true">  
-    <param name="verbose" value="$(arg verbose)" /> 
-    <rosparam param = "libraries_list" subst_value="True">$(arg libraries_list)</rosparam>   
-    <rosparam param = "resource_list" subst_value="True">$(arg resource_list)</rosparam> 
+  <node launch-prefix="$(arg prefix)" name="test_mgr" pkg="skiros2_resource" type="resource_manager_node" respawn="true">
+    <param name="verbose" value="$(arg verbose)" />
+    <rosparam param = "libraries_list" subst_value="True">$(arg libraries_list)</rosparam>
+    <rosparam param = "resource_list" subst_value="True">$(arg resource_list)</rosparam>
   </node>
 </launch>

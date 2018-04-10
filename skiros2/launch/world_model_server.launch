@@ -7,6 +7,8 @@
   <arg name="verbose" default="true"/>
   <arg name="reasoners_pkgs" default="[skiros2_std_reasoners]"/>
   <arg name="workspace_dir" default=""/>
+  <arg name="deploy" default="false"/>
+  <arg if="$(arg deploy)" name="prefix" value="" />
 
   <node launch-prefix="$(arg prefix)" name="wm" pkg="skiros2_world_model" type="world_model_server_node" respawn="true">
     <param name="workspace_dir" value="$(arg workspace_dir)" />
