@@ -38,6 +38,24 @@ class Sequential():
                     return state
         return State.Success
 
+class Enforce():
+    """
+    @brief Process children sequentially. Succeded ones are skipped, Failed are restarted
+    """
+    def printType(self):
+        return '-!'
+
+    def processChildren(self, children, visitor):
+        """
+        Serial processor - return on first fail, or return success
+        """
+        for c in children:
+            if c.state != State.Success:
+                state = c.visit(visitor)
+                if state != State.Success:
+                    return State.Running
+        return State.Success
+
 class Selector():
     """
     Process children sequentially.
