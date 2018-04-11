@@ -127,6 +127,7 @@ class TaskManagerNode(PrettyObject):
                 self.execute()
             else:
                 self._assign_task_action.set_aborted()
+                return
         while (not self._assign_task_action.is_preempt_requested()) and (not rospy.is_shutdown()) and not self._done:
             rate.sleep()
         if not self._done:
@@ -198,12 +199,12 @@ class TaskManagerNode(PrettyObject):
                  objects[ctype] = []
                  elements[ctype] = []
             e._id = e._label
-            objects[ctype].append(e._label)
-            elements[ctype].append(e)
-            self._elements[e._id] = e
+            if not e._label in objects[ctype]:#Avoids duplicates
+                objects[ctype].append(e._label)
+                elements[ctype].append(e)
+                self._elements[e._id] = e
         self._pddl_interface.setObjects(objects)
         #Evaluate inital state
-        init_state = []
         for supertype, types in self._pddl_interface._types._types.iteritems():
             elements[supertype] = []
             for t in types:
@@ -222,7 +223,7 @@ class TaskManagerNode(PrettyObject):
                 for xe in elements[xtype]:
                     params.specify("x", xe)
                     if c.evaluate(params, self._wmi):
-                        init_state.append(pddl.GroundPredicate(p.name, [xe._id], p.operator, p.value))
+                        self._pddl_interface.addInitState(pddl.GroundPredicate(p.name, [xe._id], p.operator, p.value))
             else:
                 if p.abstracts:
                     c = cond.AbstractConditionRelation("", p.name, "x", "y", True)
@@ -235,15 +236,14 @@ class TaskManagerNode(PrettyObject):
                     for ye in elements[ytype]:
                         params.specify("y", ye)
                         if c.evaluate(params, self._wmi):
-                            init_state.append(pddl.GroundPredicate(p.name, [xe._id, ye._id]))
+                            self._pddl_interface.addInitState(pddl.GroundPredicate(p.name, [xe._id, ye._id]))
         for p in self._pddl_interface._functions:
             c = cond.ConditionProperty("", p.name, "x", p.operator, p.value, True)
             xtype = p.params[0]["valueType"]
             for xe in elements[xtype]:
                 params.specify("x", xe)
                 if c.evaluate(params, self._wmi):
-                    init_state.append(pddl.GroundPredicate(p.name, [xe._id], p.operator, p.value))
-        self._pddl_interface.setInitState(init_state)
+                    self._pddl_interface.addInitState(pddl.GroundPredicate(p.name, [xe._id], p.operator, p.value))
         if self._verbose:
             log.info("[Problem]", self._pddl_interface.printProblem(False))
 
@@ -255,11 +255,16 @@ class TaskManagerNode(PrettyObject):
                 else:
                     g = g[1:-1]
                     tokens = g.split(" ")
-                    self._pddl_interface.addGoal(pddl.GroundPredicate(tokens[0], [tokens[1], tokens[2]]))
-                    if tokens[1].find("-")==-1: #If isAbstractObject
-                        self._abstract_objects.append(self._wmi.getTemplateElement(tokens[1]))
-                    if tokens[2].find("-")==-1: #If isAbstractObject
-                        self._abstract_objects.append(self._wmi.getTemplateElement(tokens[2]))
+                    if len(tokens)==3:
+                        self._pddl_interface.addGoal(pddl.GroundPredicate(tokens[0], [tokens[1], tokens[2]]))
+                        if tokens[1].find("-")==-1: #If isAbstractObject
+                            self._abstract_objects.append(self._wmi.getTemplateElement(tokens[1]))
+                        if tokens[2].find("-")==-1: #If isAbstractObject
+                            self._abstract_objects.append(self._wmi.getTemplateElement(tokens[2]))
+                    else:
+                        self._pddl_interface.addGoal(pddl.GroundPredicate(tokens[0], [tokens[1]]))
+                        if tokens[1].find("-")==-1: #If isAbstractObject
+                            self._abstract_objects.append(self._wmi.getTemplateElement(tokens[1]))
         except:
             raise Exception("Error while parsing input goal: {}".format(goal))
 

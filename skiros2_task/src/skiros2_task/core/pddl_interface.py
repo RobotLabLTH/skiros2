@@ -29,8 +29,8 @@
 #################################################################################
 
 import subprocess
-import os
 from os import walk, remove
+import skiros2_common.tools.logger as log
 
 class PddlTypes(object):
     __slots__ = '_types'
@@ -122,6 +122,15 @@ class GroundPredicate(object):
         self.params = params
         self.operator = operator
         self.value = value
+
+    def __eq__(self, other):
+        #TODO: check with the functions..
+        if self.name==other.name and len(self.params)==len(other.params):
+            return set(self.params)==set(other.params)
+        return False
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
     def isFunction(self):
         return self.operator!=None and not isinstance(self.value, str)
@@ -251,8 +260,11 @@ class PddlInterface:
     def setObjects(self, objects):
         self._objects = objects
 
-    def setInitState(self, init):
-        self._init_state = init
+    def addInitState(self, state):
+        for s in self._init_state:
+            if s==state:
+                return
+        self._init_state.append(state)
 
     def addGoal(self, g):
         self._goal.append(g)
@@ -325,11 +337,14 @@ class PddlInterface:
         if outpath:
             with open(outpath, 'r') as f:
                 data=f.read()
-            remove("output")
-            remove("all.groups")
-            remove("variables.groups")
-            remove("output.sas")
-            remove(outpath)
+            try:
+                remove(outpath)
+                remove("output")
+                remove("all.groups")
+                remove("variables.groups")
+                remove("output.sas")
+            except:
+                log.warn("[TOCHECK]", "Not all files were generated while planning.")
             return data
         else:
             return None
