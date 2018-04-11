@@ -301,15 +301,16 @@ class ConditionRelation(ConditionBase):
         subj = self._params.getParamValue(self._subject_key)
         obj = self._params.getParamValue(self._object_key)
         #print self._description + "{} {}".format(subj.printState(), obj.printState())
-        if subj.getIdNumber() < 0 or obj.getIdNumber() < 0:
-            ps = self._params.getParam(self._subject_key)
-            po = self._params.getParam(self._object_key)
-            if ((subj.getIdNumber() < 0 and ps.paramType==params.ParamTypes.Optional) or (obj.getIdNumber() < 0 and po.paramType==params.ParamTypes.Optional)):
-                return True
-            else:
-                return False
-        v = self._wm.getRelations(subj._id, self._owl_label, obj._id)
-        if v:
+        if subj.getIdNumber()<0 and subj.hasProperty("skiros:Template"):
+            subj = subj.getProperty("skiros:Template").value
+        else:
+            subj = subj.id
+        if obj.getIdNumber()<0 and obj.hasProperty("skiros:Template"):
+            obj = obj.getProperty("skiros:Template").value
+        else:
+            obj = obj.id
+        v = self._wm.getTriples(subj, self._owl_label)
+        if obj in v:
             return self._desired_state
         else:
             return not self._desired_state
@@ -405,10 +406,15 @@ class AbstractConditionRelation(ConditionBase):
         self._wm = wmi
         subj = self._params.getParamValue(self._subject_key)
         obj = self._params.getParamValue(self._object_key)
-        if not subj.hasProperty("skiros:Template") or not obj.hasProperty("skiros:Template"):
-            return self._desired_state
-        subj = subj.getProperty("skiros:Template").value
-        obj = obj.getProperty("skiros:Template").value
+        if subj.hasProperty("skiros:Template"):
+            subj = subj.getProperty("skiros:Template").value
+        else:
+            subj = subj.id
+        if obj.hasProperty("skiros:Template"):
+            obj = obj.getProperty("skiros:Template").value
+        else:
+            obj = obj.id
+        print "{} {} {} ".format(subj, self._owl_label, obj)
         v = self._wm.getTriples(subj, self._owl_label)
         if obj in v:
             return self._desired_state
