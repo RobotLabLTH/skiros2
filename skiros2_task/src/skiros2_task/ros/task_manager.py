@@ -77,13 +77,14 @@ class TaskManagerNode(PrettyObject):
 
 
     def _onMonitorMsg(self, msg):
-        if msg.type=="Task":
-            self._done = True
-            self._result = msgs.AssignTaskResult(msg.state, msg.progress_message)
-            self._assign_task_action.set_succeeded(self._result)
-        else:
-            self._feedback = msgs.AssignTaskFeedback(msg.state, msg.progress_message)
-            self._assign_task_action.publish_feedback(self._feedback)
+        if self._assign_task_action.is_active():
+            if msg.type=="Task":
+                self._done = True
+                self._result = msgs.AssignTaskResult(msg.state, msg.progress_message)
+                self._assign_task_action.set_succeeded(self._result)
+            else:
+                self._feedback = msgs.AssignTaskFeedback(msg.state, msg.progress_message)
+                self._assign_task_action.publish_feedback(self._feedback)
 
     def _onRobotDiscovery(self, msg):
         """Callback for robot discovery messages.

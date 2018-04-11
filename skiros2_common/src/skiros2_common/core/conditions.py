@@ -414,7 +414,7 @@ class AbstractConditionRelation(ConditionBase):
             obj = obj.getProperty("skiros:Template").value
         else:
             obj = obj.id
-        print "{} {} {} ".format(subj, self._owl_label, obj)
+        #print "{} {} {} ".format(subj, self._owl_label, obj)
         v = self._wm.getTriples(subj, self._owl_label)
         if obj in v:
             return self._desired_state
