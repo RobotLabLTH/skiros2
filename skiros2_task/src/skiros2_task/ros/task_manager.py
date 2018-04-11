@@ -128,6 +128,10 @@ class TaskManagerNode(PrettyObject):
             else:
                 self._assign_task_action.set_aborted()
                 return
+        if not self._task:
+            self._result = msgs.AssignTaskResult(1, "No skills to execute.")
+            self._assign_task_action.set_succeeded(self._result)
+            return
         while (not self._assign_task_action.is_preempt_requested()) and (not rospy.is_shutdown()) and not self._done:
             rate.sleep()
         if not self._done:

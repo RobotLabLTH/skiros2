@@ -66,6 +66,15 @@ class Predicate(object):
     def __ne__(self, other):
         return not self.__eq__(other)
 
+    def isNegatedOf(self, other):
+        if self.name==other.name and len(self.params)==len(other.params):
+            for p1, p2 in zip(self.params, other.params):
+                if not p1["key"]==p2["key"]:
+                    return False
+            if self.negated!=other.negated:
+                return True
+        return False
+
     def __init__(self, predicate, params, abstracts):
         self.name = predicate.getProperty("skiros:appliedOnType").value
         self.operator = None
@@ -189,7 +198,12 @@ class Action(object):
         string += "\t)\n"
         string += "\t:effect (and\n"
         for e in self.effects:
-            string += '\t\t(at end {})\n'.format(e.toActionPddl())
+            application_time = "end"
+            for p in self.preconditions:
+                if e.isNegatedOf(p):
+                    application_time = "start"
+                    break
+            string += '\t\t(at {} {})\n'.format(application_time, e.toActionPddl())
         string += "\t)\n"
         string += ")\n"
         return string
