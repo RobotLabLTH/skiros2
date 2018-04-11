@@ -201,19 +201,22 @@ class ParamHandler(object):
 
     def merge(self, other):
         """
-        Return the parameter map, result of the merge between self and another ParameterHandler
+        @brief Return the parameter map, result of the merge between self and another ParameterHandler
         """
         to_ret = self.getCopy()
         for key, param in other._params.iteritems():
             if self.hasParam(key):
-                to_ret[key].setValues(param.getValues())
+                if not param.isSpecified():#If not specified (None) parameter is removed
+                    del to_ret[key]
+                else:
+                    to_ret[key].setValues(param.getValues())
             else:
                 to_ret[key] = param
         return to_ret
 
     def remap(self, initial_key, target_key):
         """
-        Remap a parameter to a new key
+        @brief Remap a parameter to a new key
         """
         if self.hasParam(initial_key):
             #print self.printState()
@@ -225,21 +228,21 @@ class ParamHandler(object):
 
     def specifyParams(self, other, keep_default=False):
         """
-        Set the input params
+        @brief Set the input params
         """
         for key, param in other._params.iteritems():
             if self.hasParam(key):
                 t = self._params[key]
                 if keep_default and t.hasSpecifiedDefault():
                     if t.dataTypeIs(Element):
-                        if t.getDefaultValue()._id=="" or t.getDefaultValue()._id==param.value._id:
+                        if t.getDefaultValue().getIdNumber()<0 or t.getDefaultValue().getIdNumber()==param.value.getIdNumber():
                             t.values = param.values
                 else:
                     t.values = param.values
 
     def specifyParamsDefault(self, other):
         """
-        Set the input params and default value
+        @brief Set the input params and default value
         """
         for key, param in other._params.iteritems():
             if self.hasParam(key):
@@ -247,13 +250,13 @@ class ParamHandler(object):
 
     def hasParam(self, key):
         """
-        Check that a key exists and return false otherwise
+        @brief Check that a key exists and return false otherwise
         """
         return self._params.has_key(key)
 
     def setDefault(self, key=None):
         """
-        Set the param (or the params, if key is a list) to the default value
+        @brief Set the param (or the params, if key is a list) to the default value
         """
         if isinstance(key, list):
             for k in key:

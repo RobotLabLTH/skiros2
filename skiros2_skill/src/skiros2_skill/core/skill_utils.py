@@ -190,6 +190,7 @@ class NodeExecutor():
         if not skill.hasState(State.Idle): #or not skill._instance.hasState(State.Idle):
             skill.reset()
         skill.specifyParams(self._params)
+        self._printTracked(skill._params, "[{}Params] ".format(skill.label))
         if not self._autoParametrizeBB(skill):
             log.info("[ground]", "Parametrization fail for skill {}".format(skill.printInfo()))
             return False

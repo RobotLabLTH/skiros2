@@ -73,6 +73,12 @@ class Property(object):
         """
         return self._data_type
 
+    def unset(self):
+        """
+        @brief Unset the property (getValue will then return None)
+        """
+        self._values = list()
+
     def dataTypeIs(self, vtype):
         """
         @brief Return true if input type match the property datatype
