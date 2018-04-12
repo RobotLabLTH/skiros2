@@ -300,17 +300,23 @@ class ConditionRelation(ConditionBase):
         self._wm = wmi
         subj = self._params.getParamValue(self._subject_key)
         obj = self._params.getParamValue(self._object_key)
-        #print self._description + "{} {}".format(subj.printState(), obj.printState())
-        if subj.getIdNumber()<0 and subj.hasProperty("skiros:Template"):
-            subj = subj.getProperty("skiros:Template").value
+        additional = ""
+        if subj.getIdNumber()<0:
+            additional += ". ?x rdf:type {}".format(subj.type)
+            subj = "?x"
         else:
             subj = subj.id
-        if obj.getIdNumber()<0 and obj.hasProperty("skiros:Template"):
-            obj = obj.getProperty("skiros:Template").value
+        if obj.getIdNumber()<0:
+            additional += ". ?y rdf:type {}".format(obj.type)
+            obj = "?y"
         else:
             obj = obj.id
-        v = self._wm.getTriples(subj, self._owl_label)
-        if obj in v:
+        if additional=="":
+            v = obj in self._wm.getTriples(subj, self._owl_label)
+        else:
+            v = self._wm.queryOntology("SELECT * WHERE {" + "{} {} {}".format(subj, self._owl_label, obj) + additional + ".}")
+        #print "{} {} {} {}".format(subj, self._owl_label, obj, v)
+        if v:
             return self._desired_state
         else:
             return not self._desired_state

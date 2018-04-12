@@ -38,6 +38,7 @@ import skiros2_common.ros.utils as utils
 class OntologyServer(object):
     def __init__(self, anonymous=False):
         rospy.init_node("ontology", anonymous=anonymous)
+        self._verbose = rospy.get_param('~verbose', False)
         self._ontology =  Ontology()
         self.initOntologyServices()
 
@@ -60,7 +61,8 @@ class OntologyServer(object):
                         if len(s)>1:
                             temp += " "
                     to_ret.answer.append(temp)
-            log.info("[WoQuery]", "Query: {}. Answer: {}. Time: {:0.3f} sec".format(msg.query_string, to_ret.answer, self._times.getLast()))
+            if self._verbose:
+                log.info("[WoQuery]", "Query: {}. Answer: {}. Time: {:0.3f} sec".format(msg.query_string, to_ret.answer, self._times.getLast()))
         except:
             log.error("[WoQuery]", "Parse error with following query: {}. ".format(msg.query_string))
         return to_ret
@@ -72,7 +74,8 @@ class OntologyServer(object):
                     self._ontology.addRelation(utils.msg2relation(s), msg.author)
                 else:
                     self._ontology.removeRelation(utils.msg2relation(s), msg.author)
-        log.info("[WoModify]", "Done in {} sec".format(self._times.getLast()))
+        if self._verbose:
+            log.info("[WoModify]", "Done in {} sec".format(self._times.getLast()))
         return srvs.WoModifyResponse(True)
 
     def run(self):

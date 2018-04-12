@@ -184,9 +184,10 @@ class NodeExecutor():
 
 
     def _ground(self, skill):
-        if skill._instance.hasState(State.Running): #TODO: fix fix fix!
-            log.info("[ground]", "Skill {} is already running".format(skill.printInfo()))
-            return False
+        #TODO: removed but should be taken back...
+#        if skill._instance.hasState(State.Running): #TODO: fix fix fix!
+#            log.info("[ground]", "Skill {} is already running".format(skill.printInfo()))
+#            return False
         if not skill.hasState(State.Idle): #or not skill._instance.hasState(State.Idle):
             skill.reset()
         skill.specifyParams(self._params)

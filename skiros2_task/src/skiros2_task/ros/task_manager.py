@@ -79,9 +79,13 @@ class TaskManagerNode(PrettyObject):
     def _onMonitorMsg(self, msg):
         if self._assign_task_action.is_active():
             if msg.type=="Task":
-                self._done = True
-                self._result = msgs.AssignTaskResult(msg.state, msg.progress_message)
-                self._assign_task_action.set_succeeded(self._result)
+                if msg.state==1:
+                    self._done = True
+                    self._result = msgs.AssignTaskResult(msg.state, msg.progress_message)
+                    self._assign_task_action.set_succeeded(self._result)
+                else:
+                    log.info("Task execution failed. Replanning.")
+                    self.plan_and_execute()
             else:
                 self._feedback = msgs.AssignTaskFeedback(msg.state, msg.progress_message)
                 self._assign_task_action.publish_feedback(self._feedback)
@@ -97,8 +101,6 @@ class TaskManagerNode(PrettyObject):
         log.debug(self.class_name, "Received robot discovery message")
         self._pub_robot_description.publish(self._author_name, self.skills.keys())
 
-
-
     def _assign_task_cb(self, msg):
         """Callback for setting new goals.
 
@@ -107,28 +109,11 @@ class TaskManagerNode(PrettyObject):
         Args:
             msg (skiros2_msgs.srv.TmSetGoals): Service message containing the goals
         """
-        self._pddl_interface.clear()
         self._done = False
+        self._current_goals = msg.goals
         rate = rospy.Rate(10.0)
-        with tk.Timer(self.class_name) as timer:
-            self.initDomain()
-            timer.toc("Init domain")
-            self.setGoal(msg.goals)
-            self.initProblem()
-            timer.toc("Init problem")
-            plan = self.plan()
-            timer.toc("Planning sequence")
-            log.assertWarn(plan, self.class_name, "Planning failed!")
-            if plan:
-                if self._verbose:
-                    log.info("[Plan]", plan)
-                self._feedback = msgs.AssignTaskFeedback(0, plan)
-                self._assign_task_action.publish_feedback(self._feedback)
-                self.buildTask(plan)
-                self.execute()
-            else:
-                self._assign_task_action.set_aborted()
-                return
+        if self.plan_and_execute()==None:
+            return
         if not self._task:
             self._result = msgs.AssignTaskResult(1, "No skills to execute.")
             self._assign_task_action.set_succeeded(self._result)
@@ -138,6 +123,29 @@ class TaskManagerNode(PrettyObject):
         if not self._done:
             self.preempt()
             self._assign_task_action.set_preempted()
+
+    def plan_and_execute(self):
+        with tk.Timer(self.class_name) as timer:
+            self._pddl_interface.clear()
+            self.initDomain()
+            timer.toc("Init domain")
+            self.setGoal(self._current_goals)
+            self.initProblem()
+            timer.toc("Init problem")
+            plan = self.plan()
+            timer.toc("Planning sequence")
+        log.assertWarn(plan, self.class_name, "Planning failed for goals: {}".format(self._current_goals))
+        if plan:
+            if self._verbose:
+                log.info("[Plan]", plan)
+            self._feedback = msgs.AssignTaskFeedback(0, plan)
+            self._assign_task_action.publish_feedback(self._feedback)
+            self.buildTask(plan)
+            self.execute()
+            return plan
+        else:
+            self._assign_task_action.set_aborted()
+            return None
 
     def buildTask(self, plan):
         """
@@ -276,7 +284,6 @@ class TaskManagerNode(PrettyObject):
 
     def plan(self):
         return self._pddl_interface.invokePlanner()
-
 
     def execute(self):
         self._curr_task = (self._task[0].manager, self._sli.getAgent(self._task[0].manager).execute(self._task, self._author_name))
