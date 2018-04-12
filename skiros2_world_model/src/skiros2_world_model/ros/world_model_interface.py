@@ -314,11 +314,11 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
                     continue
                 if this.getIdNumber()>=0: set1 = [this]
                 else:
-                    if ph.getParam(key).paramType()==params.ParamTypes.Optional: continue
+                    if ph.getParam(key).paramType==params.ParamTypes.Optional: continue
                     else: set1 = first[key]
                 if other.getIdNumber()>=0: set2 = [other]
                 else:
-                    if ph.getParam(key2).paramType()==params.ParamTypes.Optional: continue
+                    if ph.getParam(key2).paramType==params.ParamTypes.Optional: continue
                     else: set2 = first[key2]
                 if (key, key2) in couples:
                     temp = [np.array([e1, e2]) for e1 in set1 for e2 in set2 if bool(self.getRelations(e1._id, j["type"], e2._id)) == j['state']]

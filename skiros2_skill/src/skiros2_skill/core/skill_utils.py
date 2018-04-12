@@ -109,12 +109,11 @@ class NodeExecutor():
         """
         ground undefined parameters with parameters in the Black Board
         """
-        #print skill._params.printState()
-        to_resolve = [key for key, param in skill._params.getParamMap().iteritems() if param.paramType!=params.ParamTypes.Optional and param.dataType==type(wm.Element()) and param.getValue().getIdNumber() < 0]
+        to_resolve = [key for key, param in skill._params.getParamMap().iteritems() if param.paramType!=params.ParamTypes.Optional and param.dataTypeIs(wm.Element) and param.getValue().getIdNumber() < 0]
         if not to_resolve:
             return True
-        #print to_resolve
-        #print self.printParams(self._params)
+        if self._verbose:
+            log.info("[Autoparametrize]", "To resolve {}".format(to_resolve))
         remap = {}
         cp = params.ParamHandler()
         cp.reset(skill._params.getCopy())

@@ -386,10 +386,10 @@ class WorldModel(Ontology):
                 if not e.hasProperty(k):
                     add = False
                     break
-                for v in p.getValues():
+                for v in p.values:
                     if v == "" or v==None:
                         break
-                    if not v in e.getPropertys(k):
+                    if not v in e.getProperty(k).values:
                         add = False
                         break
                 if not add:
