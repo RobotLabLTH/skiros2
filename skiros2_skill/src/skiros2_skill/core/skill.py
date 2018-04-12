@@ -418,8 +418,8 @@ class SkillWrapper(SkillInterface):
 
         Instance can change at run-time, but the description will remain fixed
         """
-        if self._has_instance:
-            self.resetDescription()
+#        if self._has_instance:
+#            self.resetDescription()
         self._instance = instance
         self._has_instance = True
         self._wmi = instance._wmi
