@@ -115,7 +115,6 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         if(res):
             for i, e in enumerate(es):
                 e._id = res.ids[i]
-                print e.printState()
                 self._resolveLocalRelations(e)
             return res.ids
         return -1
