@@ -100,7 +100,7 @@ class Predicate(object):
             string += '(not '
         if self.isFunction():
             string += '({} '.format(self.operator)
-        if isinstance(self.value, str):
+        if isinstance(self.value, basestring):
             string += '({}'.format(self.value)
         else:
             string += '({}'.format(self.name)
