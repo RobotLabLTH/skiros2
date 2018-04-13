@@ -84,8 +84,12 @@ class TaskManagerNode(PrettyObject):
                     self._result = msgs.AssignTaskResult(msg.state, msg.progress_message)
                     self._assign_task_action.set_succeeded(self._result)
                 else:
-                    log.info("Task execution failed. Replanning.")
-                    self.plan_and_execute()
+                    if self._replan_count>20:
+                        self._assign_task_action.set_aborted()
+                    else:
+                        log.info("Task execution failed. Replanning.")
+                        self._replan_count += 1
+                        self.plan_and_execute()
             else:
                 self._feedback = msgs.AssignTaskFeedback(msg.state, msg.progress_message)
                 self._assign_task_action.publish_feedback(self._feedback)
@@ -112,6 +116,7 @@ class TaskManagerNode(PrettyObject):
         self._done = False
         self._is_ready = False
         self._current_goals = msg.goals
+        self._replan_count = 0
         rate = rospy.Rate(10.0)
         if self.plan_and_execute()==None:
             return
