@@ -23,6 +23,9 @@ class TaskManagerInterface(PrettyObject):
         self._assign_task_client.send_goal(req, done_cb= done_cb, feedback_cb = feedback_cb)
         return True
 
+    def preempt(self):
+        self._assign_task_client.cancel_all_goals()
+
     def wait_for_result(self):
         self._assign_task_client.wait_for_result()
         return self._assign_task_client.get_result()

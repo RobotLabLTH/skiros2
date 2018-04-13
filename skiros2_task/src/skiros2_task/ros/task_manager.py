@@ -55,7 +55,7 @@ class TaskManagerNode(PrettyObject):
 
         self._sub_robot_discovery = rospy.Subscriber('/skiros/robot_discovery', Empty, self._onRobotDiscovery)
         self._pub_robot_description = rospy.Publisher('/skiros/robot_description', RobotDescription, queue_size=10)
-
+        self._is_ready = False
 
 
     @property
@@ -77,7 +77,7 @@ class TaskManagerNode(PrettyObject):
 
 
     def _onMonitorMsg(self, msg):
-        if self._assign_task_action.is_active():
+        if self._assign_task_action.is_active() and self._is_ready:
             if msg.type=="Task":
                 if msg.state==1:
                     self._done = True
@@ -110,6 +110,7 @@ class TaskManagerNode(PrettyObject):
             msg (skiros2_msgs.srv.TmSetGoals): Service message containing the goals
         """
         self._done = False
+        self._is_ready = False
         self._current_goals = msg.goals
         rate = rospy.Rate(10.0)
         if self.plan_and_execute()==None:
@@ -118,6 +119,7 @@ class TaskManagerNode(PrettyObject):
             self._result = msgs.AssignTaskResult(1, "No skills to execute.")
             self._assign_task_action.set_succeeded(self._result)
             return
+        self._is_ready = True
         while (not self._assign_task_action.is_preempt_requested()) and (not rospy.is_shutdown()) and not self._done:
             rate.sleep()
         if not self._done:
