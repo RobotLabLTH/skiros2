@@ -225,7 +225,7 @@ class PddlInterface:
         self._objects = {}
         self._functions = []
         self._predicates = []
-        self._actions = []
+        self._actions = dict()
         self._init_state = []
         self._goal = []
 
@@ -262,14 +262,14 @@ class PddlInterface:
             self._addSuperTypes(function)
 
     def addAction(self, action):
-        if not action in self._actions and action.preconditions and action.effects:
-            for k, p in action.params.iteritems():
+        if not action in self._actions.values() and action.preconditions and action.effects:
+            for p in action.params.values():
                 self.addType(p, "thing")
             for c in action.preconditions:
                 self.addUngroundPredicate(c)
             for c in action.effects:
                 self.addUngroundPredicate(c)
-            self._actions.append(action)
+            self._actions[action.name] = action
 
     def setObjects(self, objects):
         self._objects = objects
@@ -298,7 +298,7 @@ class PddlInterface:
         for f in self._functions:
             string += "\t{}\n".format(f.toUngroundPddl())
         string += ")\n"
-        for a in self._actions:
+        for a in self._actions.values():
             string += a.toPddl()
             string += "\n"
         string += ")\n"
@@ -362,3 +362,13 @@ class PddlInterface:
             return data
         else:
             return None
+
+    def getActionParamMap(self, name, values):
+        """
+        @brief Returns a key-value map from a planned action
+        """
+        a = self._actions[name]
+        to_ret = dict()
+        for k,v in zip(a.params.keys(), values):
+            to_ret[k] = v
+        return to_ret

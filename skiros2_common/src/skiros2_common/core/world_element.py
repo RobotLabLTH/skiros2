@@ -254,6 +254,8 @@ class Element(object):
                     value = self._properties[key].dataType()(value)
                 self._properties[key].setValues(value)
             else:
+                if type(value)==unicode:
+                    value = str(value)
                 self._properties[key] = Property(key, value, is_list)
 
         if key == 'skiros:DiscreteReasoner':

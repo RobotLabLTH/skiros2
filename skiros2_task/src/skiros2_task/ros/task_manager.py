@@ -164,10 +164,10 @@ class TaskManagerNode(PrettyObject):
             s = s[s.find('(')+1: s.find(')')]
             tokens = s.split(' ')
             skill = deepcopy(self.skills[tokens.pop(0)])
-            map(lambda t,p: t.setValue(self.getElement(p)), skill.ph.getElementParams().values(), tokens)
-            # params is a dict? how to preserve order? -> tokens?
-            # for _, t in  skill.ph._params.iteritems():
-            #     t.setValue(self.getElement(tokens.pop(0)))
+            planned_map = self._pddl_interface.getActionParamMap(skill.name, tokens)
+#            print "{}".format(planned_map)
+            for k,v in planned_map.iteritems():
+                skill.ph[k].setValue(self.getElement(v))
             self._task.append(skill)
 
 
