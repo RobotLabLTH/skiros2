@@ -420,8 +420,8 @@ class AbstractConditionRelation(ConditionBase):
             obj = obj.getProperty("skiros:Template").value
         else:
             obj = obj.id
-        #print "{} {} {} ".format(subj, self._owl_label, obj)
         v = self._wm.getTriples(subj, self._owl_label)
+        #print "{} {} {} {}".format(subj, self._owl_label, obj, v)
         if obj in v:
             return self._desired_state
         else:
@@ -437,9 +437,9 @@ class AbstractConditionRelation(ConditionBase):
         subj = ph.getParamValue(self._subject_key)
         obj = ph.getParamValue(self._object_key)
         if subj.getIdNumber()<0:
-            subj.addRelation("-1", self._owl_label, self._object_key, self._desired_state)
+            subj.addRelation("-1", self._owl_label, self._object_key, self._desired_state, abstract=True)
         if obj.getIdNumber()<0:
-            obj.addRelation(self._subject_key, self._owl_label, "-1", self._desired_state)
+            obj.addRelation(self._subject_key, self._owl_label, "-1", self._desired_state, abstract=True)
 
     def toElement(self):
         to_ret = Element("skiros:" + self.__class__.__name__, self._label)

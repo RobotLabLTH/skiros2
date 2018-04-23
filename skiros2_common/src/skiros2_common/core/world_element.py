@@ -193,17 +193,19 @@ class Element(object):
                 to_ret.append(r)
         return to_ret
 
-    def addRelation(self, subj, predicate, obj, value=True):
+    def addRelation(self, subj, predicate, obj, value=True, abstract=False):
         """
         @brief Add a relation with another element
         @subj An element or an element id
         @obj An element or an element id
+        @value The state of the relation should be True or False
+        @abstract Whether the relation is between abstract objects or instances
         """
         self._setLastUpdate()
         if isinstance(obj, Element):
             self._local_relations.append({'src': "-1", 'type': predicate, 'dst': obj})
         elif isinstance(subj, basestring) and isinstance(obj, basestring):
-            self._relations.append({'src': subj, 'type': predicate, 'dst': obj, 'state': value})
+            self._relations.append({'src': subj, 'type': predicate, 'dst': obj, 'state': value, 'abstract': abstract})
         else:
             raise ValueError('Subject/Object must be of type string: subject type is {}. object type is {}'.format(type(subj), type(obj)))
 

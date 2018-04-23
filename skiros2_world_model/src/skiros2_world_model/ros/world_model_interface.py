@@ -262,7 +262,23 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         if(res):
             return res.return_code
 
-    def resolveElements2(self, keys, ph):
+
+    def checkRelation(self, subj, pred, obj, state, abstract):
+        if abstract:
+            if subj.hasProperty("skiros:Template"):
+                e1 = subj.getProperty("skiros:Template").value
+            else:
+                e1 = subj.id
+            if obj.hasProperty("skiros:Template"):
+                e2 = obj.getProperty("skiros:Template").value
+            else:
+                e2 = obj.id
+            print "CHECKING {} {} {} = {}".format(e1, pred, e2, (e2 in self.getTriples(e1, pred)) == state)
+            return (e2 in self.getTriples(e1, pred)) == state
+        else:
+            return bool(self.getRelations(subj.id, pred, obj.id)) == state
+
+    def resolveElements2(self, keys, ph, verbose=True):
         """
         Return all elements matching the profile in input (type, label, properties and relations)
 
@@ -272,12 +288,11 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         """
         first = {}
         couples = {}
-        print_out = False
         for key in keys:
             first[key] = np.array(self.resolveElement(ph.getParamValue(key)))
             if not first[key].any():
                 log.warn("resolveElements", "No input found for param {}. Resolving: {}".format(key, ph.getParamValue(key).printState(True)))
-        all_keys = [key for key, _ in ph._params.iteritems()]
+        all_keys = ph.keys()
         coupled_keys = []
         overlap_keys = []
         relations_done = set([])
@@ -309,21 +324,34 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
                     continue
                 this = ph.getParamValue(key)
                 other = ph.getParamValue(key2)
-                #print "{} {}".format(key, key2)
+                print "{} {}".format(key, key2)
                 if this.getIdNumber()>=0 and other.getIdNumber()>=0:#If both parameters are already set, no need to resolve..
                     continue
                 if this.getIdNumber()>=0: set1 = [this]
                 else:
-                    if ph.getParam(key).paramType==params.ParamTypes.Optional: continue
-                    else: set1 = first[key]
+                    if ph.getParam(key).paramType==params.ParamTypes.Optional:
+                        abstract = ph.getParam(key).value
+                        other = ph.getParam(key2).value
+                        abstract._id = abstract.label
+                        set1 = [abstract]
+                    else:
+                        set1 = first[key]
                 if other.getIdNumber()>=0: set2 = [other]
                 else:
-                    if ph.getParam(key2).paramType==params.ParamTypes.Optional: continue
-                    else: set2 = first[key2]
+                    if ph.getParam(key2).paramType==params.ParamTypes.Optional:
+                        abstract = ph.getParam(key2).value
+                        other = ph.getParam(key).value
+                        abstract._id = abstract.label
+                        set2 = [abstract]
+                    else:
+                        set2 = first[key2]
                 if (key, key2) in couples:
-                    temp = [np.array([e1, e2]) for e1 in set1 for e2 in set2 if bool(self.getRelations(e1._id, j["type"], e2._id)) == j['state']]
+                    temp = [np.array([e1, e2]) for e1 in set1 for e2 in set2 if self.checkRelation(e1, j["type"], e2, j['state'], j['abstract'])]
                     if temp:
-                        couples[(key, key2)] = np.concatenate(couples[(key, key2)], np.array(temp))
+                        try:
+                            couples[(key, key2)] = np.concatenate(couples[(key, key2)], np.array(temp))
+                        except:
+                            log.error("", "MERGING: {} and {} ".format(couples[(key, key2)], np.array(temp)))
                     else:
                         log.warn("resolveElements", "No input for params {} {}. Resolving: {} {}".format(key, key2, ph.getParamValue(key).printState(True), ph.getParamValue(key2).printState(True)))
                 else:
@@ -331,7 +359,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
                     else: coupled_keys.append(key)
                     if key2 in coupled_keys: overlap_keys.append(key2)
                     else: coupled_keys.append(key2)
-                    temp = [np.array([e1, e2]) for e1 in set1 for e2 in set2 if bool(self.getRelations(e1._id, j["type"], e2._id)) == j['state']]
+                    temp = [np.array([e1, e2]) for e1 in set1 for e2 in set2 if self.checkRelation(e1, j["type"], e2, j['state'], j['abstract'])]
                     couples[(key, key2)] = np.array(temp)
                     if not temp:
                         log.warn("resolveElements", "No input for params {} {}. Resolving: {} {}".format(key, key2, ph.getParamValue(key).printState(True), ph.getParamValue(key2).printState(True)))
@@ -375,7 +403,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         for key in keys:
             if not key in coupled_keys:
                 couples[key] = first[key]
-        if print_out:
+        if verbose:
             for k, v in couples.iteritems():
                 s = "{}:".format(k)
                 for i in v:

@@ -187,6 +187,12 @@ class ParamHandler(object):
         else:
             log.error('ParamHandler', 'Param {} is not in the map. Debug: {}'.format(key, self.printState()))
 
+    def keys(self):
+        return self._params.keys()
+
+    def values(self):
+        return self._params.values()
+
     def iteritems(self):
         return self._params.iteritems()
 
