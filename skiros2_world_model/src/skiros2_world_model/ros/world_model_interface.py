@@ -273,12 +273,12 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
                 e2 = obj.getProperty("skiros:Template").value
             else:
                 e2 = obj.id
-            print "CHECKING {} {} {} = {}".format(e1, pred, e2, (e2 in self.getTriples(e1, pred)) == state)
+            #print "CHECKING {} {} {} = {}".format(e1, pred, e2, (e2 in self.getTriples(e1, pred)) == state)
             return (e2 in self.getTriples(e1, pred)) == state
         else:
             return bool(self.getRelations(subj.id, pred, obj.id)) == state
 
-    def resolveElements2(self, keys, ph, verbose=True):
+    def resolveElements2(self, keys, ph, verbose=False):
         """
         Return all elements matching the profile in input (type, label, properties and relations)
 
@@ -324,7 +324,6 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
                     continue
                 this = ph.getParamValue(key)
                 other = ph.getParamValue(key2)
-                print "{} {}".format(key, key2)
                 if this.getIdNumber()>=0 and other.getIdNumber()>=0:#If both parameters are already set, no need to resolve..
                     continue
                 if this.getIdNumber()>=0: set1 = [this]

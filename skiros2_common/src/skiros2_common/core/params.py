@@ -217,7 +217,8 @@ class ParamHandler(object):
                 else:
                     to_ret[key].setValues(param.getValues())
             else:
-                to_ret[key] = param
+                if param.isSpecified():#Only if specified (not None) parameter is added
+                    to_ret[key] = param
         return to_ret
 
     def remap(self, initial_key, target_key):

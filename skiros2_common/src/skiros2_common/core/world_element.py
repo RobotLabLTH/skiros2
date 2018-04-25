@@ -178,6 +178,12 @@ class Element(object):
         else:
             return None
 
+    def removeRelation(self, relation):
+        """
+        @brief Remove a relation from the element
+        """
+        self._relations.remove(relation)
+
     def getRelations(self, subj="", pred=[], obj=""):
         """
         @brief Return a list of all relations matching with input filters

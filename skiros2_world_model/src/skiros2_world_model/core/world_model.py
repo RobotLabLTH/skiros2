@@ -133,12 +133,20 @@ class WorldModel(Ontology):
         for k, p in e._properties.iteritems():
             predicate = self.lightstring2uri(k)
             for v in p.getValues():
-                value = rdflib.term.Literal(v)
+                value = rdflib.term.Literal(v, datatype=self._getDatatype(p))
                 to_ret.append((subject, predicate, value))
-        for r in e._relations:
+        for r in list(e._relations):
             if r['src']=="-1" or r['src']==e.id:
+                if not self.existsInOntology(self.lightstring2uri(r['dst'])):
+                    log.error("[element2statements]", "Element with key {} is not defined in ontology. Skipped relation: {}".format(r['dst'], r))
+                    e.removeRelation(r)
+                    continue
                 to_ret.append((subject, self.lightstring2uri(r['type']), self.lightstring2uri(r['dst'])))
             else:
+                if not self.existsInOntology(self.lightstring2uri(r['src'])):
+                    log.error("[element2statements]", "Element with key {} is not defined in ontology. Skipped relation: {}".format(r['src'], r))
+                    e.removeRelation(r)
+                    continue
                 to_ret.append((self.lightstring2uri(r['src']), self.lightstring2uri(r['type']), subject))
         return to_ret
 
@@ -235,6 +243,9 @@ class WorldModel(Ontology):
     def isSceneElement(self, uri):
         return self._uri2id(uri) >= 0
 
+    def existsInOntology(self, uri):
+        return bool(self._ontology.value(uri, RDF.type))
+
     @synchronized
     def loadScene(self, filename):
         """
@@ -329,20 +340,9 @@ class WorldModel(Ontology):
         for name, r in self._reasoners.iteritems():
             if not r.parse(e, "add"):
                 raise Exception("Reasoner {} rejected the element {} add".format(name, e))
-        subject = self.lightstring2uri(e.id)
-        self._add((subject, RDF.type, OWL.NamedIndividual), author)
-        self._add((subject, RDF.type, self.lightstring2uri(e._type)), author)
-        self._add((subject, RDFS.label, rdflib.term.Literal(e._label, datatype=XSD.string)), author)
-        for k, p in e._properties.iteritems():
-            predicate = self.lightstring2uri(k)
-            for v in p.getValues():
-                value = rdflib.term.Literal(v, datatype=self._getDatatype(p))
-                self._add((subject, predicate, value), author)
-        for r in e._relations:
-            if r['src']=="-1":
-                self._add((subject, self.lightstring2uri(r['type']), self.lightstring2uri(r['dst'])), author)
-            else:
-                self._add((self.lightstring2uri(r['src']), self.lightstring2uri(r['type']), subject), author)
+        statements = self._element2statements(e)
+        for s in statements:
+            self._add(s, author)
         self._elements_cache[e.id] = e
         return e.id
 
@@ -402,8 +402,6 @@ class WorldModel(Ontology):
     def removeElement(self, e, author):
         """
         Remove an element from the scene
-
-        If recursive, remove also all elements related to the initial one
         """
         self._id_gen.removeId(self._uri2id(e.id))
         for name, r in self._reasoners.iteritems():

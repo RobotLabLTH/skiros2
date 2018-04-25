@@ -66,6 +66,15 @@ class Predicate(object):
     def __ne__(self, other):
         return not self.__eq__(other)
 
+    def isEqualOf(self, other):
+        if self.name==other.name and len(self.params)==len(other.params):
+            for p1, p2 in zip(self.params, other.params):
+                if not p1["key"]==p2["key"]:
+                    return False
+            if self.negated==other.negated:
+                return True
+        return False
+
     def isNegatedOf(self, other):
         if self.name==other.name and len(self.params)==len(other.params):
             for p1, p2 in zip(self.params, other.params):
@@ -94,9 +103,9 @@ class Predicate(object):
     def isFunction(self):
         return self.operator!=None and not isinstance(self.value, str)
 
-    def toActionPddl(self):
+    def toActionPddl(self, invert=False):
         string = ''
-        if self.negated:
+        if self.negated or (not self.negated and invert):
             string += '(not '
         if self.isFunction():
             string += '({} '.format(self.operator)
@@ -108,7 +117,7 @@ class Predicate(object):
             string += ' ?{}'.format(p["key"])
         if self.isFunction():
             string += ') {}'.format(self.value)
-        if self.negated:
+        if self.negated or (not self.negated and invert):
             string += ')'
         string += ")"
         return string
@@ -202,6 +211,9 @@ class Action(object):
             for p in self.preconditions:
                 if e.isNegatedOf(p):
                     application_time = "start"
+                    break
+                elif e.isEqualOf(p):
+                    string += '\t\t(at {} {})\n'.format("start", e.toActionPddl(invert=True))
                     break
             string += '\t\t(at {} {})\n'.format(application_time, e.toActionPddl())
         string += "\t)\n"
