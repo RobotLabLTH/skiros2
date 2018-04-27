@@ -98,9 +98,24 @@ class WorldModel(Ontology):
             root = Element("skiros:Scene", scene_name, 0)
         self.addElement(root, self.__class__.__name__)
 
+    def _set(self, statement, author, time=None, probability=1.0):
+        """
+        @brief Remove any existing triples for subject and predicate before adding
+        (subject, predicate, object).
+
+        Convenience method to update the value of object
+        """
+        if self._verbose:
+            log.info(author, log.logColor.RED + log.logColor.BOLD  + "[-] ({}) - ({}) - (*))".format(self.uri2lightstring(statement[0]), self.uri2lightstring(statement[1])))
+            log.info(author, log.logColor.GREEN + log.logColor.BOLD  + "[+] ({}) - ({}) - ({})".format(self.uri2lightstring(statement[0]), self.uri2lightstring(statement[1]), self.uri2lightstring(statement[2])))
+        self._ontology.set(statement)
+        self._wm.set(statement)
+        if self._elements_cache.has_key(self.uri2lightstring(statement[0])):
+            del self._elements_cache[self.uri2lightstring(statement[0])]
+
     def _remove(self, statement, author, time=None, probability=1.0):
         """
-        Remove a statement from the scene and from ontology
+        @brief Remove a statement from the scene and from ontology
         """
         if self._verbose:
             log.info(author, log.logColor.RED + log.logColor.BOLD  + "[-] ({}) - ({}) - ({})".format(self.uri2lightstring(statement[0]), self.uri2lightstring(statement[1]), self.uri2lightstring(statement[2])))
@@ -113,7 +128,7 @@ class WorldModel(Ontology):
 
     def _add(self, statement, author, time=None, probability=1.0):
         """
-        Add a statement to the scene and the ontology
+        @brief Add a statement to the scene and the ontology
         """
         if self._verbose:
             log.info(author, log.logColor.GREEN + log.logColor.BOLD  + "[+] ({}) - ({}) - ({})".format(self.uri2lightstring(statement[0]), self.uri2lightstring(statement[1]), self.uri2lightstring(statement[2])))
@@ -128,8 +143,8 @@ class WorldModel(Ontology):
         to_ret = []
         subject = self.lightstring2uri(e.id)
         to_ret.append((subject, RDF.type, OWL.NamedIndividual))
-        to_ret.append((subject, RDF.type, self.lightstring2uri(e._type)))
-        to_ret.append((subject, RDFS.label, rdflib.term.Literal(e._label)))
+        to_ret.append((subject, RDF.type, self.lightstring2uri(e.type)))
+        to_ret.append((subject, RDFS.label, rdflib.term.Literal(e.label)))
         for k, p in e._properties.iteritems():
             predicate = self.lightstring2uri(k)
             for v in p.getValues():
@@ -368,6 +383,31 @@ class WorldModel(Ontology):
                 #print "Adding {}".format(s)
                 self._add(s, author)
         self._elements_cache[e.id] = e
+
+    @synchronized
+    def updateReasonerProperties(self, e, reasoner):
+        """
+        @brief Update properties of an element in the scene
+        """
+        if not self._id_gen.hasId(self._uri2id(e.id)):
+            log.error("[updateElement]", "Id {} is not present in the wm.".format(self._uri2id(e.id)))
+            return
+        for name, r in self._reasoners.iteritems():
+            if not r.parse(e, "update"):
+                raise Exception("Reasoner {} rejected the element {} update".format(name, e))
+        old_e = self.getElement(e.id)
+        subject = self.lightstring2uri(e.id)
+        for k in reasoner.getAssociatedData():
+            predicate = self.lightstring2uri(k)
+            p = e.getProperty(k)
+            values = p.values
+            if old_e.getProperty(k).values!=values:
+                old_e.getProperty(k).values = values
+                if values:
+                    self._set((subject, predicate, rdflib.term.Literal(values[0], datatype=self._getDatatype(p))), reasoner.__class__.__name__)
+                for i in range(1, len(values)):
+                    self._add((subject, predicate, rdflib.term.Literal(values[i], datatype=self._getDatatype(p))), reasoner.__class__.__name__)
+        self._elements_cache[e.id] = old_e
 
     @synchronized
     def resolveElements(self, description):

@@ -48,7 +48,7 @@ class DiscreteReasoner(object):
         to_ret = self._stop_requested
         self._stop_requested = False
         return to_ret
-      
+
     def stop(self):
         """ Request to stop the reasoner """
         self._stop_requested = True
@@ -100,6 +100,10 @@ class DiscreteReasoner(object):
         """ TODO """
         raise NotImplementedError("Not implemented in abstract class")
 
-    def computeRelations(self, sub, obj):
+    def getAssociatedData(self):
+        """ TODO """
+        raise NotImplementedError("Not implemented in abstract class")
+
+    def computeRelations(self, sub, obj, with_metrics=False):
         """ TODO """
         raise NotImplementedError("Not implemented in abstract class")

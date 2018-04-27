@@ -94,7 +94,7 @@ class NodeExecutor():
 
     def inferUnvalidParams(self, skill):
         #print '{}: {} '.format(skill._label, self.printParams(skill._params))
-        unvalid_params = skill.checkPreCond(True)
+        unvalid_params = skill.checkPreCond(self._verbose)
         if unvalid_params:
             log.info("[{}] Reset unvalid params {}".format(skill._label, unvalid_params))
             for k in unvalid_params:
@@ -198,8 +198,9 @@ class NodeExecutor():
         #if not self.inferUnvalidParams(skill):
         #    log.info("[ground]", "Invalid parameters found for skill {}".format(skill.printInfo()))
         #    return False
-        if skill.checkPreCond(True):
-            log.info("[ground]", "Pre-conditions fail for skill {}".format(skill.printInfo()))
+        if skill.checkPreCond(self._verbose):
+            if self._verbose:
+                log.info("[ground]", "Pre-conditions fail for skill {}".format(skill.printInfo()))
             return False
         return True
 

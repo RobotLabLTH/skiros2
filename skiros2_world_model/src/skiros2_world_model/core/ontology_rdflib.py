@@ -29,9 +29,8 @@
 #################################################################################
 
 import rdflib
-from skiros2_common.core.world_element import Element
 import skiros2_common.tools.logger as log
-from rdflib.namespace import RDF, RDFS, OWL, XSD
+from rdflib.namespace import RDF, RDFS, OWL
 import os.path
 
 class Ontology:

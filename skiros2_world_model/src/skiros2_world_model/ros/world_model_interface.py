@@ -174,7 +174,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         if(res):
             return [utils.msg2element(x) for x in res.elements]
 
-    def instanciate(self, uri, recursive=False, relations=list(), relation_filter="skiros:hasA", antiloop_bind=set()):
+    def instanciate(self, uri, recursive=False, relations=list(), relation_filter=["skiros:hasA", "skiros:contain"], antiloop_bind=set()):
         """
         Gets a template individual, adds it to the scene and returns a corresponding element
 
@@ -190,7 +190,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         if recursive:
             antiloop_bind.add(template._id)
             for r in relcopy:
-                if (r['type']==relation_filter or relation_filter=="") and r['src']=="-1":
+                if (r['type'] in relation_filter or not relation_filter) and r['src']=="-1":
                     if not r['dst'] in antiloop_bind:
                         rcopy = copy.deepcopy(r)
                         rcopy['src'] = template._id
@@ -243,6 +243,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
                 if pred in reasoner.computeRelations(s, o):
                    return [{"src": subj, "type": pred, "dst": obj}]
             except KeyError:
+                #No reasoner associated to the relation
                 pass
         return list()
 
