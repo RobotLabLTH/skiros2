@@ -46,7 +46,7 @@ class SkillLayerInterface:
         self._agents = {}
         self._new_changes = True
         #print self._agent_classes
-        v = self._wmi.resolveElement(wm.Element("sumo:Agent"))
+        v = self._wmi.resolveElements(wm.Element("sumo:Agent"))
         for e in v:
             log.info("[SkillLayerInterface] Detected robot: {}".format(e))
             self._agents[e.getProperty("skiros:SkillMgr").value] = SkillManagerInterface(self._wmi, e)

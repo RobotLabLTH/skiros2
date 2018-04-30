@@ -166,13 +166,9 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
             return [utils.msg2element(x) for x in res.elements]
 
     def resolveElement(self, e):
-        #TODO: change this to return only first element in list
-        msg = srvs.WmGetRequest()
-        msg.element = utils.element2msg(e)
-        msg.action = msg.RESOLVE
-        res = self._call(self._get, msg)
-        if(res):
-            return [utils.msg2element(x) for x in res.elements]
+        res = self.resolveElements(e)
+        if res:
+            return res[0]
 
     def instanciate(self, uri, recursive=False, relations=list(), relation_filter=["skiros:hasA", "skiros:contain"], antiloop_bind=set()):
         """
@@ -290,7 +286,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         first = {}
         couples = {}
         for key in keys:
-            first[key] = np.array(self.resolveElement(ph.getParamValue(key)))
+            first[key] = np.array(self.resolveElements(ph.getParamValue(key)))
             if not first[key].any():
                 log.warn("resolveElements", "No input found for param {}. Resolving: {}".format(key, ph.getParamValue(key).printState(True)))
         all_keys = ph.keys()
