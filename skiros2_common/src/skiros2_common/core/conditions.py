@@ -312,7 +312,7 @@ class ConditionRelation(ConditionBase):
         else:
             obj = obj.id
         if additional=="":
-            v = obj in self._wm.getTriples(subj, self._owl_label)
+            v = self._wm.getRelations(subj, self._owl_label, obj)
         else:
             v = self._wm.queryOntology("SELECT * WHERE {" + "{} {} {}".format(subj, self._owl_label, obj) + additional + ".}")
         #print "{} {} {} {}".format(subj, self._owl_label, obj, v)
