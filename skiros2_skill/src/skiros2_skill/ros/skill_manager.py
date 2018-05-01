@@ -172,8 +172,8 @@ class SkillManager:
     def _registerAgent(self, agent_name):
         res = self._wmi.resolveElement(wm.Element("cora:Robot", agent_name))
         if res:
-            log.info("[{}]".format(self.__class__.__name__), "Found robot {}, skipping registration.".format(res[0]))
-            self._robot = res[0]
+            log.info("[{}]".format(self.__class__.__name__), "Found robot {}, skipping registration.".format(res))
+            self._robot = res
             for r in self._robot.getRelations("-1", "skiros:hasSkill"):
                 self._wmi.removeElement(self._wmi.getElement(r['dst']))
             self._robot = self._wmi.getElement(self._robot.id)

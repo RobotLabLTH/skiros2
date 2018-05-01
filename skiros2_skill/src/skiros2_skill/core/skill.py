@@ -183,6 +183,9 @@ class SkillInterface(SkillCore):
     def visit(self, visitor):
         return visitor.process(self)
 
+    def visitPreempt(self, visitor):
+        return visitor.processPreempt(self)
+
     def printInfo(self, verbose=False):
         s = "{}-{} ".format(self._type,self._label)
         if verbose:

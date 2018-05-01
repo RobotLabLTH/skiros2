@@ -17,8 +17,7 @@ class VisitorInterface:
     def verifyPreempt(self, root):
         if self._preempt_request.is_set():
             self._preempt_request.clear()
-            vp = VisitorPreempt()
-            vp.traverse(root)
+            root.visitPreempt(self)
             self._setState(State.Failure)
             return True
         return False
@@ -38,6 +37,14 @@ class VisitorInterface:
             self._setState(root.visit(self))
             self.processingDone(root)
         return self.getState()
+
+    def processPreempt(self, procedure):
+        #Preempt children
+        for c in procedure._children:
+            c.visitPreempt(self)
+        #Preempt node
+        #print "STOPPING : {}".format(procedure.printState(True))
+        procedure.preempt()
 
     def process(self, procedure):
         #Process node
@@ -96,25 +103,6 @@ class VisitorPrint(VisitorInterface, NodePrinter, NodeExecutor):
 
     def postProcessNode(self, procedure):
         self.unindend()
-        return State.Success
-
-class VisitorPreempt(VisitorInterface):
-    """
-    Stops all running nodes
-    """
-    def __init__(self):
-        VisitorInterface.__init__(self)
-
-    def setVerbose(self, verbose):
-        self._verbose=verbose
-
-    def processNode(self, procedure):
-        if procedure.hasState(State.Running):
-            return State.Running
-        return State.Success
-
-    def postProcessNode(self, procedure):
-        procedure.preempt()
         return State.Success
 
 class VisitorExecutor(VisitorInterface, NodePrinter, NodeExecutor):

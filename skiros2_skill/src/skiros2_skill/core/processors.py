@@ -25,7 +25,7 @@ class Sequential():
     @brief Process children sequentially. Succeded ones are skipped
     """
     def printType(self):
-        return '->'
+        return '->*'
 
     def processChildren(self, children, visitor):
         """
@@ -43,7 +43,7 @@ class Enforce():
     @brief Process children sequentially. Succeded ones are skipped, Failed are restarted
     """
     def printType(self):
-        return '-!'
+        return '->*!'
 
     def processChildren(self, children, visitor):
         """
@@ -58,7 +58,7 @@ class Enforce():
 
 class Selector():
     """
-    Process children sequentially.
+    @brief Process children sequentially.
     """
     def printType(self):
         return '?'
@@ -77,12 +77,12 @@ class Selector():
 
     def stopAll(self, children, visitor):
         for c in children:
-            if c._state==State.Running:
-                c.preempt()
+            if c.state==State.Running:
+                c.visitPreempt(visitor)
 
 class ParallelFf():
     """
-    Parallel First Fail - Process children in parallel. Stop all processes if a child fails.
+    @brief Parallel First Fail - Process children in parallel. Stop all processes if a child fails.
     """
     def printType(self):
         return '|ff|'
@@ -100,8 +100,8 @@ class ParallelFf():
 
     def stopAll(self, children, visitor):
         for c in children:
-            if c._state==State.Running:
-                c.preempt() #TODO: the visitor should be included in the loop
+            if c.state==State.Running:
+                c.visitPreempt(visitor)
 
 class ParallelFs():
     """
@@ -120,8 +120,8 @@ class ParallelFs():
 
     def stopAll(self, children, visitor):
         for c in children:
-            if c._state==State.Running:
-                c.preempt()
+            if c.state==State.Running:
+                c.visitPreempt(visitor)
 #Decorators
 class Loop():
     def __init__(self, processor):
