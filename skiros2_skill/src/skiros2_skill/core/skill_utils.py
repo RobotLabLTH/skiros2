@@ -52,8 +52,8 @@ class NodeExecutor():
             vs = p.values
             if p.dataTypeIs(wm.Element):
                 for i, e in enumerate(vs):
-                    if e._id!="":
-                        vs[i] = self._wm.getElement(e._id)
+                    if e.id!="":
+                        vs[i] = self._wm.getElement(e.id)
                 p.values = vs
 
     def trackParam(self, key, prop="", relation="", print_all=False):

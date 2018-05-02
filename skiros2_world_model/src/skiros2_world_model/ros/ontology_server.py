@@ -31,9 +31,11 @@
 import rospy
 import skiros2_common.tools.logger as log
 import skiros2_msgs.srv as srvs
+from std_srvs.srv import SetBool, SetBoolResponse
 from skiros2_world_model.core.ontology_rdflib import Ontology
 from skiros2_common.tools.time_keeper import TimeKeeper
 import skiros2_common.ros.utils as utils
+from threading import Lock
 
 class OntologyServer(object):
     def __init__(self, anonymous=False):
@@ -44,8 +46,23 @@ class OntologyServer(object):
 
     def initOntologyServices(self):
         self._times = TimeKeeper()
+        self._mutex = Lock()
+        self._mutex_srv = rospy.Service('~lock', SetBool, self._lockCb)
         self._query = rospy.Service('~ontology/query', srvs.WoQuery, self._woQueryCb)
         self._modify = rospy.Service('~ontology/modify', srvs.WoModify, self._woModifyCb)
+
+    def _lockCb(self, msg):
+        """
+        @brief Can be used to get sync access to server
+        """
+        if msg.data:
+            self._mutex.acquire()
+        else:
+            try:
+                self._mutex.release()
+            except:
+                return SetBoolResponse(False, "Mutex already unlocked.")
+        return SetBoolResponse(True, "Ok")
 
     def _woQueryCb(self, msg):
         to_ret = srvs.WoQueryResponse()

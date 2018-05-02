@@ -32,6 +32,7 @@ class VisitorInterface:
         return self._state == state
 
     def traverse(self, root):
+        self.processingStart(root)
         self._setState(State.Running)
         if not self.verifyPreempt(root):
             self._setState(root.visit(self))
@@ -70,6 +71,10 @@ class VisitorInterface:
     def postProcessNode(self, procedure):
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
+
+    def processingStart(self, procedure):
+        """ Optional - Not implemented in abstract class. """
+        return True
 
     def processingDone(self, procedure):
         """ Optional - Not implemented in abstract class. """
@@ -139,8 +144,13 @@ class VisitorExecutor(VisitorInterface, NodePrinter, NodeExecutor):
         self.unindend()
         return state
 
-    def processingDone(self, procedure):
+    def processingStart(self, procedure):
+        self._wm.lock()
         self.syncParams()
+        return True
+
+    def processingDone(self, procedure):
+        self._wm.unlock()
         return True
 
 class VisitorReversibleSimulator(VisitorInterface, NodePrinter, NodeReversibleSimulator):

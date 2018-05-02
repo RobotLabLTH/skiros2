@@ -33,6 +33,7 @@ import skiros2_msgs.srv as srvs
 import skiros2_msgs.msg as msgs
 import skiros2_common.ros.utils as utils
 import skiros2_common.tools.logger as log
+from std_srvs.srv import SetBool, SetBoolRequest
 from skiros2_common.core.world_element import *
 from skiros2_world_model.core.world_model_abstract_interface import OntologyAbstractInterface
 
@@ -42,6 +43,7 @@ class OntologyInterface(OntologyAbstractInterface):
     """
     def __init__(self, author_name="test"):
         self._author_name = author_name
+        self._lock = rospy.ServiceProxy('wm/lock', SetBool)
         self._ontology_query = rospy.ServiceProxy('wm/ontology/query', srvs.WoQuery)
         self._ontology_modify = rospy.ServiceProxy('wm/ontology/modify', srvs.WoModify)
         log.info("[{}] ".format(self.__class__.__name__), "Waiting wm communications...")
@@ -57,6 +59,20 @@ class OntologyInterface(OntologyAbstractInterface):
             return True
         except rospy.ROSException, e:
             return False
+
+    def lock(self):
+        """
+        @brief Lock the ontology server mutex to signal exclusive access
+
+        Note: locking is NOT mandatory and all functions will still work without locking the server
+        """
+        return self._call(self._lock, SetBoolRequest(True)).success
+
+    def unlock(self):
+        """
+        @brief Unlock the ontology server mutex
+        """
+        return self._call(self._lock, SetBoolRequest(False)).success
 
     def queryOntology(self, query, cut_prefix=True):
         """
@@ -160,6 +176,8 @@ class OntologyInterface(OntologyAbstractInterface):
         Return the parent class of child_class
         """
         to_ret = self.queryOntology("SELECT ?x WHERE { "+ self.addPrefix(child_class) +" rdfs:subClassOf ?x. } ")
+        if not to_ret:
+            log.error("[getSuperClass]", "No super class found for {}".format(child_class))
         return to_ret[0]
 
     def getSubClasses(self, parent_class, recursive=True):

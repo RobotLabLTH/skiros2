@@ -29,6 +29,14 @@
 #################################################################################
 
 class OntologyAbstractInterface:
+    def lock(self):
+        """ Not implemented in abstract class. """
+        raise NotImplementedError("Not implemented in abstract class")
+
+    def unlock(self):
+        """ Not implemented in abstract class. """
+        raise NotImplementedError("Not implemented in abstract class")
+
     def queryOntology(self, query, cut_prefix=False):
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
