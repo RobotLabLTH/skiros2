@@ -142,12 +142,19 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         return -1
 
     def removeElement(self, e, recursive=True, rel_filter=":sceneProperty", type_filter=""):
+        """
+        @brief Removes an element from the scene. e can be an Element or an id
+        """
         #print "{}".format(eid)
         msg = srvs.WmModifyRequest()
         msg.author = self._author_name
         msg.type_filter = type_filter
         msg.relation_filter = rel_filter
-        msg.elements.append(utils.element2msg(e))
+        if isinstance(e, Element):
+            msg.elements.append(utils.element2msg(e))
+        elif isinstance(e, str):
+            e = self.getElement(e)
+            msg.elements.append(utils.element2msg(e))
         if recursive:
             msg.action = msg.REMOVE_RECURSIVE
         else:
