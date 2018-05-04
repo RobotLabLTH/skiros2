@@ -140,6 +140,9 @@ class Loop():
         return State.Running
 
 class NoFail():
+    """
+    @brief Returns only running or success
+    """
     def __init__(self, processor):
         self._processor = processor
 
@@ -150,5 +153,8 @@ class NoFail():
         """
         Ignore failed execution
         """
-        self._processor.processChildren(children, visitor)
-        return True
+        state = self._processor.processChildren(children, visitor)
+        if state==State.Running:
+            return state
+        else:
+            return State.Success

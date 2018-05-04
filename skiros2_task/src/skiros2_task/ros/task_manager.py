@@ -118,7 +118,7 @@ class TaskManagerNode(PrettyObject):
         self._current_goals = msg.goals
         self._replan_count = 0
         rate = rospy.Rate(10.0)
-        if self.plan_and_execute()==None:
+        if self.plan_and_execute() is None:
             return
         if not self._task:
             self._result = msgs.AssignTaskResult(1, "No skills to execute.")
@@ -141,8 +141,8 @@ class TaskManagerNode(PrettyObject):
             timer.toc("Init problem")
             plan = self.plan()
             timer.toc("Planning sequence")
-        log.assertWarn(plan, self.class_name, "Planning failed for goals: {}".format(self._current_goals))
-        if plan:
+        log.assertWarn(plan is None, self.class_name, "Planning failed for goals: {}".format(self._current_goals))
+        if plan is not None:
             if self._verbose:
                 log.info("[Plan]", plan)
             self._feedback = msgs.AssignTaskFeedback(0, plan)
@@ -293,7 +293,8 @@ class TaskManagerNode(PrettyObject):
         return self._pddl_interface.invokePlanner()
 
     def execute(self):
-        self._curr_task = (self._task[0].manager, self._sli.getAgent(self._task[0].manager).execute(self._task, self._author_name))
+        if self._task:
+            self._curr_task = (self._task[0].manager, self._sli.getAgent(self._task[0].manager).execute(self._task, self._author_name))
 
     def preempt(self):
         self._sli.getAgent(self._curr_task[0]).preempt(self._curr_task[1], self._author_name)

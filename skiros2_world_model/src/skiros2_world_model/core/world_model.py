@@ -367,7 +367,7 @@ class WorldModel(Ontology):
         @brief Update an element in the scene
         """
         if not self._id_gen.hasId(self._uri2id(e.id)):
-            log.error("[updateElement]", "Id {} is not present in the wm.".format(self._uri2id(e.id)))
+            log.error("[updateElement]", "Id {} is not present in the wm. Element: {}".format(self._uri2id(e.id), e.printState(True)))
             return
         for name, r in self._reasoners.iteritems():
             if not r.parse(e, "update"):
