@@ -36,6 +36,7 @@ from skiros2_world_model.core.ontology_rdflib import Ontology
 from skiros2_common.tools.time_keeper import TimeKeeper
 import skiros2_common.ros.utils as utils
 from threading import Lock
+from pyparsing import ParseException
 
 class OntologyServer(object):
     def __init__(self, anonymous=False):
@@ -64,7 +65,7 @@ class OntologyServer(object):
                 return SetBoolResponse(False, "Mutex already unlocked.")
         return SetBoolResponse(True, "Ok")
 
-    def _woQueryCb(self, msg):
+    def _woQueryCb(self, msg, trial=0):
         to_ret = srvs.WoQueryResponse()
         try:
             with self._times:
@@ -80,8 +81,13 @@ class OntologyServer(object):
                     to_ret.answer.append(temp)
             if self._verbose:
                 log.info("[WoQuery]", "Query: {}. Answer: {}. Time: {:0.3f} sec".format(msg.query_string, to_ret.answer, self._times.getLast()))
-        except:
-            log.error("[WoQuery]", "Parse error with following query: {}. ".format(msg.query_string))
+        except (AttributeError, ParseException) as e:
+            #TODO: Understand what is going wrong here. For now just retry the query a couple of times seems to cover the bug
+            log.error("[WoQuery]", "Parse error with following query: {}. Error: {}".format(msg.query_string, e))
+            if trial<2:
+                trial += 1
+                log.info("[WoQuery]", "Retring query {}.".format(trial))
+                return self._woQueryCb(msg, trial)
         return to_ret
 
     def _woModifyCb(self, msg):
