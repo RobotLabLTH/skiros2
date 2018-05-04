@@ -141,7 +141,6 @@ class TaskManagerNode(PrettyObject):
             timer.toc("Init problem")
             plan = self.plan()
             timer.toc("Planning sequence")
-        log.assertWarn(plan is None, self.class_name, "Planning failed for goals: {}".format(self._current_goals))
         if plan is not None:
             if self._verbose:
                 log.info("[Plan]", plan)
@@ -151,6 +150,7 @@ class TaskManagerNode(PrettyObject):
             self.execute()
             return plan
         else:
+            log.Warn(self.class_name, "Planning failed for goals: {}".format(self._current_goals))
             self._assign_task_action.set_aborted()
             return None
 
