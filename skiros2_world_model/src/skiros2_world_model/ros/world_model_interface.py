@@ -356,7 +356,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
                         except:
                             log.error("", "MERGING: {} and {} ".format(couples[(key, key2)], np.array(temp)))
                     else:
-                        log.warn("resolveElements", "No input for params {} {}. Resolving: {} {}".format(key, key2, ph.getParamValue(key).printState(True), ph.getParamValue(key2).printState(True)))
+                        log.warn("resolveElements", "No input for params {} {}. Resolving: {} {}".format(key, key2, ph.getParamValue(key).printState(verbose), ph.getParamValue(key2).printState(verbose)))
                 else:
                     if key in coupled_keys: overlap_keys.append(key)
                     else: coupled_keys.append(key)
@@ -365,7 +365,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
                     temp = [np.array([e1, e2]) for e1 in set1 for e2 in set2 if self.checkRelation(e1, j["type"], e2, j['state'], j['abstract'])]
                     couples[(key, key2)] = np.array(temp)
                     if not temp:
-                        log.warn("resolveElements", "No input for params {} {}. Resolving: {} {}".format(key, key2, ph.getParamValue(key).printState(True), ph.getParamValue(key2).printState(True)))
+                        log.warn("resolveElements", "No input for params {} {}. Resolving: {} {}".format(key, key2, ph.getParamValue(key).printState(verbose), ph.getParamValue(key2).printState(verbose)))
         #Merge the tuples with an overlapping key
         if overlap_keys:
             loop = True
