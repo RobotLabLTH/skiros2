@@ -36,7 +36,7 @@ class VisitorInterface:
         self._setState(State.Running)
         if not self.verifyPreempt(root):
             self._setState(root.visit(self))
-            self.processingDone(root)
+        self.processingDone(root)
         return self.getState()
 
     def processPreempt(self, procedure):
