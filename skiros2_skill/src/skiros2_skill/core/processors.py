@@ -80,6 +80,32 @@ class Selector():
             if c.state==State.Running:
                 c.visitPreempt(visitor)
 
+class SelectorStar():
+    """
+    @brief Process children sequentially. Skips failed
+    """
+    def printType(self):
+        return '?*'
+
+    def processChildren(self, children, visitor):
+        """
+        Serial processor - return on first running/success, or return failure
+        """
+        for c in children:
+            if c.state==State.Failure:
+                continue
+            state = c.visit(visitor)
+            if state==State.Success or state==State.Running:
+                if state==State.Success:
+                    self.stopAll(children, visitor)
+                return state
+        return State.Failure
+
+    def stopAll(self, children, visitor):
+        for c in children:
+            if c.state==State.Running:
+                c.visitPreempt(visitor)
+
 class ParallelFf():
     """
     @brief Parallel First Fail - Process children in parallel. Stop all processes if a child fails.
