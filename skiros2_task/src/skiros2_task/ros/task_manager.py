@@ -150,7 +150,7 @@ class TaskManagerNode(PrettyObject):
             self.execute()
             return plan
         else:
-            log.Warn(self.class_name, "Planning failed for goals: {}".format(self._current_goals))
+            log.warn(self.class_name, "Planning failed for goals: {}".format(self._current_goals))
             self._assign_task_action.set_aborted()
             return None
 
