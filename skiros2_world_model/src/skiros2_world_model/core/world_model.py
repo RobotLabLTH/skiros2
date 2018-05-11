@@ -355,6 +355,8 @@ class WorldModel(Ontology):
         for name, r in self._reasoners.iteritems():
             if not r.parse(e, "add"):
                 raise Exception("Reasoner {} rejected the element {} add".format(name, e))
+        if e.hasProperty("skiros:Template"):
+            e.addRelation("-1", "skiros:hasTemplate", e.getProperty("skiros:Template").value)
         statements = self._element2statements(e)
         for s in statements:
             self._add(s, author)

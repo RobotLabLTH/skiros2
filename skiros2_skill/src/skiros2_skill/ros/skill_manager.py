@@ -80,7 +80,7 @@ class TaskManager:
 
         iteration = 0
         result = State.Running
-        rate = rospy.Rate(50)
+        rate = rospy.Rate(25)
         while result==State.Running:
             iteration += 1
             result = visitor.traverse(TaskManager._tasks[uid])

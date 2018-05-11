@@ -90,6 +90,9 @@ class TaskManagerNode(PrettyObject):
                         log.info("Task execution failed. Replanning.")
                         self._replan_count += 1
                         self.plan_and_execute()
+                        if not self._task:
+                            self._result = msgs.AssignTaskResult(1, "No skills to execute.")
+                            self._assign_task_action.set_succeeded(self._result)
             else:
                 self._feedback = msgs.AssignTaskFeedback(msg.state, msg.progress_message)
                 self._assign_task_action.publish_feedback(self._feedback)
@@ -195,10 +198,7 @@ class TaskManagerNode(PrettyObject):
 
 
     def getElement(self, uid):
-        if uid.find("-")>0:
-            return self._elements[uid[uid.find("-")+1:]]
         return self._elements[uid]
-
 
     def initProblem(self):
         objects = {}
@@ -211,18 +211,20 @@ class TaskManagerNode(PrettyObject):
             if len(temp)>0:
                 objects[objType] = []
             for e in temp:
-                objects[objType].append(e._id)
-                self._elements[e._id[e._id.find("-")+1:]] = e
+                objects[objType].append(e.id)
+                self._elements[e.id] = e
+                self._elements[e.id.lower()] = e
         for e in self._abstract_objects:
             ctype = self._wmi.getSuperClass(e._type)
             if not objects.has_key(ctype):
                  objects[ctype] = []
                  elements[ctype] = []
-            e._id = e._label
-            if not e._label in objects[ctype]:#Avoids duplicates
+            e._id = e.label
+            if not e.label in objects[ctype]:#Avoids duplicates
                 objects[ctype].append(e._label)
                 elements[ctype].append(e)
-                self._elements[e._id] = e
+                self._elements[e.id] = e
+                self._elements[e.id.lower()] = e
         self._pddl_interface.setObjects(objects)
         #Evaluate inital state
         for supertype, types in self._pddl_interface._types._types.iteritems():
@@ -245,18 +247,45 @@ class TaskManagerNode(PrettyObject):
                     if c.evaluate(params, self._wmi):
                         self._pddl_interface.addInitState(pddl.GroundPredicate(p.name, [xe._id], p.operator, p.value))
             else:
-                if p.abstracts:
-                    c = cond.AbstractConditionRelation("", p.name, "x", "y", True)
-                else:
-                    c = cond.ConditionRelation("", p.name, "x", "y", True)
                 xtype = p.params[0]["valueType"]
                 ytype = p.params[1]["valueType"]
-                for xe in elements[xtype]:
-                    params.specify("x", xe)
-                    for ye in elements[ytype]:
-                        params.specify("y", ye)
-                        if c.evaluate(params, self._wmi):
-                            self._pddl_interface.addInitState(pddl.GroundPredicate(p.name, [xe._id, ye._id]))
+                subx = self._pddl_interface.getSubTypes(xtype)
+                suby = self._pddl_interface.getSubTypes(ytype)
+                if p.abstracts:
+                    query_str_template = """
+                        SELECT ?x ?y WHERE {{
+                        {{ ?x {relation} ?y. ?x rdf:type/rdfs:subClassOf* {xtype}. ?y rdf:type/rdfs:subClassOf* {ytype}.}}
+                        UNION
+                        {{?t {relation} ?z. ?t rdf:type/rdfs:subClassOf* {xtype}. ?z rdf:type/rdfs:subClassOf* {ytype}. ?x skiros:hasTemplate ?t. ?y skiros:hasTemplate ?z.}}
+                        UNION
+                        {{?t {relation} ?y. ?t rdf:type/rdfs:subClassOf* {xtype}. ?y rdf:type/rdfs:subClassOf* {ytype}. ?x skiros:hasTemplate ?t.}}
+                        UNION
+                        {{?x {relation} ?z. ?x rdf:type/rdfs:subClassOf* {xtype}. ?z rdf:type/rdfs:subClassOf* {ytype}. ?y skiros:hasTemplate ?z.}}
+                        }}"""
+                else:
+                    query_str_template = """
+                        SELECT ?x ?y WHERE {{
+                        {{ ?x {relation} ?y. ?x rdf:type/rdfs:subClassOf* {xtype}. ?y rdf:type/rdfs:subClassOf* {ytype}.}}
+                        UNION
+                        {{?t {relation} ?z. ?t rdf:type/rdfs:subClassOf* {xtype}. ?z rdf:type/rdfs:subClassOf* {ytype}. ?t skiros:hasTemplate ?x. ?z skiros:hasTemplate ?y. }}
+                        UNION
+                        {{?t {relation} ?y. ?t rdf:type/rdfs:subClassOf* {xtype}. ?y rdf:type/rdfs:subClassOf* {ytype}. ?t skiros:hasTemplate ?x.}}
+                        UNION
+                        {{?x {relation} ?z. ?x rdf:type/rdfs:subClassOf* {xtype}. ?z rdf:type/rdfs:subClassOf* {ytype}. ?z skiros:hasTemplate ?y.}}
+                        }}"""
+                if subx is None:
+                    subx = [xtype]
+                if suby is None:
+                    suby = [ytype]
+                for x in subx:
+                    for y in suby:
+                        query_str = query_str_template.format(relation=p.name, xtype=x, ytype=y)
+                        answer = self._wmi.queryOntology(query_str)
+                        for line in answer:
+                            tokens = line.strip().split(" ")
+                            self._pddl_interface.addInitState(pddl.GroundPredicate(p.name, tokens))
+                        #TODO: add reasoner's relations calculation
+
         for p in self._pddl_interface._functions:
             c = cond.ConditionProperty("", p.name, "x", p.operator, p.value, True)
             xtype = p.params[0]["valueType"]

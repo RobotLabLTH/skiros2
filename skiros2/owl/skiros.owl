@@ -10,10 +10,10 @@
         <owl:imports rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl"/>
         <rdfs:comment>The base ontology for the SkiROS2 platform.</rdfs:comment>
     </owl:Ontology>
-    
 
 
-    <!-- 
+
+    <!--
     ///////////////////////////////////////////////////////////////////////////////////////
     //
     // Object Properties
@@ -21,21 +21,27 @@
     ///////////////////////////////////////////////////////////////////////////////////////
      -->
 
-    
 
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#hasTemplate -->
+
+    <owl:ObjectProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#hasTemplate">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#conditionProperty"/>
+    </owl:ObjectProperty>
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#at -->
 
     <owl:ObjectProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#at">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#conditionProperty"/>
     </owl:ObjectProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#conditionProperty -->
 
     <owl:ObjectProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#conditionProperty"/>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#contain -->
@@ -43,7 +49,7 @@
     <owl:ObjectProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#contain">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#spatiallyRelated"/>
     </owl:ObjectProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#hasA -->
@@ -51,7 +57,7 @@
     <owl:ObjectProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#hasA">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#spatiallyRelated"/>
     </owl:ObjectProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#hasParam -->
@@ -59,7 +65,7 @@
     <owl:ObjectProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#hasParam">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#skillProperty"/>
     </owl:ObjectProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#hasPostCondition -->
@@ -67,7 +73,7 @@
     <owl:ObjectProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#hasPostCondition">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#skillProperty"/>
     </owl:ObjectProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#hasPreCondition -->
@@ -75,7 +81,7 @@
     <owl:ObjectProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#hasPreCondition">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#skillProperty"/>
     </owl:ObjectProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#hasSkill -->
@@ -83,7 +89,7 @@
     <owl:ObjectProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#hasSkill">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#robotProperty"/>
     </owl:ObjectProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#hasStartLocation -->
@@ -91,7 +97,7 @@
     <owl:ObjectProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#hasStartLocation">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#robotProperty"/>
     </owl:ObjectProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#robotProperty -->
@@ -99,13 +105,13 @@
     <owl:ObjectProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#robotProperty">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#sceneProperty"/>
     </owl:ObjectProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#sceneProperty -->
 
     <owl:ObjectProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#sceneProperty"/>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#skillProperty -->
@@ -113,7 +119,7 @@
     <owl:ObjectProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#skillProperty">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#sceneProperty"/>
     </owl:ObjectProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#spatiallyRelated -->
@@ -121,10 +127,10 @@
     <owl:ObjectProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#spatiallyRelated">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#sceneProperty"/>
     </owl:ObjectProperty>
-    
 
 
-    <!-- 
+
+    <!--
     ///////////////////////////////////////////////////////////////////////////////////////
     //
     // Data properties
@@ -132,7 +138,7 @@
     ///////////////////////////////////////////////////////////////////////////////////////
      -->
 
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#ArmProperty -->
@@ -140,7 +146,7 @@
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#ArmProperty">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#DeviceProperty"/>
     </owl:DatatypeProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#BaseFrameId -->
@@ -149,7 +155,7 @@
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#TransformationProperty"/>
         <rdfs:comment>The reference frame for the transformation</rdfs:comment>
     </owl:DatatypeProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#CameraProperty -->
@@ -157,13 +163,13 @@
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#CameraProperty">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#DeviceProperty"/>
     </owl:DatatypeProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#ConditionProperty -->
 
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#ConditionProperty"/>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#ContainerState -->
@@ -171,7 +177,7 @@
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#ContainerState">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#PhysicalObjectProperty"/>
     </owl:DatatypeProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#DataType -->
@@ -179,7 +185,7 @@
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#DataType">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#ParameterProperty"/>
     </owl:DatatypeProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#Default -->
@@ -187,7 +193,7 @@
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#Default">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#ParameterProperty"/>
     </owl:DatatypeProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#DepthImageRaw -->
@@ -195,7 +201,7 @@
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#DepthImageRaw">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#DepthTopic"/>
     </owl:DatatypeProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#DepthTopic -->
@@ -203,13 +209,13 @@
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#DepthTopic">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#CameraProperty"/>
     </owl:DatatypeProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#DeviceProperty -->
 
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#DeviceProperty"/>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#DiscreteReasoner -->
@@ -217,7 +223,7 @@
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#DiscreteReasoner">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#PhysicalObjectProperty"/>
     </owl:DatatypeProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#DriverAddress -->
@@ -225,7 +231,7 @@
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#DriverAddress">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#DeviceProperty"/>
     </owl:DatatypeProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#EndEffectorProperty -->
@@ -233,7 +239,7 @@
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#EndEffectorProperty">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#DeviceProperty"/>
     </owl:DatatypeProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#FrameId -->
@@ -242,7 +248,7 @@
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#TransformationProperty"/>
         <rdfs:comment>The ID of the transformation</rdfs:comment>
     </owl:DatatypeProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#FrontAxis -->
@@ -250,7 +256,7 @@
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#FrontAxis">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#EndEffectorProperty"/>
     </owl:DatatypeProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#LinkedToFrameId -->
@@ -259,7 +265,7 @@
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#TransformationProperty"/>
         <rdfs:comment>Another equivalent transformation</rdfs:comment>
     </owl:DatatypeProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#MotionExe -->
@@ -267,7 +273,7 @@
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#MotionExe">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#ArmProperty"/>
     </owl:DatatypeProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#MotionPlanner -->
@@ -275,7 +281,7 @@
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#MotionPlanner">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#ArmProperty"/>
     </owl:DatatypeProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#MoveItGroup -->
@@ -283,7 +289,7 @@
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#MoveItGroup">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#ArmProperty"/>
     </owl:DatatypeProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#Orientation -->
@@ -291,7 +297,7 @@
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#Orientation">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#TransformationProperty"/>
     </owl:DatatypeProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#OrientationW -->
@@ -299,7 +305,7 @@
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#OrientationW">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Orientation"/>
     </owl:DatatypeProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#OrientationX -->
@@ -307,7 +313,7 @@
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#OrientationX">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Orientation"/>
     </owl:DatatypeProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#OrientationY -->
@@ -315,7 +321,7 @@
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#OrientationY">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Orientation"/>
     </owl:DatatypeProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#OrientationZ -->
@@ -323,13 +329,13 @@
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#OrientationZ">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Orientation"/>
     </owl:DatatypeProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#ParameterProperty -->
 
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#ParameterProperty"/>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#ParameterType -->
@@ -337,13 +343,13 @@
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#ParameterType">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#ParameterProperty"/>
     </owl:DatatypeProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#PhysicalObjectProperty -->
 
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#PhysicalObjectProperty"/>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#Position -->
@@ -351,7 +357,7 @@
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#Position">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#TransformationProperty"/>
     </owl:DatatypeProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#PositionX -->
@@ -359,7 +365,7 @@
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#PositionX">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Position"/>
     </owl:DatatypeProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#PositionY -->
@@ -367,7 +373,7 @@
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#PositionY">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Position"/>
     </owl:DatatypeProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#PositionZ -->
@@ -375,7 +381,7 @@
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#PositionZ">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Position"/>
     </owl:DatatypeProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#PublishTf -->
@@ -384,7 +390,7 @@
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#TransformationProperty"/>
         <rdfs:comment>If true, the orientation and position info will be used to publish the object transformation on tf.</rdfs:comment>
     </owl:DatatypeProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#RgbTopic -->
@@ -392,7 +398,7 @@
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#RgbTopic">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#CameraProperty"/>
     </owl:DatatypeProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#Size -->
@@ -401,7 +407,7 @@
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#PhysicalObjectProperty"/>
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#TransformationProperty"/>
     </owl:DatatypeProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#SizeX -->
@@ -409,7 +415,7 @@
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#SizeX">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Size"/>
     </owl:DatatypeProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#SizeY -->
@@ -417,7 +423,7 @@
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#SizeY">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Size"/>
     </owl:DatatypeProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#SizeZ -->
@@ -425,7 +431,7 @@
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#SizeZ">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Size"/>
     </owl:DatatypeProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#SkillMgr -->
@@ -433,7 +439,7 @@
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#SkillMgr">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#DeviceProperty"/>
     </owl:DatatypeProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#StateProperty -->
@@ -441,13 +447,13 @@
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#StateProperty">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#DeviceProperty"/>
     </owl:DatatypeProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#Template -->
 
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#Template"/>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#TransformationProperty -->
@@ -455,7 +461,7 @@
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#TransformationProperty">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#PhysicalObjectProperty"/>
     </owl:DatatypeProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#Value -->
@@ -463,7 +469,7 @@
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#Value">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#ParameterProperty"/>
     </owl:DatatypeProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#Weight -->
@@ -471,7 +477,7 @@
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#Weight">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#PhysicalObjectProperty"/>
     </owl:DatatypeProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#appliedOnType -->
@@ -479,7 +485,7 @@
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#appliedOnType">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#ConditionProperty"/>
     </owl:DatatypeProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#desiredState -->
@@ -487,7 +493,7 @@
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#desiredState">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#ConditionProperty"/>
     </owl:DatatypeProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#desiredValue -->
@@ -495,7 +501,7 @@
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#desiredValue">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#ConditionProperty"/>
     </owl:DatatypeProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#hasObject -->
@@ -503,7 +509,7 @@
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#hasObject">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#ConditionProperty"/>
     </owl:DatatypeProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#hasSubject -->
@@ -511,7 +517,7 @@
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#hasSubject">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#ConditionProperty"/>
     </owl:DatatypeProperty>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#operator -->
@@ -519,10 +525,10 @@
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#operator">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#ConditionProperty"/>
     </owl:DatatypeProperty>
-    
 
 
-    <!-- 
+
+    <!--
     ///////////////////////////////////////////////////////////////////////////////////////
     //
     // Classes
@@ -530,7 +536,7 @@
     ///////////////////////////////////////////////////////////////////////////////////////
      -->
 
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#CompoundSkill -->
@@ -539,7 +545,7 @@
         <rdfs:subClassOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Skill"/>
         <rdfs:comment>A skill composed of other skills</rdfs:comment>
     </owl:Class>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#Condition -->
@@ -547,7 +553,7 @@
     <owl:Class rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#Condition">
         <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Abstract"/>
     </owl:Class>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#Container -->
@@ -561,7 +567,7 @@
             </owl:Restriction>
         </rdfs:subClassOf>
     </owl:Class>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#GraspingPose -->
@@ -569,7 +575,7 @@
     <owl:Class rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#GraspingPose">
         <rdfs:subClassOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#TransformationPose"/>
     </owl:Class>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#Location -->
@@ -577,7 +583,7 @@
     <owl:Class rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#Location">
         <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Object"/>
     </owl:Class>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#Manipulatable -->
@@ -585,7 +591,7 @@
     <owl:Class rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#Manipulatable">
         <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Artifact"/>
     </owl:Class>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#ObservationPose -->
@@ -593,7 +599,7 @@
     <owl:Class rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#ObservationPose">
         <rdfs:subClassOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#TransformationPose"/>
     </owl:Class>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#Parameter -->
@@ -601,7 +607,7 @@
     <owl:Class rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#Parameter">
         <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Abstract"/>
     </owl:Class>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#Part -->
@@ -610,7 +616,7 @@
         <rdfs:subClassOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Manipulatable"/>
         <rdfs:comment>Source parts which are needed to assemble one unit of a target Product.</rdfs:comment>
     </owl:Class>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#PlacingPose -->
@@ -618,7 +624,7 @@
     <owl:Class rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#PlacingPose">
         <rdfs:subClassOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#TransformationPose"/>
     </owl:Class>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#PostCondition -->
@@ -626,7 +632,7 @@
     <owl:Class rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#PostCondition">
         <rdfs:subClassOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Condition"/>
     </owl:Class>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#PreCondition -->
@@ -634,7 +640,7 @@
     <owl:Class rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#PreCondition">
         <rdfs:subClassOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Condition"/>
     </owl:Class>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#PrimitiveSkill -->
@@ -643,7 +649,7 @@
         <rdfs:subClassOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Skill"/>
         <rdfs:comment>A skill linked to an executable primitive</rdfs:comment>
     </owl:Class>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#Product -->
@@ -652,7 +658,7 @@
         <rdfs:subClassOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Manipulatable"/>
         <rdfs:comment>Represents what the production aims to achieve (e.g. diesel engine, interior door handle, plastic component)</rdfs:comment>
     </owl:Class>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#Scene -->
@@ -661,7 +667,7 @@
         <owl:equivalentClass rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/coraX.owl#PhysicalEnvironment"/>
         <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Abstract"/>
     </owl:Class>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#Skill -->
@@ -670,7 +676,7 @@
         <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Abstract"/>
         <rdfs:comment>A robot capability</rdfs:comment>
     </owl:Class>
-    
+
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#TransformationPose -->
@@ -678,7 +684,7 @@
     <owl:Class rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#TransformationPose">
         <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Object"/>
     </owl:Class>
-    
+
 
 
     <!-- http://www.inf.ufrgs.br/phi-group/ontologies/cora.owl#Robot -->
@@ -691,13 +697,13 @@
             </owl:Restriction>
         </rdfs:subClassOf>
     </rdf:Description>
-    
+
 
 
     <!-- http://www.inf.ufrgs.br/phi-group/ontologies/coraX.owl#PhysicalEnvironment -->
 
     <rdf:Description rdf:about="http://www.inf.ufrgs.br/phi-group/ontologies/coraX.owl#PhysicalEnvironment"/>
-    
+
 
 
     <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Agent -->
@@ -710,7 +716,7 @@
             </owl:Restriction>
         </rdfs:subClassOf>
     </rdf:Description>
-    
+
 
 
     <!-- http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Physical -->

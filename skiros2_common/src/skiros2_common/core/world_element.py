@@ -178,6 +178,13 @@ class Element(object):
         else:
             return None
 
+    def removeRelations(self, relations):
+        """
+        @brief Remove a list of relations from the element
+        """
+        for r in relations:
+            self.removeRelation(r)
+
     def removeRelation(self, relation):
         """
         @brief Remove a relation from the element

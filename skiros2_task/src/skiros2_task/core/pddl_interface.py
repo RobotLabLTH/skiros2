@@ -241,6 +241,10 @@ class PddlInterface:
         self._init_state = []
         self._goal = []
 
+    def getSubTypes(self, supertype):
+        if self._types._types.has_key(supertype):
+            return self._types._types[supertype]
+
     def _addSuperTypes(self, predicate):
         lookuplist = self._predicates
         if predicate.isFunction():
