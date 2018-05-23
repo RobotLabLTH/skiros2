@@ -165,6 +165,7 @@ class SkillManager:
         self._tasks._verbose = verbose
         self._registerAgent(agent_name)
         self._skills = []
+        self._wmi.unlock() #Ensures the world model's mutex is unlocked
 
     def observeTaskProgress(self, func):
         self._tasks.observeProgress(func)
@@ -191,6 +192,7 @@ class SkillManager:
     def shutdown(self):
         for s in self._skills:
             self._wmi.removeElement(s)
+        self._wmi.unlock() #Ensures the world model's mutex gets unlocked
 
     def loadSkills(self, package):
         """

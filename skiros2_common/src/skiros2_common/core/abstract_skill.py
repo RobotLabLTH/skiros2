@@ -26,7 +26,7 @@ class SkillDescription(object):
     """
     def __init__(self):
         #Description
-        self._type= ":" + self.__class__.__name__
+        self._type= "skiros:" + self.__class__.__name__
         #Params
         self._params=params.ParamHandler()
         #Conditions

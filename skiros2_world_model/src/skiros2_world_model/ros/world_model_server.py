@@ -36,7 +36,7 @@ import skiros2_msgs.srv as srvs
 from skiros2_common.tools.plugin_loader import PluginLoader
 from skiros2_common.core.discrete_reasoner import DiscreteReasoner
 from skiros2_world_model.ros.ontology_server import OntologyServer
-from skiros2_world_model.core.world_model import WorldModel
+from skiros2_world_model.core.world_model import WorldModel, Element
 import uuid
 from time import sleep
 
@@ -147,10 +147,12 @@ class WorldModelServer(OntologyServer):
         to_ret = srvs.WmModifyResponse()
         with self._times:
             if msg.action == msg.ADD:
+                e_list = list()
                 for e in msg.elements:
-                    to_ret.ids.append(self._wm.addElement(utils.msg2element(e), msg.author))
-                    e.id = to_ret.ids[-1]
-                self._publishChange(msg.author, "add", elements=msg.elements)
+                    updated_e = self._wm.addElement(utils.msg2element(e), msg.author)
+                    to_ret.ids.append(updated_e.id)
+                    e_list.append(utils.element2msg(updated_e))
+                self._publishChange(msg.author, "add", elements=e_list)
             elif msg.action == msg.UPDATE:
                 for e in msg.elements:
                     self._wm.updateElement(utils.msg2element(e), msg.author)
@@ -163,7 +165,7 @@ class WorldModelServer(OntologyServer):
             elif msg.action == msg.REMOVE_RECURSIVE:
                 for e in msg.elements:
                     to_ret.ids += self._wm.removeRecursive(utils.msg2element(e), msg.author, msg.relation_filter, msg.type_filter)
-                self._publishChange(msg.author, "remove_recursive_to_fix", elements=msg.elements)
+                self._publishChange(msg.author, "remove_recursive", elements=[utils.element2msg(Element(eid=cid)) for cid in to_ret.ids])
         if self._verbose:
             log.info("[WmModify]", "{} {} {}. Time: {:0.3f} secs".format(msg.author, msg.action, to_ret.ids, self._times.getLast()))
         return to_ret

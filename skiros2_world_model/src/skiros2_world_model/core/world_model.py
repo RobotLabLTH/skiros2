@@ -361,7 +361,7 @@ class WorldModel(Ontology):
         for s in statements:
             self._add(s, author)
         self._elements_cache[e.id] = e
-        return e.id
+        return e
 
     @synchronized
     def updateElement(self, e, author):
