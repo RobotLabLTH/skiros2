@@ -48,7 +48,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         self._modify = rospy.ServiceProxy('wm/scene/modify', srvs.WmModify)
         self._query_relations = rospy.ServiceProxy('wm/scene/query_relations', srvs.WmQueryRelations)
         if monitor_callback:
-            self._monitor = rospy.Subscriber("wm/monitor", msgs.WmMonitor, monitor_callback)
+            self._monitor = rospy.Subscriber("wm/monitor", msgs.WmMonitor, monitor_callback, queue_size=100)
 
     def getSceneName(self):
         """
@@ -58,9 +58,18 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
 
     def getScene(self):
         """
-        Return all elements in the scene
+        @brief Returns a triple with all elements in the scene and the associated uuid
         """
-        return self.getBranch("skiros:Scene-0")
+        msg = srvs.WmGetRequest()
+        e = msgs.WmElement()
+        e.id = "skiros:Scene-0"
+        msg.element = e
+        msg.action = msg.GET_RECURSIVE
+        msg.relation_filter = "skiros:sceneProperty"
+        msg.type_filter = ""
+        res = self._call(self._get, msg)
+        if(res):
+            return ([utils.msg2element(x) for x in res.elements], res.snapshot_id)
 
     def setMonitorCallback(self, callback):
         self._monitor = rospy.Subscriber("wm/monitor", msgs.WmMonitor, callback)

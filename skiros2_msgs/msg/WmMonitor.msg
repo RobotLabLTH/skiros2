@@ -6,6 +6,7 @@ string REMOVE=remove
 #Metadata
 string prev_snapshot_id
 string snapshot_id
+time stamp
 #Change
 string author
 string action

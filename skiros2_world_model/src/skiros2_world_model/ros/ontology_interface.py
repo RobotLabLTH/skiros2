@@ -182,7 +182,7 @@ class OntologyInterface(OntologyAbstractInterface):
         if(self._sub_classes_cache.has_key(parent_class)):
             return self._sub_classes_cache[parent_class]
         if recursive:
-            to_ret = self.queryOntology("SELECT ?x WHERE { ?x rdfs:subClassOf+ " + self.addPrefix(parent_class) + " . } ")
+            to_ret = self.queryOntology("SELECT ?x WHERE { ?x rdfs:subClassOf* " + self.addPrefix(parent_class) + " . } ")
         else:
             to_ret = self.queryOntology("SELECT ?x WHERE { ?x rdfs:subClassOf " + self.addPrefix(parent_class) + " . } ")
         self._sub_classes_cache[parent_class] = to_ret
@@ -195,7 +195,7 @@ class OntologyInterface(OntologyAbstractInterface):
         if(self._sub_properties_cache.has_key(parent_property)):
             return self._sub_properties_cache[parent_property]
         if recursive:
-            to_ret = self.queryOntology("SELECT ?x WHERE { ?x rdfs:subPropertyOf+ " + self.addPrefix(parent_property) + " . } ")
+            to_ret = self.queryOntology("SELECT ?x WHERE { ?x rdfs:subPropertyOf* " + self.addPrefix(parent_property) + " . } ")
         else:
             to_ret = self.queryOntology("SELECT ?x WHERE { ?x rdfs:subPropertyOf " + self.addPrefix(parent_property) + " . } ")
         self._sub_properties_cache[parent_property] = to_ret

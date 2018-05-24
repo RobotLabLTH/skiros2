@@ -25,6 +25,7 @@ from copy import deepcopy
 from interactive_markers.interactive_marker_server import InteractiveMarkerServer
 from visualization_msgs.msg import InteractiveMarker, InteractiveMarkerControl, Marker, InteractiveMarkerFeedback
 from numpy.linalg import norm
+from threading import Lock
 
 class SkirosAddObjectDialog(QDialog):
 #==============================================================================
@@ -307,7 +308,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         #because they are running in a different thread.
         self.initInteractiveServer(SkirosWidget.widget_id)
         self._wmi = wmi.WorldModelInterface(SkirosWidget.widget_id)
-        self._sli = sli.SkillLayerInterface(self._wmi)
+        self._sli = sli.SkillLayerInterface()
 
         #Setup a timer to keep interface updated
         self.refresh_timer = QTimer()
@@ -317,7 +318,9 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         #World model tab
         self._wmi.setMonitorCallback(lambda d: self.wm_update_signal.emit(d))
         self._sli.setMonitorCallback(lambda d: self.sl_progress_signal.emit(d))
-        self.create_wm_tree()
+        self._snapshot_id = ""
+        self._snapshot_stamp = rospy.Time.now()
+        self._wm_mutex = Lock()
 
 
     def shutdown_plugin(self):
@@ -378,8 +381,6 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         file = self.scene_file_lineEdit.text()
         log.debug(self.__class__.__name__, 'Loading world model from <{}>'.format(file))
         self._wmi.load(file)
-        self.create_wm_tree()
-
 
     @Slot()
     def on_save_scene_button_clicked(self):
@@ -444,45 +445,51 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
 
     @Slot()
     def on_wm_update(self, data):
-        cur_item = self.wm_tree_widget.currentItem()
-        cur_item_id = cur_item.text(1)
-        if data.action == 'update':
-            for elem in data.elements:
-                elem = rosutils.msg2element(elem)
+        with self._wm_mutex:
+            if self._snapshot_id==data.prev_snapshot_id:#Discard msgs not in sync with local wm version
+                self._snapshot_id = data.snapshot_id
+                cur_item = self.wm_tree_widget.currentItem()
+                cur_item_id = cur_item.text(1)
+                if data.action == 'update':
+                    for elem in data.elements:
+                        elem = rosutils.msg2element(elem)
 
-                # check if element is already in tree
-                items = self.wm_tree_widget.findItems(elem.id, Qt.MatchRecursive | Qt.MatchFixedString, 1)
-                if not items: continue
+                        # check if element is already in tree
+                        items = self.wm_tree_widget.findItems(elem.id, Qt.MatchRecursive | Qt.MatchFixedString, 1)
+                        if not items: continue
 
-                # check if updated item is selected
-                if elem.id == cur_item_id:
-                    # update properties table if selected item has changed
-                    self.wm_properties_widget.blockSignals(True)
-                    self.fill_properties_table(elem)
-                    self.wm_properties_widget.blockSignals(False)
+                        # check if updated item is selected
+                        if elem.id == cur_item_id:
+                            # update properties table if selected item has changed
+                            self.wm_properties_widget.blockSignals(True)
+                            self.fill_properties_table(elem)
+                            self.wm_properties_widget.blockSignals(False)
 
-                # get parent node in tree
-                parent = items[0].parent()
-                if not parent: continue
+                        # get parent node in tree
+                        parent = items[0].parent()
+                        if not parent: continue
 
-                # check if the old parent is still parent of the updated element
-                has_child = elem.getRelations(subj=parent.text(1), pred=self._wmi.getSubProperties('skiros:spatiallyRelated'), obj='-1')
-                if not has_child:
-                    # elem moved spatially
-                    self._remove_wm_node(elem)
-                    self._add_wm_node(elem)
-        elif data.action == 'add':
-            for elem in data.elements:
-                elem = rosutils.msg2element(elem)
-                self._add_wm_node(elem)
-        elif data.action == 'remove' or data.action == 'remove_recursive':
-            for elem in data.elements:
-                elem = rosutils.msg2element(elem)
-                self._remove_wm_node(elem)
-        # reselect current item
-        items = self.wm_tree_widget.findItems(cur_item_id, Qt.MatchRecursive | Qt.MatchFixedString, 1)
-        if items:
-            self.wm_tree_widget.setCurrentItem(items[0])
+                        # check if the old parent is still parent of the updated element
+                        has_child = elem.getRelations(subj=parent.text(1), pred=self._wmi.getSubProperties('skiros:spatiallyRelated'), obj='-1')
+                        if not has_child:
+                            # elem moved spatially
+                            self._remove_wm_node(elem)
+                            self._add_wm_node(elem)
+                elif data.action == 'add':
+                    for elem in data.elements:
+                        elem = rosutils.msg2element(elem)
+                        self._add_wm_node(elem)
+                elif data.action == 'remove' or data.action == 'remove_recursive':
+                    for elem in data.elements:
+                        elem = rosutils.msg2element(elem)
+                        self._remove_wm_node(elem)
+                # reselect current item
+                items = self.wm_tree_widget.findItems(cur_item_id, Qt.MatchRecursive | Qt.MatchFixedString, 1)
+                if items:
+                    self.wm_tree_widget.setCurrentItem(items[0])
+            elif data.stamp>self._snapshot_stamp:#Ignores obsolete msgs
+                    log.info("[wm_update]", "Wm not in sync, querying wm scene")
+                    self.create_wm_tree()
 
 
     def on_marker_feedback(self, feedback):
@@ -551,7 +558,11 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
 
 
     def create_wm_tree(self):
-        scene = {elem.id: elem for elem in self._wmi.getScene()}
+        scene_tuple = self._wmi.getScene()
+        #print "GOT SCENE {}".format([e.id for e in scene_tuple[0]])
+        self._snapshot_id = scene_tuple[1]
+        self._snapshot_stamp = rospy.Time.now()
+        scene = {elem.id: elem for elem in scene_tuple[0]}
         root = scene['skiros:Scene-0']
         self.wm_tree_widget.clear()
         self.wm_tree_widget.setColumnCount(2)
@@ -560,12 +571,14 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         self.wm_tree_widget.setCurrentIndex(self.wm_tree_widget.model().index(0, 0))
 
     def _remove_wm_node(self, elem):
+        #print "Removing {}".format(elem.id)
         items = self.wm_tree_widget.findItems(elem.id, Qt.MatchRecursive | Qt.MatchFixedString, 1)
         if items:
             item = items[0]
             item.parent().removeChild(item)
 
     def _add_wm_node(self, elem):
+        #print "Adding {}".format(elem.id)
         parent_rel = elem.getRelation(pred=self._wmi.getSubProperties('skiros:spatiallyRelated'), obj='-1')
         to_expand = True
         if not parent_rel:
@@ -575,11 +588,13 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
             to_expand = False
             parent_rel = elem.getRelation(pred='skiros:hasSkill', obj='-1')
             if not parent_rel:
+                log.error("[add_wm_node]", "Can't add {}".format(elem.id))
                 return
             parent_id = '{}_skills'.format(parent_rel['src'])
             item = self.wm_tree_widget.findItems(parent_id, Qt.MatchRecursive | Qt.MatchFixedString, 1)
             if not item:#In case it is still not existing i create the "support" skill node
-                item = QTreeWidgetItem(parent_rel['src'], ['Skills', '{}_skills'.format(elem.id)])
+                item = self.wm_tree_widget.findItems(parent_rel['src'], Qt.MatchRecursive | Qt.MatchFixedString, 1)[0]
+                item = QTreeWidgetItem(item, ['Skills', parent_id])
             else:
                 item = item[0]
         else:

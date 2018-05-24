@@ -72,6 +72,7 @@ class WorldModelServer(OntologyServer):
         msg.prev_snapshot_id = self._curr_snapshot.hex
         self._curr_snapshot = uuid.uuid4() # random UUID
         msg.snapshot_id = self._curr_snapshot.hex
+        msg.stamp = rospy.Time.now()
         msg.author = author
         msg.action = action
         if elements:
@@ -127,6 +128,7 @@ class WorldModelServer(OntologyServer):
             output += "{} ".format(e.id)
         if self._verbose:
             log.info("[WmGet]", "Done {} [{}]. Answer: {}. Time: {:0.3f} secs".format(msg.action, einput, output, self._times.getLast()))
+        to_ret.snapshot_id = self._curr_snapshot.hex
         return to_ret
 
     def _wmSetRelCb(self, msg):
@@ -154,10 +156,12 @@ class WorldModelServer(OntologyServer):
                     e_list.append(utils.element2msg(updated_e))
                 self._publishChange(msg.author, "add", elements=e_list)
             elif msg.action == msg.UPDATE:
+                e_list = list()
                 for e in msg.elements:
                     self._wm.updateElement(utils.msg2element(e), msg.author)
                     to_ret.ids.append(e.id)
-                self._publishChange(msg.author, "update", elements=msg.elements)
+                    e_list.append(utils.element2msg(self._wm.getElement(e.id)))
+                self._publishChange(msg.author, "update", elements=e_list)
             elif msg.action == msg.REMOVE:
                 for e in msg.elements:
                     to_ret.ids.append(self._wm.removeElement(utils.msg2element(e), msg.author))

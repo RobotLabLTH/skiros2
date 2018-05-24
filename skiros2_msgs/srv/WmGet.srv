@@ -9,4 +9,5 @@ WmElement element
 string relation_filter
 string type_filter
 ---
+string snapshot_id
 WmElement[] elements
