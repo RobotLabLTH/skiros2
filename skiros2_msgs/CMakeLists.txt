@@ -17,6 +17,7 @@ add_message_files(
   FILES
   Param.msg
   Relation.msg
+  ManagerDescription.msg
   Statement.msg
   Condition.msg
   RobotDescription.msg

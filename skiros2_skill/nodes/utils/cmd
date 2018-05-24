@@ -45,13 +45,13 @@ if __name__ == '__main__':
         if  len(sys.argv)>4:
             wait = True
         wmi = wmi.WorldModelInterface()
-        sli = sli.SkillLayerInterface(wmi)
+        sli = sli.SkillLayerInterface()
         agent = sli.getAgent(mgr)
         if action=="start":
-            eid = agent.execute([agent.getSkill(skill)], "cmd_line_tool") 
+            eid = agent.execute([agent.getSkill(skill)], "cmd_line_tool")
             if wait:
                 agent.waitResult(eid) #Bugged
             else:
                 print eid
         if action=="stop":
-            agent.preempt(int(skill), "cmd_line_tool")   
+            agent.preempt(int(skill), "cmd_line_tool")

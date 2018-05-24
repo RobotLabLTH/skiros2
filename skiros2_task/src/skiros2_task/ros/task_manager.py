@@ -46,7 +46,7 @@ class TaskManagerNode(PrettyObject):
         self._abstract_objects = []
 
         self._wmi = wmi.WorldModelInterface()
-        self._sli = sli.SkillLayerInterface(self._wmi, self._onMonitorMsg)
+        self._sli = sli.SkillLayerInterface(self._onMonitorMsg)
         self._pddl_interface = pddl.PddlInterface(rospkg.RosPack().get_path("skiros2_task"))
 
         self._verbose=rospy.get_param('~verbose', True)

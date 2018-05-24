@@ -39,6 +39,7 @@ import skiros2_skill.core.skill as skill
 from skiros2_common.core.abstract_skill import State
 from skiros2_skill.core.skill_instanciator import SkillInstanciator
 from skiros2_skill.ros.ros_skill import RosSkill
+from discovery_interface import DiscoverableNode
 import skiros2_common.tools.logger as log
 from skiros2_common.tools.id_generator import IdGen
 from skiros2_common.tools.plugin_loader import *
@@ -299,9 +300,7 @@ class SkillManager:
             self.printTask()
             raise e
 
-
-
-class SkillManagerNode(object):
+class SkillManagerNode(DiscoverableNode):
     """
     At boot:
         -add the robot description on the world model
@@ -334,8 +333,8 @@ class SkillManagerNode(object):
         #Start communications
         self._command = rospy.Service('~command', srvs.SkillCommand, self._commandCb)
         self._monitor = rospy.Publisher("skill_managers/monitor", msgs.SkillProgress, queue_size=20)
-        rospy.on_shutdown(self._sm.shutdown)
-        rospy.sleep(0.5)
+        rospy.on_shutdown(self.shutdown)
+        self.init_discovery("skill_managers", robot_name)
 
     def _initSkills(self):
         """
@@ -383,7 +382,6 @@ class SkillManagerNode(object):
             return srvs.SkillCommandResponse(False, -1)
         return srvs.SkillCommandResponse(True, task_id)
 
-
     def _onProgressUpdate(self, *args, **kwargs):
         log.debug("[{}]".format(self.__class__.__name__), "{}:Task[{task_id}]{type}:{label}[{id}]: Message[{code}]: {msg} ({state})".format(self._sm._agent_name[1:], **kwargs))
         msg = msgs.SkillProgress()
@@ -420,6 +418,10 @@ class SkillManagerNode(object):
             for s in r:
                 to_ret.list.append(skill2msg(s))
         return to_ret
+
+    def shutdown(self):
+        self.shutdown_discovery()
+        self._sm.shutdown()
 
     def run(self):
         rospy.spin()

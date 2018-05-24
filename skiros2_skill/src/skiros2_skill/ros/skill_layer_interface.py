@@ -31,32 +31,22 @@
 import rospy
 
 import skiros2_msgs.msg as msgs
-import skiros2_world_model.ros.world_model_interface as wm
-import skiros2_common.ros.utils as utils
 import skiros2_common.tools.logger as log
 from skiros2_skill.ros.skill_manager_interface import SkillManagerInterface
+from discovery_interface import DiscoveryInterface
 
-class SkillLayerInterface:
-    def __init__(self, wmi, skill_monitor_cb=None):
+class SkillLayerInterface(DiscoveryInterface):
+    def __init__(self, skill_monitor_cb=None):
         """
         Initialize agents list
         """
-        self._wmi = wmi
-        self._agent_classes = self._wmi.getSubClasses("sumo:Agent")
         self._agents = {}
         self._new_changes = True
-        #print self._agent_classes
-        v = self._wmi.resolveElements(wm.Element("sumo:Agent"))
-        for e in v:
-            log.info("[SkillLayerInterface] Detected robot: {}".format(e))
-            self._agents[e.getProperty("skiros:SkillMgr").value] = SkillManagerInterface(self._wmi, e)
-        self._wmi.setMonitorCallback(self._wmMonitorCB)
-
-        self._monitor_sub = rospy.Subscriber("skill_managers/monitor", msgs.SkillProgress, self._smProgressCB)
+        self._monitor_sub = rospy.Subscriber("skill_managers/monitor", msgs.SkillProgress, self._progress_cb)
         self._monitor_cb = None
+        self.init_discovery("skill_managers", self._discovery_cb)
         if skill_monitor_cb:
             self.setMonitorCallback(skill_monitor_cb)
-
 
     def getAgent(self, agent):
         if isinstance(agent, str):
@@ -77,21 +67,16 @@ class SkillLayerInterface:
     def setMonitorCallback(self, cb):
         self._monitor_cb = cb
 
-    def _smProgressCB(self, msg):
+    def _discovery_cb(self, msg):
+        if msg.state==msg.ACTIVE and not self._agents.has_key(msg.name):
+            log.info("[SkillLayerInterface]", "New skill manager detected: {}".format(msg.name))
+            self._new_changes = True
+            self._agents[msg.name] = SkillManagerInterface(msg.name)
+        elif msg.state==msg.INACTIVE and self._agents.has_key(msg.name):
+            log.info("[SkillLayerInterface]", "Skill manager {} went down.".format(msg.name))
+            self._new_changes = True
+            del self._agents[msg.name]
+
+    def _progress_cb(self, msg):
         if self._monitor_cb:
             self._monitor_cb(msg)
-
-    def _wmMonitorCB(self, msg):
-        """
-        Update agents list
-        """
-        if msg.action == "update":
-            return
-        for emsg in msg.elements:
-            if emsg.type in self._agent_classes:
-                e = utils.msg2element(emsg)
-                self._new_changes = True
-                if msg.action is "add":
-                    self._agents[e.getProperty("skiros:SkillMgr").value] = SkillManagerInterface(self._wmi, e)
-                elif msg.action is "remove":
-                    del self._agents[e.getProperty("skiros:SkillMgr").value]
