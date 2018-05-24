@@ -56,97 +56,102 @@ def skill2msg(skill):
     msg.params = utils.serializeParamMap(skill._description._params.getParamMap())
     return msg
 
-class TaskManager:
+class BtTicker:
     """
-    Internal task manager used to keep track of on-going tasks
+    Manager of a set of Behavior Trees (Tasks) and a visitor
+
+    Ticks the tasks sequentially, with the specified visitor
+
+    Provides interfaces to start, pause, stop the ticking process and to add/remove tasks
     """
     _verbose = True
+    _tasks_to_preempt = list()
     _tasks = {}
-    _processes = {}
-    _visitors = {}
+    _process = None
+    _visitor = None
     _id_gen = IdGen()
 
     _progress_cb = None
 
+    _progress_visitor = visitors.VisitorProgress()
+    _finished_skill_ids = list()
 
     def __getitem__(self, key):
-        return TaskManager._tasks[key]
+        return BtTicker._tasks[key]
 
-    def _run(self, uid, visitor, clear):
+    def _run(self, clear):
         """
-        Tick tree at 25hz
+        @brief Tick tasks at 25hz
         """
-        progress = visitors.VisitorProgress()
-        finished_skill_ids = []
+        BtTicker._finished_skill_ids = list()
+        visitor = BtTicker._visitor
 
-        iteration = 0
         result = State.Running
         rate = rospy.Rate(25)
-        while result==State.Running:
-            iteration += 1
-            result = visitor.traverse(TaskManager._tasks[uid])
-            log.debug("[{}]".format(visitor.__class__.__name__), "Iteration {} result: {}".format(iteration, result.name))
+        while BtTicker._tasks:
+            for uid in list(BtTicker._tasks.keys()):
+                if uid in BtTicker._tasks_to_preempt:
+                    BtTicker._tasks_to_preempt.remove(uid)
+                    visitor.preempt()
+                t = BtTicker._tasks[uid]
+                result = visitor.traverse(t)
+                self.publish_progress(uid, t, result, clear)
+            #log.info("", "Remaining: {}".format(rate.remaining()))#TODO: decrease the loop time.Optimize operations
+            rate.sleep()
+
+    def publish_progress(self, uid, t, result, clear):
+        if result == State.Running:
+            progress = BtTicker._progress_visitor
+            finished_skill_ids = BtTicker._finished_skill_ids
             progress.reset()
-            progress.traverse(TaskManager._tasks[uid])
+            progress.traverse(t)
             for (id,desc) in progress.snapshot():
                 if id not in finished_skill_ids:
                     if desc['state'] is State.Success or desc['state'] is State.Failure:
                         finished_skill_ids.append(id)
                     if self._progress_cb is not None:
                         self._progress_cb(task_id=uid, id=id, **desc)
-            #log.info("", "Remaining: {}".format(rate.remaining()))#TODO: decrease the loop time.Optimize operations
-            rate.sleep()
-        #if result==State.Failure:
-        print "===Final state==="
-        printer = visitors.VisitorPrint(visitor._wm, visitor._instanciator)
-        printer.traverse(TaskManager._tasks[uid])
-        self._progress_cb(task_id=uid, id=uid, **{"type":"Task", "label": "-", "state": TaskManager._tasks[uid].state, "msg": "Terminated.", "code": 0})
-        if clear:
-            self.removeTask(uid)
+        else:
+            print "===Final state==="
+            printer = visitors.VisitorPrint(BtTicker._visitor._wm, BtTicker._visitor._instanciator)
+            printer.traverse(t)
+            self._progress_cb(task_id=uid, id=uid, **{"type":"Task", "label": str(uid), "state": t.state, "msg": "Terminated.", "code": 0})
+            if clear:
+                self.remove_task(uid)
 
-
-    def observeProgress(self, func):
+    def observe_progress(self, func):
         self._progress_cb = func
 
 
     def clear(self):
-        for uid, v in TaskManager._visitors.iteritems():
-            self.preempt(uid)
-            self.join(uid)
-        TaskManager._tasks.clear()
-        TaskManager._visitors.clear()
-        TaskManager._id_gen.clear()
+        if BtTicker._visitor:
+            BtTicker._visitor.preempt()
+            BtTicker._process.join()
+            BtTicker._visitor = None
+        BtTicker._tasks.clear()
+        BtTicker._id_gen.clear()
 
-    def addTask(self, obj, desired_id=-1):
-        uid = TaskManager._id_gen.getId(desired_id)
-        TaskManager._tasks[uid] = obj
+    def add_task(self, obj, desired_id=-1):
+        uid = BtTicker._id_gen.getId(desired_id)
+        BtTicker._tasks[uid] = obj
         return uid
 
-    def removeTask(self, uid):
-        if TaskManager._processes.has_key(uid):
-            TaskManager._visitors.pop(uid)
-            TaskManager._processes.pop(uid)
-        TaskManager._tasks.pop(uid)
-        TaskManager._id_gen.removeId(uid)
+    def remove_task(self, uid):
+        BtTicker._tasks.pop(uid)
+        BtTicker._id_gen.removeId(uid)
 
-    def start(self, uid, visitor, clear=False):
-        TaskManager._visitors[uid] = visitor
-        TaskManager._processes[uid] = Process(target=TaskManager._run, args=(self, uid, visitor, clear))
-        TaskManager._processes[uid].start()
+    def start(self, visitor, clear=True):
+        BtTicker._visitor = visitor
+        BtTicker._process = Process(target=BtTicker._run, args=(self, clear))
+        BtTicker._process.start()
         return True
 
-    def isAlive(self, uid):
-        TaskManager._processes[uid].is_alive()
-
-    def join(self, uid):
-        TaskManager._processes[uid].join()
+    def join(self):
+        BtTicker._process.join()
 
     def preempt(self, uid):
-        TaskManager._visitors[uid].preempt()
+        BtTicker._tasks_to_preempt.append(uid)
         log.info("preempt", "Task {} preempted.".format(uid))
-
-    def kill(self, uid):
-        log.error("", "TODO")
 
 
 class SkillManager:
@@ -161,15 +166,15 @@ class SkillManager:
         #self._local_wm._verbose = False
         self._plug_loader = PluginLoader()
         self._instanciator = SkillInstanciator(self._local_wm)
-        self._tasks = TaskManager()
+        self._ticker = BtTicker()
         self._verbose = verbose
-        self._tasks._verbose = verbose
+        self._ticker._verbose = verbose
         self._registerAgent(agent_name)
         self._skills = []
         self._wmi.unlock() #Ensures the world model's mutex is unlocked
 
     def observeTaskProgress(self, func):
-        self._tasks.observeProgress(func)
+        self._ticker.observe_progress(func)
 
     def _registerAgent(self, agent_name):
         res = self._wmi.resolveElement(wm.Element("cora:Robot", agent_name))
@@ -238,21 +243,21 @@ class SkillManager:
         self._wmi.addElement(e)
         self._skills.append(e)
 
-    def addTask(self, task, desired_id=-1):
+    def add_task(self, task, desired_id=-1):
         root = skill.Root("root", self._local_wm)
         for i in task:
             print i.manager+":"+i.type+":"+i.name+i.ph.printState()
             root.addChild(skill.SkillWrapper(i.type, i.name, self._instanciator))
             root.last().specifyParamsDefault(i.ph)
-        return self._tasks.addTask(root, desired_id)
+        return self._ticker.add_task(root, desired_id)
 
     def preemptTask(self, uid):
-        self._tasks.preempt(uid)
+        self._ticker.preempt(uid)
 
     def printTask(self, uid):
         self.visitor = visitors.VisitorPrint(self._local_wm, self._instanciator)
         self.visitor.setVerbose(self._verbose)
-        return self._tasks.start(uid, self.visitor)
+        return self._ticker.start(self.visitor)
 
     def executeTask(self, uid, sim=False, track_params=list()):#[("MotionChange",)]
         self.visitor = visitors.VisitorExecutor(self._local_wm, self._instanciator)
@@ -260,10 +265,10 @@ class SkillManager:
         for t in track_params:
             self.visitor.trackParam(*t)
         self.visitor.setVerbose(self._verbose)
-        return self._tasks.start(uid, self.visitor)
+        return self._ticker.start(self.visitor)
 
-    def clearTasks(self):
-        self._tasks.clear()
+    def clear_tasks(self):
+        self._ticker.clear()
 
     def executeOptimal(self):
         #Optimize Procedure
@@ -362,23 +367,19 @@ class SkillManagerNode(DiscoverableNode):
 
     def _commandCb(self, msg):
         if msg.action == msg.START:
-            self._sm.clearTasks()
-            task_id = self._sm.addTask(self._makeTask(msg.skills), msg.execution_id)
+            task_id = self._sm.add_task(self._makeTask(msg.skills), msg.execution_id)
             #self._sm.printTask(task_id)
             self._sm.executeTask(task_id)
         elif msg.action == msg.PREEMPT:
             task_id = self._sm.preemptTask(msg.execution_id)
         elif msg.action == msg.PAUSE:
             log.error("[{}]".format(self.__class__.__name__), "TODO")
-            pass
+            return srvs.SkillCommandResponse(False, -1)
         elif msg.action == msg.KILL:
             log.error("[{}]".format(self.__class__.__name__), "TODO")
-            pass
+            return srvs.SkillCommandResponse(False, -1)
         else:
-            task_id = self._sm.addTask([SkillHolder("", msg.action, "")])
-            self._sm.printTask(task_id)
-            #self._sm._tasks.join(task_id)
-            self._sm.executeTask(task_id)
+            log.error("[{}]".format(self.__class__.__name__), "Unrecognized command.")
             return srvs.SkillCommandResponse(False, -1)
         return srvs.SkillCommandResponse(True, task_id)
 

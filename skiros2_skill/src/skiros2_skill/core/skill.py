@@ -465,6 +465,14 @@ class SkillBase(SkillInterface, object):
     """
     Base class for user's skills
     """
+    def _parse_type(self, ptype):
+        if ptype.find("skiros:")>=0:
+            return ptype
+        elif ptype.find(":")>=0:
+            return "skiros" + ptype
+        else:
+            return "skiros:" + ptype
+
     def getLightCopy(self):
         """
         Makes a light copy (only description, params and state)
@@ -497,7 +505,7 @@ class SkillBase(SkillInterface, object):
         """
         @brief Return a skill wrapper initialized
         """
-        return SkillWrapper(ptype, plabel, self._instanciator)
+        return SkillWrapper(self._parse_type(ptype), plabel, self._instanciator)
 
     def getNode(self, children_processor):
         """
