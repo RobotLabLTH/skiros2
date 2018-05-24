@@ -70,12 +70,12 @@ class SkillLayerInterface(DiscoveryInterface):
     def _discovery_cb(self, msg):
         if msg.state==msg.ACTIVE and not self._agents.has_key(msg.name):
             log.info("[SkillLayerInterface]", "New skill manager detected: {}".format(msg.name))
-            self._new_changes = True
             self._agents[msg.name] = SkillManagerInterface(msg.name)
+            self._new_changes = True
         elif msg.state==msg.INACTIVE and self._agents.has_key(msg.name):
             log.info("[SkillLayerInterface]", "Skill manager {} went down.".format(msg.name))
-            self._new_changes = True
             del self._agents[msg.name]
+            self._new_changes = True
 
     def _progress_cb(self, msg):
         if self._monitor_cb:
