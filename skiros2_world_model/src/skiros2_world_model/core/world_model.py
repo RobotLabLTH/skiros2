@@ -465,6 +465,7 @@ class WorldModel(Ontology):
                 if (e2._type in types_filter or not types_filter) and not elist.has_key(e2._id):
                     self._getRecursive(e2, rels_filter, types_filter, elist)
 
+    @synchronized
     def getRecursive(self, eid, rel_filter="", type_filter=""):
         """
         Get an element from the scene and all elements related to the initial one
