@@ -1,5 +1,5 @@
 from flufl.enum import Enum
-from copy import deepcopy
+from copy import copy, deepcopy
 import skiros2_common.tools.logger as log
 from skiros2_common.core.property import Property
 from skiros2_common.core.world_element import Element
@@ -28,7 +28,7 @@ class Param(Property):
     True
 
     """
-    __slots__ = ['_key', '_description', '_param_type', '_values', '_data_type', '_default', '_last_update', '_is_list']
+    __slots__ = ['_key', '_description', '_param_type', '_data_type', '_is_list', '_values', '_default', '_last_update']
     def __init__(self, key, description, value, param_type, is_list=False):
         self._is_list = is_list
         self._key=key
@@ -50,6 +50,17 @@ class Param(Property):
             self._default = [value]
             self._data_type=type(value)
             self._values = [value]
+
+    def __copy__(self):
+        result = self.__class__.__new__(self.__class__)
+        for k in self.__slots__:
+            setattr(result, k, getattr(self, k))
+        return result
+
+    def __deepcopy__(self, memo):
+        result = self.__copy__()
+        memo[id(self)] = result
+        return result
 
     @property
     def last_update(self):
@@ -348,5 +359,5 @@ class ParamHandler(object):
             if not p.dataTypeIs(Element):
                 to_ret += p.printState() + " "
             else:
-                to_ret += p.key + p.value.printState() + " "
+                to_ret += p.key + ": " + p.value.printState() + " "
         return to_ret

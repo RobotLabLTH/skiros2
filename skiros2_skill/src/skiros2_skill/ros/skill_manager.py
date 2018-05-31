@@ -96,7 +96,7 @@ class BtTicker:
                 t = BtTicker._tasks[uid]
                 result = visitor.traverse(t)
                 self.publish_progress(uid, t, result, clear)
-            #log.info("", "Remaining: {}".format(rate.remaining()))#TODO: decrease the loop time.Optimize operations
+            #log.info("", "Remaining: {}".format(rate.remaining().to_sec()))#TODO: decrease the loop time.Optimize operations
             rate.sleep()
 
     def publish_progress(self, uid, t, result, clear):
@@ -160,7 +160,7 @@ class SkillManager:
     """
     def __init__(self, prefix, agent_name, verbose=True):
         self._agent_name = agent_name
-        self._wmi = wmi.WorldModelInterface(agent_name)
+        self._wmi = wmi.WorldModelInterface(agent_name, make_cache=True)
         self._wmi.setDefaultPrefix(prefix)
         self._local_wm = self._wmi
         #self._local_wm._verbose = False

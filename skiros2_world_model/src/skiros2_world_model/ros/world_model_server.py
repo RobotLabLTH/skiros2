@@ -46,7 +46,7 @@ class WorldModelServer(OntologyServer):
         rospy.init_node("wm", anonymous=anonymous)
         rospy.on_shutdown(self._waitClientsDisconnection)
         self._verbose = rospy.get_param('~verbose', False)
-        self._wm = WorldModel(self._verbose)
+        self._wm = WorldModel(self._verbose, self.wm_change_cb)
         self._ontology = self._wm
         self._plug_loader = PluginLoader()
         self._loadReasoners()
@@ -66,6 +66,9 @@ class WorldModelServer(OntologyServer):
         if self._monitor:
             while self._monitor.get_num_connections()>0:
                 sleep(0.1)
+
+    def wm_change_cb(self, author, action, element):
+        self._publishChange(author, action, [utils.element2msg(element)])
 
     def _publishChange(self, author, action, elements=None, relation=None):
         msg =  msgs.WmMonitor()

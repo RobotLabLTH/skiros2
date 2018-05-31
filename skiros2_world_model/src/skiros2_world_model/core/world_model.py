@@ -41,7 +41,7 @@ from wrapt.decorators import synchronized
 from skiros2_common.tools.id_generator import IdGen
 
 class WorldModel(Ontology):
-    def __init__(self, verbose=False):
+    def __init__(self, verbose, change_cb):
         self._verbose = verbose
         self._id_gen = IdGen()
         self._reasoners = {}
@@ -49,6 +49,7 @@ class WorldModel(Ontology):
         self._wm = rdflib.Graph()
         self._init()
         self._reset()
+        self._change_cb = change_cb
         init_scene = rospy.get_param('~init_scene', "")
         if init_scene!="":
             self.loadScene(init_scene)
@@ -410,6 +411,7 @@ class WorldModel(Ontology):
                 for i in range(1, len(values)):
                     self._add((subject, predicate, rdflib.term.Literal(values[i], datatype=self._getDatatype(p))), reasoner.__class__.__name__)
         self._elements_cache[e.id] = old_e
+        self._change_cb(reasoner.__class__.__name__, "update", old_e)
 
     @synchronized
     def resolveElements(self, description):

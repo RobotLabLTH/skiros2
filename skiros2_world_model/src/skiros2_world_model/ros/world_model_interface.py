@@ -40,15 +40,26 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
     """
     Interface for scene services on a world model node
     """
-    def __init__(self, author_name="test", monitor_callback=None):
+    _elements_cache = {}
+
+    def __init__(self, author_name="test", make_cache=False):
         OntologyInterface.__init__(self, author_name)
         self._load_and_save = rospy.ServiceProxy('wm/scene/load_and_save', srvs.WmLoadAndSave)
         self._set_relations = rospy.ServiceProxy('wm/scene/set_relation', srvs.WmSetRelation)
         self._get = rospy.ServiceProxy('wm/scene/get', srvs.WmGet)
         self._modify = rospy.ServiceProxy('wm/scene/modify', srvs.WmModify)
         self._query_relations = rospy.ServiceProxy('wm/scene/query_relations', srvs.WmQueryRelations)
-        if monitor_callback:
-            self._monitor = rospy.Subscriber("wm/monitor", msgs.WmMonitor, monitor_callback, queue_size=100)
+        if make_cache:
+            self._monitor = rospy.Subscriber("wm/monitor", msgs.WmMonitor, self._monitor_cb, queue_size=100)
+
+    def _monitor_cb(self, msg):
+        for elem in msg.elements:
+            elem = utils.msg2element(elem)
+            if msg.action == 'update' or msg.action == 'add':
+                WorldModelInterface._elements_cache[elem.id] = elem
+            elif msg.action == 'remove' or msg.action == 'remove_recursive':
+                if WorldModelInterface._elements_cache.has_key(elem.id):
+                    del WorldModelInterface._elements_cache[elem.id]
 
     def getSceneName(self):
         """
@@ -222,14 +233,17 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
             return utils.msg2element(res.elements[0])
 
     def getElement(self, eid):
-        msg = srvs.WmGetRequest()
-        e = msgs.WmElement()
-        e.id = eid
-        msg.element = e
-        msg.action = msg.GET
-        res = self._call(self._get, msg)
-        if(res):
-            return utils.msg2element(res.elements[0])
+        if WorldModelInterface._elements_cache.has_key(eid):
+            return WorldModelInterface._elements_cache[eid]
+        else:
+            msg = srvs.WmGetRequest()
+            e = msgs.WmElement()
+            e.id = eid
+            msg.element = e
+            msg.action = msg.GET
+            res = self._call(self._get, msg)
+            if(res):
+                return utils.msg2element(res.elements[0])
 
     def getBranch(self, eid, relation_filter=":sceneProperty", type_filter=""):
         """
