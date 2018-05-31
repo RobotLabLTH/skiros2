@@ -59,7 +59,7 @@ class WorldModelServer(OntologyServer):
         self._get = rospy.Service('~scene/get', srvs.WmGet, self._wmGetCb)
         self._modify = rospy.Service('~scene/modify', srvs.WmModify, self._wmModifyCb)
         self._get = rospy.Service('~scene/load_and_save', srvs.WmLoadAndSave, self._wmLoadAndSaveCb)
-        self._monitor = rospy.Publisher("~monitor", msgs.WmMonitor, queue_size=20)
+        self._monitor = rospy.Publisher("~monitor", msgs.WmMonitor, queue_size=20, latch=True)
         self.initOntologyServices()
 
     def _waitClientsDisconnection(self):

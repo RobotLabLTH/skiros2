@@ -65,7 +65,7 @@ class SkillInstanciator:
             skill.init(self._wm)
             skill.setDescription(self._available_descriptions[skill._type])
         else:
-            log.error("assignDescription", "No instances of type {} found.".format(skill._type))
+            log.error("assignDescription", "No instances of type {} found. Debug: {}".format(skill._type, self._available_descriptions.keys()))
 
     def getInstances(self, ptype):
         return self._available_instances[ptype]
