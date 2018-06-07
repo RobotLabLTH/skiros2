@@ -53,8 +53,7 @@ class TimeKeeper():
 
     def __exit__(self, type, value, traceback):
         self._list.append(time.time()-self._start_time)
-        if self.getLast()>0.01:
-            print "[{}] Time: {:0.4f}".format(self._name, self.getLast())
+        #print "[{}] Time: {:0.4f}".format(self._name, self.getLast())
 
     def getAvgTime(self):
         return sum(self._list) / float(len(self._list))
