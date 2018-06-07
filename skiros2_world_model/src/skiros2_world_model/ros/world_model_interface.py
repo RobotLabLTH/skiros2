@@ -62,6 +62,12 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
                     del WorldModelInterface._elements_cache[elem.id]
             else:
                 log.error("[WmMonitor]", "Command {} not recognized.".format(msg.action))
+        if msg.relation.relation!='':
+            rel = utils.msg2relation(msg.relation)
+            if WorldModelInterface._elements_cache.has_key(rel['src']):
+                del WorldModelInterface._elements_cache[rel['src']]
+            if WorldModelInterface._elements_cache.has_key(rel['dst']):
+                del WorldModelInterface._elements_cache[rel['dst']]
 
     def getSceneName(self):
         """

@@ -67,8 +67,11 @@ class WorldModelServer(OntologyServer):
             while self._monitor.get_num_connections()>0:
                 sleep(0.1)
 
-    def wm_change_cb(self, author, action, element):
-        self._publishChange(author, action, [utils.element2msg(element)])
+    def wm_change_cb(self, author, action, element=None, relation=None):
+        if element is not None:
+            self._publishChange(author, action, [utils.element2msg(element)])
+        else:
+            self._publishChange(author, action, relation=utils.relation2msg(relation))
 
     def _publishChange(self, author, action, elements=None, relation=None):
         msg =  msgs.WmMonitor()
@@ -138,11 +141,11 @@ class WorldModelServer(OntologyServer):
         with self._times:
             if msg.value:
                 temp = "+"
-                self._wm.addRelation(utils.msg2relation(msg.relation), msg.author)
+                self._wm.addRelation(utils.msg2relation(msg.relation), msg.author, is_relation=True)
                 self._publishChange(msg.author, "add", relation=msg.relation)
             else:
                 temp = "-"
-                self._wm.removeRelation(utils.msg2relation(msg.relation), msg.author)
+                self._wm.removeRelation(utils.msg2relation(msg.relation), msg.author, is_relation=True)
                 self._publishChange(msg.author, "remove", relation=msg.relation)
         if self._verbose:
             log.info("[wmSetRelCb]", "[{}] {} Time: {:0.3f} secs".format(temp, msg.relation, self._times.getLast()))

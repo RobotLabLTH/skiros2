@@ -114,7 +114,7 @@ class WorldModel(Ontology):
         if self._elements_cache.has_key(self.uri2lightstring(statement[0])):
             del self._elements_cache[self.uri2lightstring(statement[0])]
 
-    def _remove(self, statement, author, time=None, probability=1.0):
+    def _remove(self, statement, author, is_relation=False, time=None, probability=1.0):
         """
         @brief Remove a statement from the scene and from ontology
         """
@@ -122,12 +122,14 @@ class WorldModel(Ontology):
             log.info(author, log.logColor.RED + log.logColor.BOLD  + "[-] ({}) - ({}) - ({})".format(self.uri2lightstring(statement[0]), self.uri2lightstring(statement[1]), self.uri2lightstring(statement[2])))
         self._ontology.remove(statement)
         self._wm.remove(statement)
-        if self._elements_cache.has_key(self.uri2lightstring(statement[0])):
-            del self._elements_cache[self.uri2lightstring(statement[0])]
-        if self._elements_cache.has_key(self.uri2lightstring(statement[2])):
-            del self._elements_cache[self.uri2lightstring(statement[2])]
+        if is_relation:
+            if self._elements_cache.has_key(self.uri2lightstring(statement[0])):
+                del self._elements_cache[self.uri2lightstring(statement[0])]
+            if self._elements_cache.has_key(self.uri2lightstring(statement[2])):
+                del self._elements_cache[self.uri2lightstring(statement[2])]
+            self._change_cb(author, "remove", relation={'src': self.uri2lightstring(statement[0]), 'type': self.uri2lightstring(statement[1]), 'dst': self.uri2lightstring(statement[2])})
 
-    def _add(self, statement, author, time=None, probability=1.0):
+    def _add(self, statement, author, is_relation=False, time=None, probability=1.0):
         """
         @brief Add a statement to the scene and the ontology
         """
@@ -135,35 +137,37 @@ class WorldModel(Ontology):
             log.info(author, log.logColor.GREEN + log.logColor.BOLD  + "[+] ({}) - ({}) - ({})".format(self.uri2lightstring(statement[0]), self.uri2lightstring(statement[1]), self.uri2lightstring(statement[2])))
         self._ontology.add(statement)
         self._wm.add(statement)
-        if self._elements_cache.has_key(self.uri2lightstring(statement[0])):
-            del self._elements_cache[self.uri2lightstring(statement[0])]
-        if self._elements_cache.has_key(self.uri2lightstring(statement[2])):
-            del self._elements_cache[self.uri2lightstring(statement[2])]
+        if is_relation:
+            if self._elements_cache.has_key(self.uri2lightstring(statement[0])):
+                del self._elements_cache[self.uri2lightstring(statement[0])]
+            if self._elements_cache.has_key(self.uri2lightstring(statement[2])):
+                del self._elements_cache[self.uri2lightstring(statement[2])]
+            self._change_cb(author, "add", relation={'src': self.uri2lightstring(statement[0]), 'type': self.uri2lightstring(statement[1]), 'dst': self.uri2lightstring(statement[2])})
 
     def _element2statements(self, e):
         to_ret = []
         subject = self.lightstring2uri(e.id)
-        to_ret.append((subject, RDF.type, OWL.NamedIndividual))
-        to_ret.append((subject, RDF.type, self.lightstring2uri(e.type)))
-        to_ret.append((subject, RDFS.label, rdflib.term.Literal(e.label)))
+        to_ret.append(((subject, RDF.type, OWL.NamedIndividual), False))
+        to_ret.append(((subject, RDF.type, self.lightstring2uri(e.type)), False))
+        to_ret.append(((subject, RDFS.label, rdflib.term.Literal(e.label)), False))
         for k, p in e._properties.iteritems():
             predicate = self.lightstring2uri(k)
             for v in p.getValues():
                 value = rdflib.term.Literal(v, datatype=self._getDatatype(p))
-                to_ret.append((subject, predicate, value))
+                to_ret.append(((subject, predicate, value), False))
         for r in list(e._relations):
             if r['src']=="-1" or r['src']==e.id:
                 if not self.existsInOntology(self.lightstring2uri(r['dst'])):
                     log.error("[element2statements]", "Element with key {} is not defined in ontology. Skipped relation: {}".format(r['dst'], r))
                     e.removeRelation(r)
                     continue
-                to_ret.append((subject, self.lightstring2uri(r['type']), self.lightstring2uri(r['dst'])))
+                to_ret.append(((subject, self.lightstring2uri(r['type']), self.lightstring2uri(r['dst'])), True))
             else:
                 if not self.existsInOntology(self.lightstring2uri(r['src'])):
                     log.error("[element2statements]", "Element with key {} is not defined in ontology. Skipped relation: {}".format(r['src'], r))
                     e.removeRelation(r)
                     continue
-                to_ret.append((self.lightstring2uri(r['src']), self.lightstring2uri(r['type']), subject))
+                to_ret.append(((self.lightstring2uri(r['src']), self.lightstring2uri(r['type']), subject), True))
         return to_ret
 
     def _uri2type(self, uri):
@@ -304,22 +308,22 @@ class WorldModel(Ontology):
         self._wm.serialize(self._workspace+"/"+filename, format='turtle')
 
     @synchronized
-    def addRelation(self, r, author):
+    def addRelation(self, r, author, is_relation):
         """
         @brief Add an rdf triple
         """
         s = self.lightstring2uri(r['src'])
         o = self.lightstring2uri(r['dst'])
-        self._add((s, self.lightstring2uri(r['type']), o), author)
+        self._add((s, self.lightstring2uri(r['type']), o), author, is_relation=is_relation)
 
     @synchronized
-    def removeRelation(self, r, author):
+    def removeRelation(self, r, author, is_relation):
         """
         @brief Remove an rdf triple
         """
         s = self.lightstring2uri(r['src'])
         o = self.lightstring2uri(r['dst'])
-        self._remove((s, self.lightstring2uri(r['type']), o), author)
+        self._remove((s, self.lightstring2uri(r['type']), o), author, is_relation=is_relation)
 
     def getRelations(self, r):
         to_ret = []
@@ -364,8 +368,8 @@ class WorldModel(Ontology):
         if e.hasProperty("skiros:Template"):
             e.addRelation("-1", "skiros:hasTemplate", e.getProperty("skiros:Template").value)
         statements = self._element2statements(e)
-        for s in statements:
-            self._add(s, author)
+        for s, is_relation in statements:
+            self._add(s, author, is_relation)
         self._elements_cache[e.id] = e
         return e
 
@@ -375,21 +379,21 @@ class WorldModel(Ontology):
         @brief Update an element in the scene
         """
         if not self._id_gen.hasId(self._uri2id(e.id)):
-            log.error("[updateElement]", "Id {} is not present in the wm. Element: {}".format(self._uri2id(e.id), e.printState(True)))
+            log.error("[updateElement]", "Request update from {}, but Id {} is not present in the wm. ".format(author, self._uri2id(e.id)))
             return
         for name, r in self._reasoners.iteritems():
             if not r.parse(e, "update"):
                 raise Exception("Reasoner {} rejected the element {} update".format(name, e))
-        prev = self.getContextStatements(e.id)
+        prev = self._element2statements(self.getElement(e.id))
         curr = self._element2statements(e)
-        for s in prev:
-            if not s in curr:
-                #print "Removing {}".format(s)
-                self._remove(s, author)
-        for s in curr:
-            if not s in prev:
-                #print "Adding {}".format(s)
-                self._add(s, author)
+        c1, c2 = zip(*curr)
+        for s, is_relation in prev:
+            if not s in c1:
+                self._remove(s, author, is_relation)
+        p1, p2 = zip(*prev)
+        for s, is_relation in curr:
+            if not s in p1:
+                self._add(s, author, is_relation)
         self._elements_cache[e.id] = e
 
     @synchronized
@@ -398,7 +402,7 @@ class WorldModel(Ontology):
         @brief Update properties of an element in the scene
         """
         if not self._id_gen.hasId(self._uri2id(e.id)):
-            log.error("[updateElement]", "Id {} is not present in the wm.".format(self._uri2id(e.id)))
+            log.error("[updateElement]", "Request update from {}, but Id {} is not present in the wm. ".format(author, self._uri2id(e.id)))
             return
         for name, r in self._reasoners.iteritems():
             if not r.parse(e, "update"):
@@ -461,13 +465,14 @@ class WorldModel(Ontology):
         """
         Remove an element from the scene
         """
+        e = self.getElement(e.id)
         self._id_gen.removeId(self._uri2id(e.id))
         for name, r in self._reasoners.iteritems():
             if not r.parse(e, "remove"):
                 raise Exception("Reasoner {} rejected the element {} removal".format(name, e))
-        statements = self.getContextStatements(e.id)
-        for s in statements:
-            self._remove(s, author)
+        statements = self._element2statements(e)
+        for s, is_relation in statements:
+            self._remove(s, author, is_relation)
         return e.id
 
     def _getRecursive(self, e, rels_filter, types_filter, elist):
