@@ -45,8 +45,8 @@ class WorldModelServer(OntologyServer):
         self._monitor = None
         rospy.init_node("wm", anonymous=anonymous)
         rospy.on_shutdown(self._waitClientsDisconnection)
-        self._verbose = rospy.get_param('~verbose', False)
-        self._wm = WorldModel(self._verbose, self.wm_change_cb)
+        self._verbose = True#rospy.get_param('~verbose', False)
+        self._wm = WorldModel(False, self.wm_change_cb)
         self._ontology = self._wm
         self._plug_loader = PluginLoader()
         self._loadReasoners()
@@ -162,6 +162,13 @@ class WorldModelServer(OntologyServer):
                 e_list = list()
                 for e in msg.elements:
                     self._wm.updateElement(utils.msg2element(e), msg.author)
+                    to_ret.ids.append(e.id)
+                    e_list.append(utils.element2msg(self._wm.getElement(e.id)))
+                self._publishChange(msg.author, "update", elements=e_list)
+            elif msg.action == msg.UPDATE_PROPERTIES:
+                e_list = list()
+                for e in msg.elements:
+                    self._wm.updateProperties(utils.msg2element(e), msg.author, self._wm.get_reasoner(msg.type_filter), False)
                     to_ret.ids.append(e.id)
                     e_list.append(utils.element2msg(self._wm.getElement(e.id)))
                 self._publishChange(msg.author, "update", elements=e_list)

@@ -135,13 +135,13 @@ class Param(Property):
         @brief Specify the parameter and set it as default value
         """
         self.setValues(values)
-        self._default = self._values
+        self._default = deepcopy(self._values)
 
     def setDefault(self):
         """
         @brief Set the parameter to default value
         """
-        self._values = self._default
+        self._values = deepcopy(self._default)
 
     @property
     def description(self):

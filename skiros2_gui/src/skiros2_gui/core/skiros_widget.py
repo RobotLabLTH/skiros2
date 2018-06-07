@@ -450,7 +450,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
                 self._snapshot_id = data.snapshot_id
                 cur_item = self.wm_tree_widget.currentItem()
                 cur_item_id = cur_item.text(1)
-                if data.action == 'update':
+                if data.action == 'update' or data.action == 'update_properties':
                     for elem in data.elements:
                         elem = rosutils.msg2element(elem)
 

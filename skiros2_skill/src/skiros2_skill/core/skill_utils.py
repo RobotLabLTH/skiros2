@@ -187,8 +187,7 @@ class NodeExecutor():
 #        if skill._instance.hasState(State.Running): #TODO: fix fix fix!
 #            log.info("[ground]", "Skill {} is already running".format(skill.printInfo()))
 #            return False
-        if not skill.hasState(State.Idle): #or not skill._instance.hasState(State.Idle):
-            skill.reset()
+        skill.reset()
         skill.specifyParams(self._params)
         self._printTracked(skill._params, "[{}Params] ".format(skill.label))
         if not self._autoParametrizeBB(skill):

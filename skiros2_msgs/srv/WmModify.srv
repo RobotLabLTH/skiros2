@@ -1,6 +1,7 @@
 #Possible actions
 string ADD=add
 string UPDATE=update
+string UPDATE_PROPERTIES=update_properties
 string REMOVE=remove
 string REMOVE_RECURSIVE=remove_recursive
 

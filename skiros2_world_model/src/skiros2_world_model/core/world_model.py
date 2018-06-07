@@ -204,6 +204,11 @@ class WorldModel(Ontology):
         for _, r in self._reasoners.iteritems():
             r.execute()
 
+    def get_reasoner(self, reasoner_class):
+        if not self._reasoners.has_key(reasoner_class):
+            return None
+        return self._reasoners[reasoner_class]
+
     def loadReasoner(self, reasoner_class):
         self._reasoners[reasoner_class.__name__] = reasoner_class()
         self._reasoners[reasoner_class.__name__].init(self)
@@ -388,7 +393,7 @@ class WorldModel(Ontology):
         self._elements_cache[e.id] = e
 
     @synchronized
-    def updateReasonerProperties(self, e, reasoner):
+    def updateProperties(self, e, author, reasoner=None, publish=True):
         """
         @brief Update properties of an element in the scene
         """
@@ -400,18 +405,27 @@ class WorldModel(Ontology):
                 raise Exception("Reasoner {} rejected the element {} update".format(name, e))
         old_e = self.getElement(e.id)
         subject = self.lightstring2uri(e.id)
-        for k in reasoner.getAssociatedData():
+        if reasoner is not None:
+            prop_to_update = reasoner.getAssociatedData()
+        else:
+            prop_to_update = e.available_properties()
+        for k in prop_to_update:
             predicate = self.lightstring2uri(k)
             p = e.getProperty(k)
             values = p.values
-            if old_e.getProperty(k).values!=values:
-                old_e.getProperty(k).values = values
+            if not old_e.hasProperty(k):
+                old_e.setProperty(k, values)
+                for i in range(0, len(values)):
+                    self._add((subject, predicate, rdflib.term.Literal(values[i], datatype=self._getDatatype(p))), author)
+            elif old_e.getProperty(k).values!=values:
+                old_e.setProperty(k, values)
                 if values:
-                    self._set((subject, predicate, rdflib.term.Literal(values[0], datatype=self._getDatatype(p))), reasoner.__class__.__name__)
+                    self._set((subject, predicate, rdflib.term.Literal(values[0], datatype=self._getDatatype(p))), author)
                 for i in range(1, len(values)):
-                    self._add((subject, predicate, rdflib.term.Literal(values[i], datatype=self._getDatatype(p))), reasoner.__class__.__name__)
+                    self._add((subject, predicate, rdflib.term.Literal(values[i], datatype=self._getDatatype(p))), author)
         self._elements_cache[e.id] = old_e
-        self._change_cb(reasoner.__class__.__name__, "update", old_e)
+        if publish:
+            self._change_cb(author, "update", old_e)
 
     @synchronized
     def resolveElements(self, description):

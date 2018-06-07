@@ -55,11 +55,13 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
     def _monitor_cb(self, msg):
         for elem in msg.elements:
             elem = utils.msg2element(elem)
-            if msg.action == 'update' or msg.action == 'add':
+            if msg.action == 'update' or msg.action == 'update_properties' or msg.action == 'add':
                 WorldModelInterface._elements_cache[elem.id] = elem
             elif msg.action == 'remove' or msg.action == 'remove_recursive':
                 if WorldModelInterface._elements_cache.has_key(elem.id):
                     del WorldModelInterface._elements_cache[elem.id]
+            else:
+                log.error("[WmMonitor]", "Command {} not recognized.".format(msg.action))
 
     def getSceneName(self):
         """
@@ -140,6 +142,9 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         return -1
 
     def addElement(self, e):
+        """
+        @brief Add an element to the scene. The id is updated with the one assigned from the world model
+        """
         msg = srvs.WmModifyRequest()
         msg.author = self._author_name
         msg.elements.append(utils.element2msg(e))
@@ -148,10 +153,13 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         if(res):
             e._id = res.ids[0]
             self._resolveLocalRelations(e)
-            return e._id
+            return e.id
         return -1
 
     def updateElement(self, e):
+        """
+        @brief Update properties and relations of an element
+        """
         msg = srvs.WmModifyRequest()
         msg.author = self._author_name
         msg.elements.append(utils.element2msg(e))
@@ -159,6 +167,20 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         res = self._call(self._modify, msg)
         if(res):
             return e._id
+        return -1
+
+    def updateElementProperties(self, e, reasoner=""):
+        """
+        @brief Update the properties of an element (ignores the relations)
+        """
+        msg = srvs.WmModifyRequest()
+        msg.author = self._author_name
+        msg.elements.append(utils.element2msg(e))
+        msg.action = msg.UPDATE_PROPERTIES
+        msg.type_filter = reasoner
+        res = self._call(self._modify, msg)
+        if(res):
+            return e.id
         return -1
 
     def removeElement(self, e, recursive=True, rel_filter=":sceneProperty", type_filter=""):
@@ -233,9 +255,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
             return utils.msg2element(res.elements[0])
 
     def getElement(self, eid):
-        if WorldModelInterface._elements_cache.has_key(eid):
-            return WorldModelInterface._elements_cache[eid]
-        else:
+        if not WorldModelInterface._elements_cache.has_key(eid):
             msg = srvs.WmGetRequest()
             e = msgs.WmElement()
             e.id = eid
@@ -243,7 +263,8 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
             msg.action = msg.GET
             res = self._call(self._get, msg)
             if(res):
-                return utils.msg2element(res.elements[0])
+                WorldModelInterface._elements_cache[eid] = utils.msg2element(res.elements[0])
+        return WorldModelInterface._elements_cache[eid]
 
     def getBranch(self, eid, relation_filter=":sceneProperty", type_filter=""):
         """
@@ -260,25 +281,32 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         if(res):
             return [utils.msg2element(x) for x in res.elements]
 
-    def _getReasonersRel(self, subj, pred, obj):
-        if pred!="" and subj!="" and obj!="" and subj!="-1" and obj!="-1":
-            try:
-                s = self.getElement(subj)
-                o = self.getElement(obj)
-                reasoner = s._getReasoner(pred)
-                if pred in reasoner.computeRelations(s, o):
-                   return [{"src": subj, "type": pred, "dst": obj}]
-            except KeyError:
-                #No reasoner associated to the relation
-                pass
-        return list()
+    def getReasonerRelations(self, subj, pred, obj):
+        try:
+            reasoner = subj._getReasoner(pred)
+            if pred in reasoner.computeRelations(subj, obj):
+               return [{"src": subj.id, "type": pred, "dst": obj.id}]
+            else:
+                return list()
+        except KeyError:
+            #No reasoner associated to the relation
+            pass
+            return None
 
     def getRelations(self, subj, pred, obj):
+        if pred!="" and subj!="" and obj!="" and subj!="-1" and obj!="-1":
+            subj = self.getElement(subj)
+            obj = self.getElement(obj)
+            rels = self.getReasonerRelations(subj, pred, obj)
+            if rels is not None:
+                return rels
+            else:
+                return subj.getRelations(pred=pred, obj=obj.id)
         msg = srvs.WmQueryRelationsRequest()
         msg.relation = utils.relation2msg(utils.makeRelation(subj, pred, obj))
         res = self._call(self._query_relations, msg)
         if(res):
-            return [utils.msg2relation(x) for x in res.matches] + self._getReasonersRel(subj, pred, obj)
+            return [utils.msg2relation(x) for x in res.matches]
 
     def removeRelations(self, relations):
         msg = srvs.WmModifyRequest()

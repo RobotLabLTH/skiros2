@@ -27,7 +27,7 @@ class Timer(object):
         self._start_time = now()
         self._time = self._start_time
         return self
-        
+
     def __exit__(self, type, value, traceback):
         if type is not None: return False
         dt = now() - self._start_time
@@ -39,19 +39,22 @@ class Timer(object):
 Usage
 	With Timekeeper:
 		--Do something--
-	time_to_do_something = Timekeeper.list[-1]
+	time_to_do_something = Timekeeper.getLast()
 	avg_time_to_do_something = Timekeeper.getAvgTime()
 """
 class TimeKeeper():
-    def __init__(self):
+    def __init__(self, name=""):
+        self._name = name
         self._list = []
-        
+
     def __enter__(self):
         self._start_time = time.time()
         return self
-        
+
     def __exit__(self, type, value, traceback):
         self._list.append(time.time()-self._start_time)
+        if self.getLast()>0.01:
+            print "[{}] Time: {:0.4f}".format(self._name, self.getLast())
 
     def getAvgTime(self):
         return sum(self._list) / float(len(self._list))
@@ -59,7 +62,7 @@ class TimeKeeper():
     def getLast(self):
         return self._list[-1]
 
-    
+
 """
 Usage
 	With Timekeepers[name]:
@@ -69,12 +72,12 @@ Usage
 class TimeKeepers():
     def __init__(self):
         self._map = {}
-    
+
     def __getitem__(self, key):
         if not self._map.has_key(key):
-            self._map[key] = TimeKeeper()
+            self._map[key] = TimeKeeper(key)
         return self._map[key]
-        
+
     def printAvgTimings(self):
         for k, keeper in self._map.iteritems():
             time = keeper.getAvgTime()

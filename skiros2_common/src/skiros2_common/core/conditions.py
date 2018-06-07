@@ -330,9 +330,9 @@ class ConditionRelation(ConditionBase):
             return False
         #print self._description + "{} {}".format(subj.printState(), obj.printState())
         self._has_cache = True
-        self._cache = self._wm.getRelations("-1", "", obj._id)
+        self._cache = self._wm.getRelations("-1", "", obj.id)
         #print self._description + "{} {}".format(subj.printState(), obj.printState())
-        if not self._wm.setRelation(subj._id, self._owl_label, obj._id, self._desired_state):
+        if not self._wm.setRelation(subj.id, self._owl_label, obj.id, self._desired_state):
             return False
         return True
 
