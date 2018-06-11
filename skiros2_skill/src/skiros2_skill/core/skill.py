@@ -314,7 +314,6 @@ class SkillInterface(SkillCore):
         self._pre_conditions = deepcopy(self._description._pre_conditions)
         self._hold_conditions = deepcopy(self._description._hold_conditions)
         self._post_conditions = deepcopy(self._description._post_conditions)
-        self._children = []
 
     def mergeDescription(self, other):
         self.resetDescription(other)
@@ -426,7 +425,8 @@ class SkillWrapper(SkillInterface):
         self._instance = instance
         self._has_instance = True
         self._wmi = instance._wmi
-        self._setState(self._instance.getState())
+        #self._setState(self._instance.getState())
+        self._children = list()
         instance.expand(self)
 
     def getInstance(self):
