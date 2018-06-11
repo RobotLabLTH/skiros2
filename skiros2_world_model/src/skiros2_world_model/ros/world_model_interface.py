@@ -49,10 +49,14 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         self._get = rospy.ServiceProxy('wm/scene/get', srvs.WmGet)
         self._modify = rospy.ServiceProxy('wm/scene/modify', srvs.WmModify)
         self._query_relations = rospy.ServiceProxy('wm/scene/query_relations', srvs.WmQueryRelations)
+        self._last_snapshot_id = ""
         if make_cache:
             self._monitor = rospy.Subscriber("wm/monitor", msgs.WmMonitor, self._monitor_cb, queue_size=100)
 
     def _monitor_cb(self, msg):
+        if self._last_snapshot_id!=msg.prev_snapshot_id:
+            WorldModelInterface._elements_cache.clear()
+        self._last_snapshot_id = msg.snapshot_id
         for elem in msg.elements:
             elem = utils.msg2element(elem)
             if msg.action == 'update' or msg.action == 'update_properties' or msg.action == 'add':
