@@ -39,17 +39,15 @@ class Param(Property):
         else:
             self._param_type=param_type
         if isinstance(value, list):
-            self._default = value
             self._values = value
             self._data_type = type(value[0])
         elif isinstance(value, type):
             self._data_type=value
-            self._default = list()
             self._values = list()
         else:
-            self._default = [value]
             self._data_type=type(value)
             self._values = [value]
+        self._default = deepcopy(self._values)
 
     def __copy__(self):
         result = self.__class__.__new__(self.__class__)
@@ -61,6 +59,14 @@ class Param(Property):
         result = self.__copy__()
         memo[id(self)] = result
         return result
+
+    @property
+    def default(self):
+        return self.getDefaultValue()
+
+    @property
+    def defaults(self):
+        return self.getDefaultValues()
 
     @property
     def last_update(self):

@@ -765,12 +765,12 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         if param.dataTypeIs(bool):
             cbox = QCheckBox()
             if param.isSpecified():
-                cbox.setChecked(param.getValue())
+                cbox.setChecked(param.default)
             layout.addWidget(cbox, row, 1)
         elif param.dataTypeIs(Element):
             combobox = QComboBox()
             layout.addWidget(combobox, row, 1)
-            matches = self._wmi.resolveElements(param.getValue())
+            matches = self._wmi.resolveElements(param.default)
             if param.paramTypeIs(ParamTypes.Optional):
                 combobox.addItem("", None)
             for e in matches:
@@ -778,7 +778,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         else:
             lineedit = QLineEdit()
             if param.isSpecified():
-                lineedit.setText(str(param.getValue()))
+                lineedit.setText(str(param.value))
             layout.addWidget(lineedit, row, 1)
 
     @Slot(str)
