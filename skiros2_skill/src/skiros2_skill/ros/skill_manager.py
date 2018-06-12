@@ -74,7 +74,7 @@ class BtTicker:
     _progress_cb = None
 
     _progress_visitor = visitors.VisitorProgress()
-    _finished_skill_ids = list()
+    _finished_skill_ids = dict()
 
     def __getitem__(self, key):
         return BtTicker._tasks[key]
@@ -83,7 +83,7 @@ class BtTicker:
         """
         @brief Tick tasks at 25hz
         """
-        BtTicker._finished_skill_ids = list()
+        BtTicker._finished_skill_ids = dict()
         visitor = BtTicker._visitor
 
         result = State.Running
@@ -100,18 +100,18 @@ class BtTicker:
             rate.sleep()
 
     def publish_progress(self, uid, t, result, clear):
-        if result == State.Running:
-            progress = BtTicker._progress_visitor
-            finished_skill_ids = BtTicker._finished_skill_ids
-            progress.reset()
-            progress.traverse(t)
-            for (id,desc) in progress.snapshot():
-                if id not in finished_skill_ids:
-                    if desc['state'] is State.Success or desc['state'] is State.Failure:
-                        finished_skill_ids.append(id)
-                    if self._progress_cb is not None:
-                        self._progress_cb(task_id=uid, id=id, **desc)
-        else:
+        progress = BtTicker._progress_visitor
+        finished_skill_ids = BtTicker._finished_skill_ids
+        progress.reset()
+        progress.traverse(t)
+        for (id,desc) in progress.snapshot():
+            if finished_skill_ids.has_key(id):
+                if finished_skill_ids[id] == desc:
+                    continue
+            finished_skill_ids[id] = desc
+            self._progress_cb(task_id=uid, id=id, **desc)
+
+        if result != State.Running:
             print "===Final state==="
             printer = visitors.VisitorPrint(BtTicker._visitor._wm, BtTicker._visitor._instanciator)
             printer.traverse(t)

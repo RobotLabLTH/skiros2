@@ -272,12 +272,15 @@ class SkillCore(SkillDescription):
         @return A list of parameters that breaks the conditions, or an empty list if all are satisfied
         """
         to_ret = Set()
+        err_msg = ""
         for c in self._pre_conditions:
             if not c.evaluate(self._params, self._wmi):
+                err_msg += "{} Check failed. \n".format(c.getDescription())
                 if verbose:
                     log.error(c.getDescription(), "ConditionCheck failed")
                 for key in c.getKeys():
                     to_ret.add(key)
+        self._progress_msg = err_msg
         return list(to_ret)
 
     def hasPostCond(self):
