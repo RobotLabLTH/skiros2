@@ -50,6 +50,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         self._modify = rospy.ServiceProxy('wm/scene/modify', srvs.WmModify)
         self._query_relations = rospy.ServiceProxy('wm/scene/query_relations', srvs.WmQueryRelations)
         self._last_snapshot_id = ""
+        self._make_cache = make_cache
         if make_cache:
             self._monitor = rospy.Subscriber("wm/monitor", msgs.WmMonitor, self._monitor_cb, queue_size=100)
 
@@ -272,8 +273,12 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
             msg.element = e
             msg.action = msg.GET
             res = self._call(self._get, msg)
-            if(res):
+            if not res:
+                return None
+            if self._make_cache:
                 WorldModelInterface._elements_cache[eid] = utils.msg2element(res.elements[0])
+            else:
+                return utils.msg2element(res.elements[0])
         return WorldModelInterface._elements_cache[eid]
 
     def getBranch(self, eid, relation_filter=":sceneProperty", type_filter=""):
