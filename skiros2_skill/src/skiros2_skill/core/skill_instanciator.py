@@ -70,24 +70,33 @@ class SkillInstanciator:
     def getInstances(self, ptype):
         return self._available_instances[ptype]
 
+    def duplicate_instance(self, instance):
+        """
+        @brief Add a new instance of the skill in the available list
+        """
+        new = instance.__class__()
+        new.init(self._wm, self)
+        self._available_instances[new._type].append(new)
+        return new
+
     def assignInstance(self, skill):
         """
         @brief Assign an instance to an abstract skill.
 
-        If an instance with same label is not found, assign the first instance of the type.
+        If an instance with same label is not found, assign the last instance of the type.
         """
         to_set = None
-        first_cycle = True
         for p in self._available_instances[skill._type]:
-            if first_cycle: #TODO: removed temporarly-> and not p.hasState(State.Running)
-                first_cycle = False
-                to_set = p
-            if p._label == skill._label:
-                to_set = p
-        if to_set != None:
+            to_set = p
+            if p._label == skill._label or skill._label=="":
+                if not p.hasState(State.Running):
+                    break
+        if to_set is not None:
+            if to_set.hasState(State.Running):
+                to_set = self.duplicate_instance(to_set)
             skill.setInstance(to_set)
         else:
-            log.error("assignInstance", "No instances of type {} found.".format(skill._type))
+            log.error("assignInstance", "No instance of type {} found.".format(skill._type))
 
     def printState(self, verbose=True, filter_type=""):
         s = 'Descriptions:\n'

@@ -145,12 +145,12 @@ class VisitorExecutor(VisitorInterface, NodePrinter, NodeExecutor):
         return state
 
     def processingStart(self, procedure):
-        self._wm.lock()
+        #self._wm.lock()
         self.syncParams()
         return True
 
     def processingDone(self, procedure):
-        self._wm.unlock()
+        #self._wm.unlock()
         return True
 
 class VisitorReversibleSimulator(VisitorInterface, NodePrinter, NodeReversibleSimulator):

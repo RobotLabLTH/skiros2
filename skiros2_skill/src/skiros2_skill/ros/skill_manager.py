@@ -79,27 +79,36 @@ class BtTicker:
     def __getitem__(self, key):
         return BtTicker._tasks[key]
 
-    def _run(self, clear):
+    def _run(self, _):
         """
         @brief Tick tasks at 25hz
         """
         BtTicker._finished_skill_ids = dict()
         visitor = BtTicker._visitor
-
         result = State.Running
         rate = rospy.Rate(25)
+        log.info("[BtTicker]", "Execution starts.")
         while BtTicker._tasks:
             for uid in list(BtTicker._tasks.keys()):
+                #log.info("[BtTicker]", "Executing task {}.".format(uid))
                 if uid in BtTicker._tasks_to_preempt:
                     BtTicker._tasks_to_preempt.remove(uid)
                     visitor.preempt()
                 t = BtTicker._tasks[uid]
                 result = visitor.traverse(t)
-                self.publish_progress(uid, t, result, clear)
+                self.publish_progress(uid, t, result)
+                if result != State.Running:
+                    self.remove_task(uid)
             #log.info("", "Remaining: {}".format(rate.remaining().to_sec()))#TODO: decrease the loop time.Optimize operations
             rate.sleep()
+        log.info("[BtTicker]", "Execution stops.")
 
-    def publish_progress(self, uid, t, result, clear):
+    def is_running(self):
+        if BtTicker._process is None:
+            return False
+        return BtTicker._process.is_alive()
+
+    def publish_progress(self, uid, t, result):
         progress = BtTicker._progress_visitor
         finished_skill_ids = BtTicker._finished_skill_ids
         progress.reset()
@@ -116,8 +125,6 @@ class BtTicker:
             printer = visitors.VisitorPrint(BtTicker._visitor._wm, BtTicker._visitor._instanciator)
             printer.traverse(t)
             self._progress_cb(task_id=uid, id=uid, **{"type":"Task", "label": str(uid), "state": t.state, "msg": "Terminated.", "code": 0})
-            if clear:
-                self.remove_task(uid)
 
     def observe_progress(self, func):
         self._progress_cb = func
@@ -140,11 +147,12 @@ class BtTicker:
         BtTicker._tasks.pop(uid)
         BtTicker._id_gen.removeId(uid)
 
-    def start(self, visitor, clear=True):
-        BtTicker._visitor = visitor
-        BtTicker._process = Process(target=BtTicker._run, args=(self, clear))
-        BtTicker._process.start()
-        return True
+    def start(self, visitor):
+        if not self.is_running():
+            BtTicker._visitor = visitor
+            BtTicker._process = Process(target=BtTicker._run, args=(self, True))
+            BtTicker._process.start()
+            return True
 
     def join(self):
         BtTicker._process.join()
@@ -171,7 +179,7 @@ class SkillManager:
         self._ticker._verbose = verbose
         self._registerAgent(agent_name)
         self._skills = []
-        self._wmi.unlock() #Ensures the world model's mutex is unlocked
+        #self._wmi.unlock() #Ensures the world model's mutex is unlocked
 
     def observeTaskProgress(self, func):
         self._ticker.observe_progress(func)

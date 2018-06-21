@@ -322,6 +322,9 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         self._snapshot_stamp = rospy.Time.now()
         self._wm_mutex = Lock()
 
+        #Skill tab
+        self._curr_task = None
+
 
     def shutdown_plugin(self):
         # TODO unregister all publishers here
@@ -804,9 +807,13 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
     def on_skill_exe_button_clicked(self):
         skill = deepcopy(self.skill_combo_box.itemData(self.skill_combo_box.currentIndex()))
         if self._getParameters(self.skill_params_layout, skill.ph):
-            self._curr_task = (skill.manager, self._sli.getAgent(skill.manager).execute([skill], SkirosWidget.widget_id))
+            self._curr_task = [skill.manager, self._sli.getAgent(skill.manager).execute([skill], SkirosWidget.widget_id)]
 
     @Slot()
     def on_skill_stop_button_clicked(self):
-        self._sli.getAgent(self._curr_task[0]).preempt(self._curr_task[1], SkirosWidget.widget_id)
+        if self._curr_task is not None:
+            self._sli.getAgent(self._curr_task[0]).preempt(self._curr_task[1], SkirosWidget.widget_id)
+            self._curr_task[1] -= 1
+            if self._curr_task[1]<0:
+                self._curr_task = None
 
