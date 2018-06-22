@@ -2,7 +2,6 @@ import os
 import rospy
 import rospkg
 
-import time
 from functools import partial
 
 from python_qt_binding import loadUi
@@ -26,6 +25,7 @@ from interactive_markers.interactive_marker_server import InteractiveMarkerServe
 from visualization_msgs.msg import InteractiveMarker, InteractiveMarkerControl, Marker, InteractiveMarkerFeedback
 from numpy.linalg import norm
 from threading import Lock
+from datetime import datetime
 
 class SkirosAddObjectDialog(QDialog):
 #==============================================================================
@@ -325,6 +325,9 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         #Skill tab
         self._curr_task = None
 
+        #Log tab
+        self.log_file = None
+
 
     def shutdown_plugin(self):
         # TODO unregister all publishers here
@@ -333,14 +336,21 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
     def save_settings(self, plugin_settings, instance_settings):
         # TODO save intrinsic configuration, usually using:
         instance_settings.set_value("scene_name", self.scene_file_lineEdit.text())
+        instance_settings.set_value("save_logs", self.save_logs_checkBox.isChecked())
+        instance_settings.set_value("logs_file_name", self.logs_file_lineEdit.text())
 
 
     def restore_settings(self, plugin_settings, instance_settings):
         # TODO restore intrinsic configuration, usually using:
         if self._wmi.getSceneName()!="":
             self.scene_file_lineEdit.setText(self._wmi.getSceneName())
-        elif instance_settings.value("scene_name")!=None and instance_settings.value("scene_name")!="":
+        elif instance_settings.value("scene_name") is not None and instance_settings.value("scene_name")!="":
             self.scene_file_lineEdit.setText(instance_settings.value("scene_name"))
+        if instance_settings.value("logs_file_name") is not None:
+            self.logs_file_lineEdit.setText(instance_settings.value("logs_file_name"))
+        if instance_settings.value("save_logs") is not None:
+            self.save_logs_checkBox.setChecked(bool(instance_settings.value("save_logs")))
+            self.on_save_logs_checkBox_clicked()
 
 #    def trigger_configuration(self):
 #        # Comment in to signal that the plugin has a way to configure
@@ -362,6 +372,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 3, QTableWidgetItem(str(msg.progress_code)))
         self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 4, QTableWidgetItem(msg.progress_message))
         self.tableWidget_output.scrollToBottom()
+        self.save_log(msg, "skill")
 
 
     def refresh_timer_cb(self):
@@ -490,6 +501,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
                 items = self.wm_tree_widget.findItems(cur_item_id, Qt.MatchRecursive | Qt.MatchFixedString, 1)
                 if items:
                     self.wm_tree_widget.setCurrentItem(items[0])
+                self.save_log(data, "wm_edit")
             elif data.stamp>self._snapshot_stamp or self._snapshot_id=="":#Ignores obsolete msgs
                 log.info("[wm_update]", "Wm not in sync, querying wm scene")
                 self.create_wm_tree()
@@ -817,3 +829,37 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
             if self._curr_task[1]<0:
                 self._curr_task = None
 
+#==============================================================================
+# Logs
+#==============================================================================
+    @Slot()
+    def on_logs_file_lineEdit_editingFinished(self):
+        self.on_save_logs_checkBox_clicked()
+
+    def on_save_logs_checkBox_clicked(self):
+        if self.log_file is not None:
+            self.logs_textEdit.clear()
+            self.log_file.close()
+            self.log_file = None
+        if self.save_logs_checkBox.isChecked():
+            file_name = os.path.expanduser(self.logs_file_lineEdit.text())
+            directory = file_name[0: file_name.rfind('/')]
+            if not os.path.exists(directory):
+                os.makedirs(directory)
+            elif os.path.exists(file_name):
+                with open(file_name, "r") as f:
+                    self.logs_textEdit.setText(f.read())
+            self.log_file = open(file_name, "a")
+
+    def save_log(self, msg, log_type):
+        if log_type=="skill":
+            string = "{} {} {} {} {} {} {}".format(datetime.now(), msg.robot, msg.task_id, msg.label, State(msg.state).name, msg.progress_code, msg.progress_message)
+        elif log_type=="wm_edit":
+            if msg.relation.relation=="":
+                string = "{} {} {} {}".format(datetime.now(), "WM", msg.action, [e.id for e in msg.elements])
+            else:
+                relation = rosutils.msg2relation(msg.relation)
+                string = "{} {} {}_relation {}-{}-{}".format(datetime.now(), "WM", msg.action, relation['src'], relation['type'], relation['dst'])
+        if self.save_logs_checkBox.isChecked():
+            self.logs_textEdit.append(string)
+            self.log_file.write(string+"\n")
