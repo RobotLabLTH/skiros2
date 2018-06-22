@@ -7,6 +7,7 @@ from flufl.enum import Enum
 from copy import copy, deepcopy
 from multiprocessing.dummy import Event
 from sets import Set
+from skiros2_common.tools.time_keeper import TimeKeeper
 
 """
 Possible states for a skill
@@ -206,7 +207,9 @@ class SkillCore(SkillDescription):
         #Execution
         self._state_change = Event()
         self._state=State.Uninitialized
+        self._time_keeper = TimeKeeper()
         self._progress_code=0
+        self._progress_time=0.0
         self._progress_msg=""
     #--------Class functions--------
     def expand(self, skill):
@@ -223,6 +226,7 @@ class SkillCore(SkillDescription):
         if code==None:
             code = self._progress_code+1
         self._progress_code=code
+        self._progress_time=self._time_keeper.time_from_start()
         self._progress_msg=msg
 
     @property
@@ -232,6 +236,10 @@ class SkillCore(SkillDescription):
     @property
     def progress_code(self):
         return self._progress_code
+
+    @property
+    def progress_time(self):
+        return self._progress_time
 
     @property
     def progress_msg(self):
@@ -248,8 +256,6 @@ class SkillCore(SkillDescription):
     @property
     def state(self):
         return self._state
-
-
 
     def _resetDescription(self, other=None):
         if other:
@@ -329,6 +335,7 @@ class SkillCore(SkillDescription):
     def reset(self):
         self.onReset()
         self._params.setDefault()
+        self._time_keeper.reset()
         self._setProgress("", 0)
         self._setState(State.Idle)
         return self._state
@@ -336,6 +343,7 @@ class SkillCore(SkillDescription):
     def start(self, params=None):
         if params:
             self.specifyParams(params, False)
+        self._time_keeper.reset()
         if self.onStart():
             self._setState(State.Running)
         else:

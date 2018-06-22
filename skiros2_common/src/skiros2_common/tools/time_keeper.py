@@ -46,6 +46,22 @@ class TimeKeeper():
     def __init__(self, name=""):
         self._name = name
         self._list = []
+        self.reset()
+
+    def reset(self):
+        self._start_time = now()
+        self._time = self._start_time
+
+    def time_from_start(self):
+        return now() - self._start_time
+
+    def tic(self):
+        return now() - self._time
+
+    def toc(self):
+        dt = self.tic()
+        self._time = now()
+        return dt
 
     def __enter__(self):
         self._start_time = time.time()
@@ -53,7 +69,6 @@ class TimeKeeper():
 
     def __exit__(self, type, value, traceback):
         self._list.append(time.time()-self._start_time)
-        #print "[{}] Time: {:0.4f}".format(self._name, self.getLast())
 
     def getAvgTime(self):
         return sum(self._list) / float(len(self._list))

@@ -46,6 +46,7 @@ from skiros2_common.tools.plugin_loader import *
 from multiprocessing.dummy import Process
 import skiros2_skill.core.visitors as visitors
 from skiros2_resource.ros.resource_layer_interface import *
+from skiros2_common.tools.time_keeper import TimeKeeper
 
 log.setLevel(log.INFO)
 
@@ -76,9 +77,6 @@ class BtTicker:
     _progress_visitor = visitors.VisitorProgress()
     _finished_skill_ids = dict()
 
-    def __getitem__(self, key):
-        return BtTicker._tasks[key]
-
     def _run(self, _):
         """
         @brief Tick tasks at 25hz
@@ -90,13 +88,15 @@ class BtTicker:
         log.info("[BtTicker]", "Execution starts.")
         while BtTicker._tasks:
             for uid in list(BtTicker._tasks.keys()):
+                task_progress_msg="Terminated."
                 #log.info("[BtTicker]", "Executing task {}.".format(uid))
                 if uid in BtTicker._tasks_to_preempt:
                     BtTicker._tasks_to_preempt.remove(uid)
                     visitor.preempt()
+                    task_progress_msg="Preempted."
                 t = BtTicker._tasks[uid]
-                result = visitor.traverse(t)
-                self.publish_progress(uid, t, result)
+                result = visitor.traverse(t[0])
+                self.publish_progress(uid, t, result, task_progress_msg)
                 if result != State.Running:
                     self.remove_task(uid)
             #log.info("", "Remaining: {}".format(rate.remaining().to_sec()))#TODO: decrease the loop time.Optimize operations
@@ -108,11 +108,11 @@ class BtTicker:
             return False
         return BtTicker._process.is_alive()
 
-    def publish_progress(self, uid, t, result):
+    def publish_progress(self, uid, task, result, task_progress_msg):
         progress = BtTicker._progress_visitor
         finished_skill_ids = BtTicker._finished_skill_ids
         progress.reset()
-        progress.traverse(t)
+        progress.traverse(task[0])
         for (id,desc) in progress.snapshot():
             if finished_skill_ids.has_key(id):
                 if finished_skill_ids[id] == desc:
@@ -123,8 +123,8 @@ class BtTicker:
         if result != State.Running:
             print "===Final state==="
             printer = visitors.VisitorPrint(BtTicker._visitor._wm, BtTicker._visitor._instanciator)
-            printer.traverse(t)
-            self._progress_cb(task_id=uid, id=uid, **{"type":"Task", "label": str(uid), "state": t.state, "msg": "Terminated.", "code": 0})
+            printer.traverse(task[0])
+            self._progress_cb(task_id=uid, id=uid, **{"type":"Task", "label": "task_{}".format(uid), "state": task[0].state, "msg": task_progress_msg, "time": task[1].time_from_start(), "code": 0})
 
     def observe_progress(self, func):
         self._progress_cb = func
@@ -140,7 +140,7 @@ class BtTicker:
 
     def add_task(self, obj, desired_id=-1):
         uid = BtTicker._id_gen.getId(desired_id)
-        BtTicker._tasks[uid] = obj
+        BtTicker._tasks[uid] = (obj, TimeKeeper())
         return uid
 
     def remove_task(self, uid):
@@ -401,6 +401,7 @@ class SkillManagerNode(DiscoverableNode):
         msg.label = kwargs['label']
         msg.state = kwargs['state']
         msg.progress_code = kwargs['code']
+        msg.progress_time = kwargs['time']
         msg.progress_message = kwargs['msg']
         self._monitor.publish(msg)
 

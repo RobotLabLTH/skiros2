@@ -853,7 +853,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
 
     def save_log(self, msg, log_type):
         if log_type=="skill":
-            string = "{} {} {} {} {} {} {}".format(datetime.now(), msg.robot, msg.task_id, msg.label, State(msg.state).name, msg.progress_code, msg.progress_message)
+            string = "{} {} {} {} {} [{}]{} {:0.4f}".format(datetime.now(), msg.robot, msg.task_id, msg.label, State(msg.state).name, msg.progress_code, msg.progress_message, msg.progress_time)
         elif log_type=="wm_edit":
             if msg.relation.relation=="":
                 string = "{} {} {} {}".format(datetime.now(), "WM", msg.action, [e.id for e in msg.elements])

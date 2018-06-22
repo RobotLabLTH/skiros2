@@ -5,4 +5,5 @@ string type
 string label
 int16 state
 int16 progress_code
+float32 progress_time
 string progress_message

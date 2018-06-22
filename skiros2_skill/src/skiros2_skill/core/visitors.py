@@ -211,7 +211,12 @@ class VisitorProgress(VisitorInterface, NodeMemorizer):
 
     def processNode(self, procedure):
         if procedure.progress_msg:
-            self.memorize(procedure.id, {"type":procedure.type, "label":procedure.label, "state":procedure.state, "msg":procedure.progress_msg, "code":procedure.progress_code})
+            self.memorize(procedure.id, {"type":procedure.type,
+                                        "label":procedure.label,
+                                        "state":procedure.state,
+                                        "msg":procedure.progress_msg,
+                                        "code":procedure.progress_code,
+                                        "time": procedure.progress_time})
         return State.Running
 
     def postProcessNode(self, procedure):
