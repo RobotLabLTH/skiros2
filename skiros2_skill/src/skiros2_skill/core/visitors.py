@@ -39,14 +39,6 @@ class VisitorInterface:
         self.processingDone(root)
         return self.getState()
 
-    def processPreempt(self, procedure):
-        #Preempt children
-        for c in procedure._children:
-            c.visitPreempt(self)
-        #Preempt node
-        #print "STOPPING : {}".format(procedure.printState(True))
-        procedure.preempt()
-
     def process(self, procedure):
         #Process node
         state = self.processNode(procedure)
@@ -59,6 +51,13 @@ class VisitorInterface:
                 return state
         #Post-process node
         return self.postProcessNode(procedure)
+
+    def processPreempt(self, procedure):
+        #Preempt children
+        for c in procedure._children:
+            c.visitPreempt(self)
+        #Preempt node
+        procedure.preempt()
 
     def processNode(self, procedure):
         """ Not implemented in abstract class. """
@@ -110,22 +109,16 @@ class VisitorPrint(VisitorInterface, NodePrinter, NodeExecutor):
         self.unindend()
         return State.Success
 
-class VisitorExecutor(VisitorInterface, NodePrinter, NodeExecutor):
+class VisitorExecutor(VisitorInterface, NodeExecutor, NodeMemorizer):
     """
-    Simulate the procedure execution
+    @brief Execute the behavior tree
+
+    Memorizes the nodes with a progress for later process
     """
     def __init__(self, wmi, instanciator):
         #Execution
         VisitorInterface.__init__(self)
-        self._simulate=False
-        self._verbose=False
-        self._prefix = "->"
-        self._indend = 0
-        self._wm = wmi
-        self._stack = []
-        self._tracked_params = []
-        self._instanciator = instanciator
-        self._params=params.ParamHandler()
+        NodeExecutor.__init__(self, wmi, instanciator)
 
     def setVerbose(self, verbose):
         self._verbose=verbose
@@ -133,25 +126,43 @@ class VisitorExecutor(VisitorInterface, NodePrinter, NodeExecutor):
     def processNode(self, procedure):
         if not procedure.hasState(State.Running):
             state = self.execute(procedure)
+            self.memorizeProgress(procedure)
         else:
             state = State.Running
-        self.indend()
-        #print "Pre "+procedure.printState()
         return state
 
     def postProcessNode(self, procedure):
         state = self.postExecute(procedure)
-        self.unindend()
+        self.memorizeProgress(procedure)
         return state
+
+    def processPreempt(self, procedure):
+        #Preempt children
+        for c in procedure._children:
+            c.visitPreempt(self)
+        #Preempt node
+        procedure.preempt()
+        self.memorizeProgress(procedure)
 
     def processingStart(self, procedure):
         #self._wm.lock()
+        self.reset_memory()
         self.syncParams()
         return True
 
     def processingDone(self, procedure):
         #self._wm.unlock()
         return True
+
+    def memorizeProgress(self, procedure):
+        if procedure.progress_msg:
+            self.memorize(procedure.id, {"type":procedure.type,
+                                        "label":procedure.label,
+                                        "parent":procedure.parent.label if procedure.parent is not None else "",
+                                        "state":procedure.state,
+                                        "msg":procedure.progress_msg,
+                                        "code":procedure.progress_code,
+                                        "time": procedure.progress_time})
 
 class VisitorReversibleSimulator(VisitorInterface, NodePrinter, NodeReversibleSimulator):
     """
@@ -160,21 +171,8 @@ class VisitorReversibleSimulator(VisitorInterface, NodePrinter, NodeReversibleSi
     def __init__(self, wmi, instanciator):
         #Execution
         VisitorInterface.__init__(self)
-        self._simulate=True
-        self._verbose=False
-        self._stack = []
-        self._tracked_params = []
-        self._prefix = "->"
-        self._indend = 0
-        self._wm = wmi
-        self._instanciator = instanciator
-        self._params=params.ParamHandler()
-        self.forward = NodeMemorizer('Forward')
-        self.back = NodeMemorizer('Backward')
-        self._execution_branch = []
-        self._forget_branch = []
-        self.visitor = VisitorPrint(self._wm, self._instanciator)
-        self._bound = {}
+        NodePrinter.__init__(self)
+        NodeReversibleSimulator.__init__(self,  wmi, instanciator)
 
     def setVerbose(self, verbose):
         self._verbose=verbose

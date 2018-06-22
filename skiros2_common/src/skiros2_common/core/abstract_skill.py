@@ -187,7 +187,7 @@ class SkillDescription(object):
 
 class SkillCore(SkillDescription):
     """
-    An abstract executable skill with a description (type, label, params, conditions), a state and progress code
+    @brief An abstract executable skill with a description (type, label, params, conditions), a state and progress code
     """
 
     gen_id = IdGen()
@@ -286,7 +286,7 @@ class SkillCore(SkillDescription):
                     log.error(c.getDescription(), "ConditionCheck failed")
                 for key in c.getKeys():
                     to_ret.add(key)
-        self._progress_msg = err_msg
+        self._setProgress(err_msg, -1)
         return list(to_ret)
 
     def hasPostCond(self):
@@ -346,8 +346,10 @@ class SkillCore(SkillDescription):
         self._time_keeper.reset()
         if self.onStart():
             self._setState(State.Running)
+            self._setProgress("Start", 0)
         else:
             self._setState(State.Failure)
+        print "{} {} {}".format(self.label, self._state, self._progress_msg)
         return self._state
 
     def printInfo(self, verbose=False):
@@ -418,10 +420,11 @@ class SkillCore(SkillDescription):
 
     def onStart(self):
         """Called just before 1st execute"""
-        return State.Running
+        return True
 
     def onPreempt(self):
         """ Called when skill is requested to stop. """
+        self._setProgress("Preempted", -1)
         return State.Failure
 
     def execute(self):

@@ -268,7 +268,7 @@ class NodeMemorizer:
         if self._verbose:
             log.info(self._name, msg)
 
-    def reset(self):
+    def reset_memory(self):
         self._tree = []
 
     def hasMemory(self):

@@ -31,6 +31,10 @@ class SkillInterface(SkillCore):
         self._input_cache = []
         self._remaps_cache = defaultdict(list)
 
+    @property
+    def parent(self):
+        return self._parent
+
     def getLightCopy(self):
         """
         Makes a light copy (only description, params and state)
@@ -364,6 +368,7 @@ class SkillInterface(SkillCore):
         """
             Optional
         """
+        self._setProgress("End", 1)
         return None
 
 class SkillWrapper(SkillInterface):
@@ -446,6 +451,7 @@ class SkillWrapper(SkillInterface):
 
     def onStart(self):
         self._progress_code = 0
+        self._progress_time = 0.0
         self._progress_msg = ""
         return self._instance.start(self.getParamsNoRemaps())==State.Running
 
@@ -455,6 +461,7 @@ class SkillWrapper(SkillInterface):
         res = self._instance.tick()
         self._copyInstanceParams()
         self._progress_msg = self._instance.progress_msg
+        self._progress_time = self._instance.progress_time
         self._progress_code = self._instance.progress_code
         if res!=None:
             return res
@@ -530,6 +537,7 @@ class Root(SkillInterface):
         return
 
     def execute(self):
+        self._setProgress("End", 1)
         return self._state
 
 class Skill(SkillInterface):
@@ -549,4 +557,5 @@ class Skill(SkillInterface):
         return
 
     def execute(self):
+        self._setProgress("End", 1)
         return self._state

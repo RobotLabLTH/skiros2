@@ -501,7 +501,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
                 items = self.wm_tree_widget.findItems(cur_item_id, Qt.MatchRecursive | Qt.MatchFixedString, 1)
                 if items:
                     self.wm_tree_widget.setCurrentItem(items[0])
-                self.save_log(data, "wm_edit")
+                #self.save_log(data, "wm_edit")
             elif data.stamp>self._snapshot_stamp or self._snapshot_id=="":#Ignores obsolete msgs
                 log.info("[wm_update]", "Wm not in sync, querying wm scene")
                 self.create_wm_tree()
@@ -853,7 +853,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
 
     def save_log(self, msg, log_type):
         if log_type=="skill":
-            string = "{} {} {} {} {} [{}]{} {:0.4f}".format(datetime.now(), msg.robot, msg.task_id, msg.label, State(msg.state).name, msg.progress_code, msg.progress_message, msg.progress_time)
+            string = "{} {} {} {} [{}] {} {:0.4f}".format(datetime.now(), msg.parent_id, msg.label, State(msg.state).name, msg.progress_code, msg.progress_message, msg.progress_time)
         elif log_type=="wm_edit":
             if msg.relation.relation=="":
                 string = "{} {} {} {}".format(datetime.now(), "WM", msg.action, [e.id for e in msg.elements])

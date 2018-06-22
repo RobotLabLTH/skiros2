@@ -1,6 +1,7 @@
 string robot
 int16 task_id
 int16 id
+string parent_id
 string type
 string label
 int16 state
