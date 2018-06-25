@@ -365,13 +365,15 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
 #==============================================================================
 
     def on_progress_update(self, msg):
-        self.tableWidget_output.insertRow(self.tableWidget_output.rowCount())
-        self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 0, QTableWidgetItem(msg.label))
-        self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 1, QTableWidgetItem(msg.type))
-        self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 2, QTableWidgetItem(State(msg.state).name))
-        self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 3, QTableWidgetItem(str(msg.progress_code)))
-        self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 4, QTableWidgetItem(msg.progress_message))
-        self.tableWidget_output.scrollToBottom()
+        last_msg = self.tableWidget_output.item(self.tableWidget_output.rowCount()-1, 4).text() if self.tableWidget_output.rowCount()>0 else ""
+        if msg.progress_message!="Start" and msg.progress_message!="End" and msg.progress_message!=last_msg:
+            self.tableWidget_output.insertRow(self.tableWidget_output.rowCount())
+            self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 0, QTableWidgetItem(msg.label))
+            self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 1, QTableWidgetItem(msg.type))
+            self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 2, QTableWidgetItem(State(msg.state).name))
+            self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 3, QTableWidgetItem(str(msg.progress_code)))
+            self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 4, QTableWidgetItem(msg.progress_message))
+            self.tableWidget_output.scrollToBottom()
         self.save_log(msg, "skill")
 
 

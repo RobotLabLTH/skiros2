@@ -682,7 +682,7 @@
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#TransformationPose -->
 
     <owl:Class rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#TransformationPose">
-        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Object"/>
+        <rdfs:subClassOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Location"/>
     </owl:Class>
 
 
