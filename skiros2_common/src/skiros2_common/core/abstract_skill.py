@@ -349,7 +349,6 @@ class SkillCore(SkillDescription):
             self._setProgress("Start", 0)
         else:
             self._setState(State.Failure)
-        print "{} {} {}".format(self.label, self._state, self._progress_msg)
         return self._state
 
     def printInfo(self, verbose=False):

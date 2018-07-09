@@ -99,35 +99,52 @@ class SkillInterface(SkillCore):
             ph.remap(r2, r1)
         return ph
 
+    def get_remap(self, key):
+        """
+        @brief Return the key remapping if existing or otherwise the key unchanged
+        """
+        return self._remaps[key] if self._remaps.has_key(key) else key
+
     def remap(self, initial_key, target_key, record=True):
         """
-        Remap a parameter to a new key
+        @brief Remap a parameter with initial_key to a new target_key
+
+        All skill's children are remapped too.
         """
-        #log.error(self._label, "remap {} {} {}".format(self, initial_key, target_key))
+        #Ignore harmful remappings
         if self._remaps.has_key(initial_key):
             if self._remaps[initial_key]==target_key:#Redundant
                 #log.warn(self._label, "Ignoring redundant remap {}->{}".format(initial_key, target_key))
                 return
-            else:
+            else:#Already remapped
                 #log.warn(self._label, "Key {} already remapped to {}. Can t remap to {}".format(initial_key, self._remaps[initial_key], target_key))
                 return
-        if self._remaps.has_key(target_key):
-            #log.warn(self._label, "Ignoring circular remap {}->{}".format(initial_key, target_key))
-            return
 
-        if self._params.hasParam(target_key):
-            log.error(self._label, "Key {} already present in the map, remapping can shadow a parameter.".format(target_key))
-            return
+        #The current 2->3 is related to an existing remap 1->2
+        if initial_key in self._remaps.values():
+            log.warn("ChainRemap", "Case not tested, possible hidden bugs here.")
+
         for c in self._children:
             c.remap(initial_key, target_key)
-        #Remaps
-        self._params.remap(initial_key, target_key)
-        for c in self._pre_conditions:
-            c.remap(initial_key, target_key)
-        for c in self._hold_conditions:
-            c.remap(initial_key, target_key)
-        for c in self._post_conditions:
-            c.remap(initial_key, target_key)
+
+        if self._remaps.has_key(target_key):
+            #Asking remap 1->2 but exists a remap 2->3. Records a remap 1->3
+            target_key = self.get_remap(target_key)
+
+        if self.params.hasParam(target_key):
+            #log.warn(self.type, "Key {} already present in the map, remapping would shadow a parameter.".format(target_key))
+            return
+
+        if self.params.hasParam(initial_key):
+            #log.warn("{}".format(self.type), "REMAPPING: {} {}".format(initial_key, target_key))
+            #Remaps
+            self._params.remap(initial_key, target_key)
+            for c in self._pre_conditions:
+                c.remap(initial_key, target_key)
+            for c in self._hold_conditions:
+                c.remap(initial_key, target_key)
+            for c in self._post_conditions:
+                c.remap(initial_key, target_key)
         #Records
         if record:
             self._remaps[initial_key] = target_key
