@@ -439,7 +439,12 @@ class SkillWrapper(SkillInterface):
         return self._instance.reset()
 
     def onPreempt(self):
-        return self._instance.preempt()
+        res = self._instance.preempt()
+        self._copyInstanceParams()
+        self._progress_msg = self._instance.progress_msg
+        self._progress_time = self._instance.progress_time
+        self._progress_code = self._instance.progress_code
+        return res
 
     def onStart(self):
         self._progress_code = 0
