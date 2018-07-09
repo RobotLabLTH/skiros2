@@ -103,6 +103,7 @@ class WorldModelServer(OntologyServer):
                 self._wm.saveScene(msg.filename)
             elif msg.action==msg.LOAD:
                 self._wm.loadScene(msg.filename)
+                self._publishChange("", "reset", elements=[])
         if self._verbose:
             log.info("[wmLoadAndSave]", "{} file {}. Time: {:0.3f} secs".format(msg.action, msg.filename, self._times.getLast()))
         return srvs.WmLoadAndSaveResponse(True)

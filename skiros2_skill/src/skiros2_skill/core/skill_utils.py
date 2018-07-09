@@ -234,7 +234,7 @@ class NodeExecutor():
                 return State.Idle
         state = self._execute(skill)
         if self._verbose:
-            log.info("[{}]".format(self.__class__.__name__), "Started {}".format(skill.printState()))
+            log.info("[VisitorStart]", "{}".format(skill.printState(self._verbose)))
         if state==State.Running:
             self.mergeParams(skill)#Update params
         return state
@@ -250,7 +250,7 @@ class NodeExecutor():
         self._printTracked(skill._params, "[{}Params] ".format(skill._type))
         state = self._postExecute(skill)
         if self._verbose:
-            log.info("[{}]".format(self.__class__.__name__), "Executed {}".format(skill.printState()))
+            log.info("[VisitorExecute]", "{}".format(skill.printState(self._verbose)))
         self.mergeParams(skill)#Update params
         return state
 

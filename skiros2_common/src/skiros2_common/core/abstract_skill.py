@@ -362,9 +362,9 @@ class SkillCore(SkillDescription):
         return s
 
     def printState(self, verbose=False):
-        s = "{}".format(self._label)
+        s = "{}-{}({})".format(self.type[self.type.find(":")+1:], self.label, self.state)
         if verbose:
-            s += "[{}]".format(self._params.printState())
+            s += "[{}]".format(self.params.printState())
         return s
 
     def printProgress(self):

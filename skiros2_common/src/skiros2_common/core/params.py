@@ -362,7 +362,7 @@ class ParamHandler(object):
     def printState(self):
         to_ret = ""
         for _, p in self._params.iteritems():
-            if not p.dataTypeIs(Element):
+            if not p.dataTypeIs(Element) or not p.isSpecified():
                 to_ret += p.printState() + " "
             else:
                 to_ret += p.key + ": " + p.value.printState() + " "

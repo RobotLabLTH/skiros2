@@ -3,7 +3,7 @@ import skiros2_common.tools.logger as log
 from processors import *
 from copy import deepcopy
 from copy import copy
-from collections import defaultdict
+from collections import OrderedDict
 from skiros2_common.core.abstract_skill import SkillDescription, SkillCore, State, ParamOptions
 
 class SkillPreempted(Exception):
@@ -19,7 +19,7 @@ class SkillInterface(SkillCore):
     def __init__(self, children_processor=Sequential()):
         super(SkillInterface, self).__init__()
         #Params
-        self._remaps={}
+        self._remaps=OrderedDict()
         #Connections
         self._parent = None
         self._children=[]
@@ -29,7 +29,7 @@ class SkillInterface(SkillCore):
         self._max_cache = 2
         self._params_cache = []
         self._input_cache = []
-        self._remaps_cache = defaultdict(list)
+        self._remaps_cache=OrderedDict()
 
     @property
     def parent(self):
@@ -62,10 +62,10 @@ class SkillInterface(SkillCore):
         """
         Clear remaps
         """
-        for r1, r2 in reversed(self._remaps.iteritems()):
+        for r1, r2 in reversed(self._remaps.items()):
             self.remap(r2, r1)
-        self._remaps={}
-        self._remaps_cache={}
+        self._remaps=OrderedDict()
+        self._remaps_cache=OrderedDict()
 
     def _copyRemaps(self, skill):
         """
@@ -93,9 +93,12 @@ class SkillInterface(SkillCore):
             raise
 
     def getParamsNoRemaps(self):
+        """
+        @brief Get the skill's parameters without key remappings
+        """
         ph = params.ParamHandler()
         ph.reset(self._params.getCopy())
-        for r1, r2 in self._remaps.iteritems():
+        for r1, r2 in reversed(self._remaps.items()):
             ph.remap(r2, r1)
         return ph
 
@@ -206,34 +209,6 @@ class SkillInterface(SkillCore):
 
     def visitPreempt(self, visitor):
         return visitor.processPreempt(self)
-
-    def printInfo(self, verbose=False):
-        s = "{}-{} ".format(self._type,self._label)
-        if verbose:
-            s += "["
-            s += self._params.printState() + ']\n'
-            s += self.printConditions()
-            s += "Remaps: \n"
-            for r1, r2 in self._remaps.iteritems():
-                s += r1+"->"+r2
-        else:
-            s += "\n"
-        return s
-
-    def printState(self, verbose=False):
-        s = "{}-{}({})".format(self._type, self._label, self._state)
-        if verbose:
-            if self.hasInstance():
-                if self._children:
-                    s += "({})".format(self._children_processor.printType())
-                #s += "({})".format(self._state)
-                s += "[{}]".format(self._params.printState())
-                #s += "\n[Remaps: {}]".format(self._remaps)
-                #s += "[Remaps cache: {}]".format(self._remaps_cache)
-                #s += "[{}]".format(self.getModifiedParams())
-            else:
-                s += "({})".format('abstract')
-        return s
 
     def getParent(self):
         return self._parent

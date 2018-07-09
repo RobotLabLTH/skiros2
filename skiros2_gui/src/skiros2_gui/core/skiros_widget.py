@@ -462,7 +462,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
     @Slot()
     def on_wm_update(self, data):
         with self._wm_mutex:
-            if self._snapshot_id==data.prev_snapshot_id:#Discard msgs not in sync with local wm version
+            if self._snapshot_id==data.prev_snapshot_id and data.action!="reset":#Discard msgs not in sync with local wm version
                 self._snapshot_id = data.snapshot_id
                 cur_item = self.wm_tree_widget.currentItem()
                 cur_item_id = cur_item.text(1)
@@ -822,6 +822,9 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         skill = deepcopy(self.skill_combo_box.itemData(self.skill_combo_box.currentIndex()))
         if self._getParameters(self.skill_params_layout, skill.ph):
             self._curr_task = [skill.manager, self._sli.getAgent(skill.manager).execute([skill], SkirosWidget.widget_id)]
+            if self._curr_task[1]<0:
+                self._curr_task = None
+
 
     @Slot()
     def on_skill_stop_button_clicked(self):

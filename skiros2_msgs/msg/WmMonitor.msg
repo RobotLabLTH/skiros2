@@ -2,6 +2,7 @@
 string ADD=add
 string UPDATE=update
 string REMOVE=remove
+string RESET=reset
 
 #Metadata
 string prev_snapshot_id

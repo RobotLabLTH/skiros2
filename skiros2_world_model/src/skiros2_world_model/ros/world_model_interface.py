@@ -55,7 +55,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
             self._monitor = rospy.Subscriber("wm/monitor", msgs.WmMonitor, self._monitor_cb, queue_size=100)
 
     def _monitor_cb(self, msg):
-        if self._last_snapshot_id!=msg.prev_snapshot_id:
+        if self._last_snapshot_id!=msg.prev_snapshot_id or msg.action=='reset':
             WorldModelInterface._elements_cache.clear()
         self._last_snapshot_id = msg.snapshot_id
         for elem in msg.elements:

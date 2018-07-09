@@ -115,6 +115,8 @@ class SkillManagerInterface:
         for s in skill_list:
             msg.skills.append(s.toMsg())
         res = self.call(self._skill_exe_client, msg)
+        if res is None:
+            return -1
         if not res.ok:
             log.error("Can t execute task ")
             return -1
@@ -127,6 +129,8 @@ class SkillManagerInterface:
         msg.author = author;
         msg.execution_id = execution_id
         res = self.call(self._skill_exe_client, msg)
+        if res is None:
+            return False
         if not res.ok:
             log.error("Can t stop task " + execution_id)
             return False
