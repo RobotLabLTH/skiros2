@@ -3,7 +3,7 @@ import skiros2_common.tools.logger as log
 from processors import *
 from copy import deepcopy
 from copy import copy
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 from skiros2_common.core.abstract_skill import SkillDescription, SkillCore, State, ParamOptions
 
 class SkillPreempted(Exception):
@@ -29,7 +29,7 @@ class SkillInterface(SkillCore):
         self._max_cache = 2
         self._params_cache = []
         self._input_cache = []
-        self._remaps_cache=OrderedDict()
+        self._remaps_cache=defaultdict(list)
 
     @property
     def parent(self):
@@ -65,7 +65,7 @@ class SkillInterface(SkillCore):
         for r1, r2 in reversed(self._remaps.items()):
             self.remap(r2, r1)
         self._remaps=OrderedDict()
-        self._remaps_cache=OrderedDict()
+        self._remaps_cache=defaultdict(list)
 
     def _copyRemaps(self, skill):
         """
@@ -444,7 +444,10 @@ class SkillWrapper(SkillInterface):
         self._progress_msg = self._instance.progress_msg
         self._progress_time = self._instance.progress_time
         self._progress_code = self._instance.progress_code
-        return res
+        if res!=None:
+            return res
+        else:
+            return self._state
 
     def onStart(self):
         self._progress_code = 0

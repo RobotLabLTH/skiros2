@@ -239,6 +239,13 @@ class NodeExecutor():
             self.mergeParams(skill)#Update params
         return state
 
+    def preemptSkill(self, skill):
+        skill.specifyParams(self._params)
+        skill.preempt()
+        if self._verbose:
+            log.info("[VisitorPreempt]", "{}".format(skill.printState(self._verbose)))
+        self.mergeParams(skill)
+
     def _postExecute(self, skill):
         if self._simulate:
             return skill.simulate()#Set post-cond to true

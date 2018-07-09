@@ -33,7 +33,6 @@ class VisitorInterface:
 
     def traverse(self, root):
         self.processingStart(root)
-        self._setState(State.Running)
         if not self.verifyPreempt(root):
             self._setState(root.visit(self))
         self.processingDone(root)
@@ -141,7 +140,7 @@ class VisitorExecutor(VisitorInterface, NodeExecutor, NodeMemorizer):
         for c in procedure._children:
             c.visitPreempt(self)
         #Preempt node
-        procedure.preempt()
+        self.preemptSkill(procedure)
         self.memorizeProgress(procedure)
 
     def processingStart(self, procedure):
