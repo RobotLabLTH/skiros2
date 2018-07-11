@@ -204,13 +204,18 @@ class NodeExecutor():
         return True
 
     def tryOther(self, skill):
-        used = [skill._label]
+        """
+        @brief If the skill label is not specified, try other instances
+        """
+        if skill.label!="":
+            return False
+        used = [skill._instance.label]
         #if self._verbose:
-        for i in self._instanciator.getInstances(skill._type):
-            if not i._label in used:
+        for i in self._instanciator.getInstances(skill.type):
+            if not i.label in used:
                 log.info("tryOther", "Try different skill {}".format(skill._label))
-                used.append(i._label)
-                skill._label = i._label
+                used.append(i.label)
+                skill._label = i.label
                 skill.setInstance(i)
                 if self._ground(skill):
                     return True

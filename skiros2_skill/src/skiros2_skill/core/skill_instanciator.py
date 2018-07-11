@@ -49,8 +49,8 @@ class SkillInstanciator:
     def addInstance(self, skill):
         skill.init(self._wm, self)
         if not skill._type in self._available_descriptions:
-            self._available_descriptions[skill._type] = self._makeDescription(skill)
-        self._available_instances[skill._type].append(skill)
+            self._available_descriptions[skill.type] = self._makeDescription(skill)
+        self._available_instances[skill.type].append(skill)
 
     def expandAll(self):
         for _, ps in self._available_instances.iteritems():
@@ -63,9 +63,9 @@ class SkillInstanciator:
         """
         if skill._type in self._available_descriptions:
             skill.init(self._wm)
-            skill.setDescription(self._available_descriptions[skill._type])
+            skill.setDescription(self._available_descriptions[skill.type])
         else:
-            log.error("assignDescription", "No instances of type {} found. Debug: {}".format(skill._type, self._available_descriptions.keys()))
+            log.error("assignDescription", "No instances of type {} found. Debug: {}".format(skill.type, self._available_descriptions.keys()))
 
     def getInstances(self, ptype):
         return self._available_instances[ptype]
@@ -76,7 +76,7 @@ class SkillInstanciator:
         """
         new = instance.__class__()
         new.init(self._wm, self)
-        self._available_instances[new._type].append(new)
+        self._available_instances[new.type].append(new)
         return new
 
     def assignInstance(self, skill):
@@ -86,9 +86,9 @@ class SkillInstanciator:
         If an instance with same label is not found, assign the last instance of the type.
         """
         to_set = None
-        for p in self._available_instances[skill._type]:
-            to_set = p
-            if p._label == skill._label or skill._label=="":
+        for p in self._available_instances[skill.type]:
+            if p.label == skill.label or skill.label=="":
+                to_set = p
                 if not p.hasState(State.Running):
                     break
         if to_set is not None:
@@ -96,18 +96,18 @@ class SkillInstanciator:
                 to_set = self.duplicate_instance(to_set)
             skill.setInstance(to_set)
         else:
-            log.error("assignInstance", "No instance of type {} found.".format(skill._type))
+            log.error("assignInstance", "No instance of type {} found.".format(skill.type))
 
     def printState(self, verbose=True, filter_type=""):
         s = 'Descriptions:\n'
         for t, p in self._available_descriptions.iteritems():
-            if p._type==filter_type or filter_type=="":
+            if p.type==filter_type or filter_type=="":
                 s += p.printInfo(verbose)
                 s += '\n'
         s += '\nInstances:\n'
         for k, l in self._available_instances.iteritems():
             for p in l:
-                if p._type==filter_type or filter_type=="":
+                if p.type==filter_type or filter_type=="":
                     s += p.printInfo(verbose)
                     s += '\n'
         return s
