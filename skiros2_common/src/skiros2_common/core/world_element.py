@@ -206,6 +206,13 @@ class Element(object):
                 to_ret.append(r)
         return to_ret
 
+    def setRelation(self, subj, predicate, obj):
+        """
+        @brief Set a relation, removing previous definitions
+        """
+        self.removeRelations(self.getRelations(subj if subj=="-1" else "", predicate, obj if obj=="-1" else ""))
+        self.addRelation(subj, predicate, obj)
+
     def addRelation(self, subj, predicate, obj, value=True, abstract=False):
         """
         @brief Add a relation with another element
