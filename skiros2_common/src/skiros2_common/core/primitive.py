@@ -30,6 +30,7 @@ class PrimitiveBase(SkillCore):
         self.createDescription()
         self.generateDefParams()
         self.generateDefConditions()
+        self.modifyDescription(self)
         return self.onInit()
 
     def _updateRoutine(self, time):

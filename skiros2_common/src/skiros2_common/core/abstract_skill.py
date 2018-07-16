@@ -18,8 +18,9 @@ State = Enum('State', 'Success Failure Running Idle Uninitialized')
 Unspecify: (postCondition) The parameter is unspecified (removed from the Blackboard) after execution
 Consume: (postCondition) The parameter is unspecified and removed from world model after execution
 Hardware: (postCondition) The parameter is declared as hardware. The state is set to busy during the skill's execution
+RespectType: (preCondition) The value must respect the type of the default parameter.
 """
-ParamOptions = Enum('ParamOptions', 'Consume Output Unspecify Lock')
+ParamOptions = Enum('ParamOptions', 'Consume Output Unspecify Lock RespectType')
 
 class SkillDescription(object):
     """
@@ -41,6 +42,14 @@ class SkillDescription(object):
     @property
     def params(self):
         return self._params
+
+    @property
+    def label(self):
+        return self._label
+
+    @property
+    def type(self):
+        return self._type
 
     def getDescription(self):
         """
@@ -79,6 +88,8 @@ class SkillDescription(object):
                     self._pre_conditions += [self.getPropCond(key+'Idle', "skiros:StateProperty", key, "=", "Idle", True)]
                     self._hold_conditions += [self.getPropCond(key+'Busy', "skiros:StateProperty", key, "=", "Idle", False)]
                     self._post_conditions += [self.getPropCond(key+'Idle', "skiros:StateProperty", key, "=", "Idle", True)]
+                elif o == ParamOptions.RespectType:
+                    self._pre_conditions.append(self.getOnTypeCond(key+'OfType', key, self.params[key].default.type))
 
     def generateDefParams(self):
         """
@@ -246,14 +257,6 @@ class SkillCore(SkillDescription):
         return self._progress_msg
 
     @property
-    def label(self):
-        return self._label
-
-    @property
-    def type(self):
-        return self._type
-
-    @property
     def state(self):
         return self._state
 
@@ -413,7 +416,14 @@ class SkillCore(SkillDescription):
             self._label = label
         self._resetDescription()
 
+
     #-------- Virtual functions--------
+    def modifyDescription(self, skill):
+        """
+        @brief Override to define additional parameters/condition over the skill
+        """
+        pass
+
     def onReset(self):
         """ Called when resetting. """
 

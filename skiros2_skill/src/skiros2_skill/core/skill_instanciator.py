@@ -30,7 +30,8 @@
 
 from collections import defaultdict
 import skiros2_common.tools.logger as log
-from skiros2_common.core.abstract_skill import SkillDescription, State
+from skiros2_common.core.abstract_skill import State
+from copy import deepcopy
 
 class SkillInstanciator:
     def __init__(self, wmi):
@@ -38,18 +39,13 @@ class SkillInstanciator:
         self._available_instances=defaultdict(list)
         self._wm = wmi
 
-    def _makeDescription(self, skill):
-        to_ret = SkillDescription()
-        to_ret.setDescription(*skill.getDescription())
-        return to_ret
-
     def addDescription(self, skill):
         self._available_descriptions[skill._type] = skill
 
     def addInstance(self, skill):
         skill.init(self._wm, self)
         if not skill._type in self._available_descriptions:
-            self._available_descriptions[skill.type] = self._makeDescription(skill)
+            self._available_descriptions[skill.type] = skill._description
         self._available_instances[skill.type].append(skill)
 
     def expandAll(self):
@@ -63,7 +59,7 @@ class SkillInstanciator:
         """
         if skill._type in self._available_descriptions:
             skill.init(self._wm)
-            skill.setDescription(self._available_descriptions[skill.type])
+            skill.setDescription(deepcopy(self._available_descriptions[skill.type]))
         else:
             log.error("assignDescription", "No instances of type {} found. Debug: {}".format(skill.type, self._available_descriptions.keys()))
 

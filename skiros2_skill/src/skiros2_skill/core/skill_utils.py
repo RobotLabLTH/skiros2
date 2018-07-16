@@ -105,15 +105,40 @@ class NodeExecutor():
             return self._autoParametrizeBB(skill)
         return True
 
+    def _importParentsConditions(self, skill, to_resolve):            
+        """
+        @brief Import additional conditions coming from skill's parents
+        
+        The conditions applied on parameters of the skill are imported in the skill description,
+        so they are taken into consideration when grounding
+        """
+        parents = [skill.parent]
+        while parents[-1].parent is not None:
+            parents.append(parents[-1].parent)
+        for parent in parents:
+            for pc in parent._pre_conditions:
+                if [key for key in to_resolve if key in pc.getKeys()]:
+                    dont_add = False
+                    for sc in skill._pre_conditions:
+                        if sc.isEqual(pc):
+                            dont_add = True
+                    if dont_add: continue
+                    print "{} Adding condition {}".format(skill.type, pc.getDescription())
+                    for key in pc.getKeys():
+                        if not skill.params.hasParam(key):
+                            skill.params[key] = deepcopy(parent.params[key])
+                    skill.addPreCondition(pc)
+
     def _autoParametrizeBB(self, skill):
         """
-        ground undefined parameters with parameters in the Black Board
+        @brief ground undefined parameters with parameters in the Black Board
         """
         to_resolve = [key for key, param in skill._params.getParamMap().iteritems() if param.paramType!=params.ParamTypes.Optional and param.dataTypeIs(wm.Element) and param.getValue().getIdNumber() < 0]
         if not to_resolve:
             return True
         if self._verbose:
             log.info("[Autoparametrize]", "To resolve {}".format(to_resolve))
+        self._importParentsConditions(skill, to_resolve)
         remap = {}
         cp = params.ParamHandler()
         cp.reset(skill._params.getCopy())
@@ -207,15 +232,14 @@ class NodeExecutor():
         """
         @brief If the skill label is not specified, try other instances
         """
-        if skill.label!="":
+        if skill._label!="":
             return False
         used = [skill._instance.label]
         #if self._verbose:
         for i in self._instanciator.getInstances(skill.type):
             if not i.label in used:
-                log.info("tryOther", "Try different skill {}".format(skill._label))
+                log.info("tryOther", "Trying skill {}".format(i.label))
                 used.append(i.label)
-                skill._label = i.label
                 skill.setInstance(i)
                 if self._ground(skill):
                     return True

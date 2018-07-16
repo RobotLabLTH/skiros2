@@ -693,3 +693,55 @@ class ConditionGenerate(ConditionBase):
         to_ret.setProperty("skiros:hasSubject", self._subject_key)
         to_ret.setProperty("skiros:desiredState", self._desired_state)
         return to_ret
+        
+        
+class ConditionOnType(ConditionBase):  
+    def __init__(self, clabel, subj, value):
+        self._subject_key=subj      
+        self._label=clabel   
+        self._value=value  
+        self._params = None 
+        self._setDescription()
+               
+    def isEqual(self, other):
+        if isinstance(other, ConditionOnType):
+            return self._subject_key==other._subject_key and self._value==other._value 
+        else:
+            return False
+             
+    def hasConflict(self, other):
+        if isinstance(other, ConditionOnType):
+            return self._subject_key==other._subject_key
+        else:
+            return False
+            
+    def _setDescription(self):  
+        self._description = "[{}] {} is of type {}".format(self._label, 
+                              self._subject_key, 
+                              self._value) 
+                                  
+    def evaluate(self, ph, wmi):
+        self._params = ph
+        self._wm = wmi
+        st = self._params[self._subject_key].value.type
+        types = wmi.getSubClasses(st) + [st]
+        return self._value in types 
+        
+    def setTrue(self, ph, wmi):   
+        return True
+        
+    def revert(self, ph, wmi):       
+        return True
+        
+    def setDesiredState(self, ph):
+        e = ph.getParamValue(self._subject_key)
+        if e.id>=0: 
+            return
+        else: 
+            e._type = self._value
+            
+    def toElement(self):
+        to_ret = Element("skiros:" + self.__class__.__name__, self._label)
+        to_ret.setProperty("skiros:hasSubject", self._subject_key)
+        to_ret.setProperty("skiros:desiredValue", self._value)
+        return to_ret

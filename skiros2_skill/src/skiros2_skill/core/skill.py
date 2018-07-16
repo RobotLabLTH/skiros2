@@ -158,6 +158,7 @@ class SkillInterface(SkillCore):
     def init(self, wmi):
         self._wmi = wmi
         self.createDescription()
+        self.modifyDescription(self)
         self._setState(State.Idle)
 
     def inSubtreeOf(self, skill):
@@ -307,9 +308,15 @@ class SkillInterface(SkillCore):
             self._params.reset(self._description._params.merge(other._params))
         else:
             self._params = deepcopy(self._description._params)
-        self._pre_conditions = deepcopy(self._description._pre_conditions)
-        self._hold_conditions = deepcopy(self._description._hold_conditions)
-        self._post_conditions = deepcopy(self._description._post_conditions)
+        self._pre_conditions = list()
+        self._hold_conditions = list()
+        self._post_conditions = list()
+        for p in self._description._pre_conditions:
+            self.addPreCondition(deepcopy(p))
+        for p in self._description._hold_conditions:
+            self.addHoldCondition(deepcopy(p))
+        for p in self._description._post_conditions:
+            self.addPostCondition(deepcopy(p))
 
     def mergeDescription(self, other):
         self.resetDescription(other)
@@ -323,17 +330,23 @@ class SkillInterface(SkillCore):
             if not c in self._post_conditions:
                 self.addPostCondition(c)
 
-    def addPreCondition(self, condition):
+    def addPreCondition(self, condition, modify_description=False):
+        if modify_description:
+            self._description.addPreCondition(deepcopy(condition))
         self._pre_conditions.append(condition)
         for r1, r2 in self._remaps.iteritems():
             self._pre_conditions[-1].remap(r1, r2)
 
-    def addHoldCondition(self, condition):
+    def addHoldCondition(self, condition, modify_description=False):
+        if modify_description:
+            self._description.addHoldCondition(deepcopy(condition))
         self._hold_conditions.append(condition)
         for r1, r2 in self._remaps.iteritems():
             self._hold_conditions[-1].remap(r1, r2)
 
-    def addPostCondition(self, condition):
+    def addPostCondition(self, condition, modify_description=False):
+        if modify_description:
+            self._description.addPostCondition(deepcopy(condition))
         self._post_conditions.append(condition)
         for r1, r2 in self._remaps.iteritems():
             self._post_conditions[-1].remap(r1, r2)
@@ -417,12 +430,13 @@ class SkillWrapper(SkillInterface):
 
         Instance can change at run-time, but the description will remain fixed
         """
-#        if self._has_instance:
-#            self.resetDescription()
+        if self._has_instance:
+            self.resetDescription()
         self._instance = instance
         self._has_instance = True
         self._wmi = instance._wmi
         #self._setState(self._instance.getState())
+        self._instance.modifyDescription(self)
         self._children = list()
         instance.expand(self)
 
@@ -497,6 +511,7 @@ class SkillBase(SkillInterface, object):
         self._children_processor = Sequential()
         self._setState(State.Idle)
         self.generateDefConditions()
+        self.modifyDescription(self)
 
     def createDescription(self):
         """ Not implemented in abstract class. """
