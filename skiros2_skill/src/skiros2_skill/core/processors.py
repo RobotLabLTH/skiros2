@@ -73,7 +73,7 @@ class Selector():
                 if state==State.Success:
                     self.stopAll(children, visitor)
                 return state
-        return State.Failure
+        return state
 
     def stopAll(self, children, visitor):
         for c in children:
