@@ -93,7 +93,7 @@ class BtTicker:
                 t = BtTicker._tasks[uid]
                 result = visitor.traverse(t)
                 self.publish_progress(uid, visitor, result)
-                if result != State.Running:
+                if result != State.Running and result != State.Idle:
                     print "===Final state==="
                     printer = visitors.VisitorPrint(BtTicker._visitor._wm, BtTicker._visitor._instanciator)
                     printer.traverse(t)

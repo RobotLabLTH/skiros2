@@ -117,8 +117,8 @@ class ParallelFf():
         state = State.Success
         for c in children:
             cstate = c.visit(visitor)
-            if cstate==State.Running:
-                state = State.Running
+            if cstate==State.Running or cstate==State.Idle:
+                state = cstate
             if cstate==State.Failure:
                 self.stopAll(children, visitor)
                 return State.Failure
