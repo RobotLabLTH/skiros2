@@ -330,6 +330,16 @@ class SkillInterface(SkillCore):
             if not c in self._post_conditions:
                 self.addPostCondition(c)
 
+    def addParam(self, key, value, param_type, options=[], description=""):
+        """
+        @brief Check for remaps before adding a parameter.
+
+        See SkillDescription for more details
+        """
+        if self._remaps.has_key(key):
+            key = self._remaps[key]
+        SkillDescription.addParam(self, key, value, param_type, options, description)
+
     def addPreCondition(self, condition, modify_description=False):
         if modify_description:
             self._description.addPreCondition(deepcopy(condition))

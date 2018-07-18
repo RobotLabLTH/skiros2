@@ -379,6 +379,7 @@ class SkillCore(SkillDescription):
         """
         if not self._params.hasParam(key):
             log.error("specifyParamDefault", "No param '{}' found. Debug: {}".format(key, self.printInfo(True)))
+        self._description._params.specifyDefault(key, values)
         self._params.specifyDefault(key, values)
 
     def specifyParam(self, key, values):
@@ -393,6 +394,7 @@ class SkillCore(SkillDescription):
         """
         Set the parameters and makes them default (they will no more be overwritten by specifyParams, even with keep_offline=False)
         """
+        self._description._params.specifyParamsDefault(input_params)
         self._params.specifyParamsDefault(input_params)
 
     def specifyParams(self, input_params, keep_default=True):
