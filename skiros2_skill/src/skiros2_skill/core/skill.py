@@ -442,6 +442,7 @@ class SkillWrapper(SkillInterface):
         """
         if self._has_instance:
             self.resetDescription()
+        self._description.setDescription(*self.getDescription())
         self._instance = instance
         self._has_instance = True
         self._wmi = instance._wmi
