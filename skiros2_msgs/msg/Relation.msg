@@ -1,1 +1,3 @@
-string relation
+string subjectId
+string predicate
+string objectId

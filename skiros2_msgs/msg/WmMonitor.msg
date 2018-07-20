@@ -12,4 +12,4 @@ time stamp
 string author
 string action
 WmElement[] elements
-Relation relation
+Relation[] relation

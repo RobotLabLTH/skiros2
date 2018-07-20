@@ -92,11 +92,11 @@ class OntologyInterface(OntologyAbstractInterface):
         req = srvs.WoModifyRequest()
         rmsg = msgs.Statement()
         rmsg.value = True
-        rmsg.relation = utils.makeRelationMsg(class_uri, "rdf:type", "owl:class").relation
+        rmsg.relation = utils.makeRelationMsg(class_uri, "rdf:type", "owl:class")
         req.statements.append(rmsg)
         rmsg = msgs.Statement()
         rmsg.value = True
-        rmsg.relation = utils.makeRelationMsg(class_uri, "rdfs:subClassOf", parent_uri).relation
+        rmsg.relation = utils.makeRelationMsg(class_uri, "rdfs:subClassOf", parent_uri)
         req.statements.append(rmsg)
         res = self._call(self._ontology_modify, req)
         if res:

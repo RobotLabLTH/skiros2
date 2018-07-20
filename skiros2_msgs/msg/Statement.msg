@@ -1,2 +1,2 @@
-string relation
+Relation relation
 bool value

@@ -84,7 +84,7 @@ class WorldModelServer(OntologyServer):
         if elements:
             msg.elements = elements
         if relation:
-            msg.relation = relation
+            msg.relation.append(relation)
         self._monitor.publish(msg)
 
     def _loadReasoners(self):

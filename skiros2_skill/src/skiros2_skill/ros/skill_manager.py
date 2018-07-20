@@ -38,14 +38,12 @@ import skiros2_world_model.ros.world_model_interface as wmi
 import skiros2_skill.core.skill as skill
 from skiros2_common.core.abstract_skill import State
 from skiros2_skill.core.skill_instanciator import SkillInstanciator
-from skiros2_skill.ros.ros_skill import RosSkill
 from discovery_interface import DiscoverableNode
 import skiros2_common.tools.logger as log
 from skiros2_common.tools.id_generator import IdGen
 from skiros2_common.tools.plugin_loader import *
 from multiprocessing.dummy import Process
 import skiros2_skill.core.visitors as visitors
-from skiros2_resource.ros.resource_layer_interface import *
 from skiros2_common.tools.time_keeper import TimeKeeper
 
 log.setLevel(log.INFO)
@@ -226,22 +224,6 @@ class SkillManager:
         """
         self.addSkill(name)
 
-    def addExternalPrimitive(self, rtype, name, ri, mgr_name):
-        """
-        @brief Instanciate a link to a primitive hosted on a resource manager
-        """
-        description = self._plug_loader.getPluginByName(rtype.replace(":", ""))()
-        skill = RosSkill()
-        skill.setDescription(description, name)
-        skill.setRosInterface(ri, mgr_name)
-        self._instanciator.addInstance(skill)
-        e = skill.toElement()
-        e.addRelation(self._robot._id, "skiros:hasSkill", "-1")
-        if not self._wmi.getType(e._type):
-            self._wmi.addClass(e._type, "skiros:Skill")
-        self._wmi.addElement(e)
-        self._skills.append(e)
-
     def add_task(self, task, desired_id=-1):
         root = skill.Root("root", self._local_wm)
         for i in task:
@@ -323,8 +305,6 @@ class SkillManagerNode(DiscoverableNode):
         full_name = rospy.get_param('~prefix', prefix) + ':' + robot_name[robot_name.rfind("/")+1:]
         self._sm = SkillManager(rospy.get_param('~prefix', prefix), full_name, verbose=rospy.get_param('~verbose', True))
         self._sm.observeTaskProgress(self._onProgressUpdate)
-        self._rli = ResourceLayerInterface()
-        self._rli.printState()
         #Init skills
         self._initialized = False
         self._getskills = rospy.Service('~get_skills', srvs.ResourceGetDescriptions, self._getDescriptionsCb)
@@ -346,9 +326,6 @@ class SkillManagerNode(DiscoverableNode):
         """
         for r in rospy.get_param('~libraries_list', []):
             self._sm.loadSkills(r)
-        #Instanciate primitives hosted on resource managers
-        for mgr, r in self._rli.getAvailableResources():
-            self._sm.addExternalPrimitive(r.type, r.name, self._rli, mgr)
         #Instanciate local primitives
         for r in rospy.get_param('~primitive_list', []):
             self._sm.addLocalPrimitive(r)

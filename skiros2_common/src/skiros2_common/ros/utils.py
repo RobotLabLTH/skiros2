@@ -229,11 +229,11 @@ def serializeParamMap(param_map):
     >>> serializeParamMap(ph._params)
     [param: {"values": [], "specType": 2, "type": "list", "description": "", "key": "MyList"}, param: {"values": [], "specType": 2, "type": "dict", "description": "", "key": "MyDict"}]
     >>> params = {}
-    >>> params["MyDict"] = param.Property("MyDict", dict)
+    >>> params["MyDict"] = param.Param("MyDict", "", dict, param.ParamTypes.Required)
     >>> serializeParamMap(params)
     [param: {"values": [], "type": "dict", "key": "MyDict"}]
     >>> params = {}
-    >>> params["MyString"] = param.Property("MyString", "String")
+    >>> params["MyString"] = param.Param("MyString", "", "String", param.ParamTypes.Required)
     >>> serializeParamMap(params)
     [param: {"values": ["String"], "type": "str", "key": "MyString"}]
     """
@@ -261,24 +261,52 @@ def deserializeParamMap(params):
             param_map[dp._key] = dp
     return param_map
 
-def deserializePropertyMap(params):
+def deserializePropertyMap(msg):
     """
     >>> params = {}
     >>> params["MyDict"] = param.Property("MyDict", dict)
     >>> params["MyFloat"] = param.Property("MyFloat", float)
-    >>> params = param.ParamHandler(deserializePropertyMap(serializeParamMap(params)))
-    >>> params.printState()
-    'MyDict:[] MyFloat:[] '
+    >>> params = deserializePropertyMap(serializePropertyMap(params))
+    >>> for p in params.values(): p.printState()
+    'MyDict:[]'
+    'MyFloat:[]'
     >>> params["MyFloat"].value = 1.0
-    >>> params.printState()
-    'MyDict:[] MyFloat:[1.0] '
+    >>> for p in params.values(): p.printState()
+    'MyDict:[]'
+    'MyFloat:[1.0]'
     """
-    param_map = {}
-    for p in params:
-        dp = decodeProperty(p.param)
-        if dp!=None:
-            param_map[dp._key] = dp
-    return param_map
+    p_map = {}
+    for p in msg:
+        dataValue = json_loads_byteified(p.dataValue)#TODO: if doesn-t work add old check
+        if len(dataValue)>0:
+            p_map[p.key] =  param.Property(p.key, decode(dataValue, p.dataType))
+        else:
+            p_map[p.key] =  param.Property(p.key, getTypeFromStr(p.dataType).__class__)
+    return p_map
+
+def serializePropertyMap(p_map):
+    """
+    >>> params = {}
+    >>> params["MyDict"] = param.Property("MyDict", dict)
+    >>> serializePropertyMap(params)
+    [key: "MyDict"
+    dataValue: "[]"
+    dataType: "dict"]
+    >>> params = {}
+    >>> params["MyString"] = param.Property("MyString", "String")
+    >>> serializePropertyMap(params)
+    [key: "MyString"
+    dataValue: "[\"String\"]"
+    dataType: "str"]
+    """
+    s_p_map = []
+    for p in p_map.values():
+        msg = msgs.Property()
+        msg.key = p.key
+        msg.dataValue = str(json.dumps(p._values, cls=ParamsEncoder))
+        msg.dataType = getStrFromType(p._data_type)
+        s_p_map.append(msg)
+    return s_p_map
 
 def msg2element(msg):
     e = we.Element()
@@ -292,24 +320,26 @@ def msg2element(msg):
 
 def element2msg(element):
     msg = msgs.WmElement()
-    msg.id = element._id
-    msg.label = element._label
-    msg.type = element._type
-    msg.properties = serializeParamMap(element._properties)
+    msg.id = element.id
+    msg.label = element.label
+    msg.type = element.type
+    msg.properties = serializePropertyMap(element._properties)
     for r in element._relations:
         msg.relations.append(relation2msg(r))
     return msg
 
 def relation2msg(r):
     rmsg = msgs.Relation()
-    rmsg.relation = str(json.dumps(r))
+    rmsg.subjectId = r['src']
+    rmsg.predicate = r['type']
+    rmsg.objectId = r['dst']
     return rmsg
 
 def msg2relation(msg):
-    return json_loads_byteified(msg.relation)
+    return makeRelation(msg.subjectId, msg.predicate, msg.objectId)
 
 def makeRelation(subj, pred, obj):
     return {'src': subj, 'type': pred, 'dst': obj}
 
 def makeRelationMsg(subj, pred, obj):
-    return relation2msg({'src': subj, 'type': pred, 'dst': obj})
+    return msgs.Relation(subj, pred, obj)

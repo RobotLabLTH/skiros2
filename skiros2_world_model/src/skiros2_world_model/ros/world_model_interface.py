@@ -67,8 +67,8 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
                     del WorldModelInterface._elements_cache[elem.id]
             else:
                 log.error("[WmMonitor]", "Command {} not recognized.".format(msg.action))
-        if msg.relation.relation!='':
-            rel = utils.msg2relation(msg.relation)
+        if msg.relation:
+            rel = utils.msg2relation(msg.relation[0])
             if WorldModelInterface._elements_cache.has_key(rel['src']):
                 del WorldModelInterface._elements_cache[rel['src']]
             if WorldModelInterface._elements_cache.has_key(rel['dst']):

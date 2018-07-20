@@ -16,6 +16,7 @@ control_msgs
 add_message_files(
   FILES
   Param.msg
+  Property.msg
   Relation.msg
   ManagerDescription.msg
   Statement.msg

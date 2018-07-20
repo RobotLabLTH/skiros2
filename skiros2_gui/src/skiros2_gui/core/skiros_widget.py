@@ -860,10 +860,10 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         if log_type=="skill":
             string = "{} {} {} {} [{}] {} {:0.4f}".format(datetime.now(), msg.parent_id, msg.label, State(msg.state).name, msg.progress_code, msg.progress_message, msg.progress_time)
         elif log_type=="wm_edit":
-            if msg.relation.relation=="":
+            if not msg.relation:
                 string = "{} {} {} {}".format(datetime.now(), "WM", msg.action, [e.id for e in msg.elements])
             else:
-                relation = rosutils.msg2relation(msg.relation)
+                relation = rosutils.msg2relation(msg.relation[0])
                 string = "{} {} {}_relation {}-{}-{}".format(datetime.now(), "WM", msg.action, relation['src'], relation['type'], relation['dst'])
         if self.save_logs_checkBox.isChecked():
             self.logs_textEdit.append(string)
