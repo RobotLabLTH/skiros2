@@ -16,5 +16,4 @@
   <run_depend>rospy</run_depend>
   <run_depend>skiros2_msgs</run_depend>
   <run_depend>skiros2_world_model</run_depend>
-  <run_depend>skiros2_resource</run_depend>
 </package>
