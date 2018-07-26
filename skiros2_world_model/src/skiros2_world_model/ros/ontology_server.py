@@ -94,9 +94,9 @@ class OntologyServer(object):
         with self._times:
             for s in msg.statements:
                 if s.value:
-                    self._ontology.addRelation(utils.msg2relation(s.relation), msg.author, is_relation=False)
+                    self._ontology.add_relation(utils.msg2relation(s.relation), msg.context, msg.author)
                 else:
-                    self._ontology.removeRelation(utils.msg2relation(s.relation), msg.author, is_relation=False)
+                    self._ontology.remove_relation(utils.msg2relation(s.relation), msg.context, msg.author)
         if self._verbose:
             log.info("[WoModify]", "Done in {} sec".format(self._times.getLast()))
         return srvs.WoModifyResponse(True)

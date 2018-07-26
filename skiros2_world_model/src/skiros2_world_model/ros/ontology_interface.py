@@ -58,7 +58,7 @@ class OntologyInterface(OntologyAbstractInterface):
         try:
             rospy.wait_for_service(self._ontology_query.resolved_name, 0.0)
             return True
-        except rospy.ROSException, e:
+        except rospy.ROSException:
             return False
 
     def lock(self):

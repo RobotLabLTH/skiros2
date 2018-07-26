@@ -1,33 +1,3 @@
-#################################################################################
-# Software License Agreement (BSD License)
-#
-# Copyright (c) 2016, Francesco Rovida
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-#
-# * Redistributions of source code must retain the above copyright
-#   notice, this list of conditions and the following disclaimer.
-# * Redistributions in binary form must reproduce the above copyright
-#   notice, this list of conditions and the following disclaimer in the
-#   documentation and/or other materials provided with the distribution.
-# * Neither the name of the copyright holder nor the
-#   names of its contributors may be used to endorse or promote products
-#   derived from this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
-# ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#################################################################################
-
 import rospy
 import rospkg
 from os import walk
@@ -153,14 +123,14 @@ class WorldModelServer(OntologyServer):
         with self._times:
             to_ret = srvs.WmGetResponse()
             if msg.action == msg.GET:
-                to_ret.elements.append(utils.element2msg(self._wm.getElement(msg.element.id)))
+                to_ret.elements.append(utils.element2msg(self._wm.get_element(msg.element.id)))
             elif msg.action == msg.GET_TEMPLATE:
                 to_ret.elements.append(utils.element2msg(self._wm.get_template_individual(msg.element.label)))
             elif msg.action == msg.GET_RECURSIVE:
-                for _, e in self._wm.getRecursive(msg.element.id, msg.relation_filter, msg.type_filter).iteritems():
+                for _, e in self._wm.get_recursive(msg.element.id, msg.relation_filter, msg.type_filter).iteritems():
                     to_ret.elements.append(utils.element2msg(e))
             elif msg.action == msg.RESOLVE:
-                for e in self._wm.resolveElements(utils.msg2element(msg.element)):
+                for e in self._wm.resolve_elements(utils.msg2element(msg.element)):
                     to_ret.elements.append(utils.element2msg(e))
         output = ""
         einput = utils.msg2element(msg.element)
@@ -175,11 +145,11 @@ class WorldModelServer(OntologyServer):
         with self._times:
             if msg.value:
                 temp = "+"
-                self._wm.addRelation(utils.msg2relation(msg.relation), msg.author, is_relation=True)
+                self._wm.add_relation(utils.msg2relation(msg.relation), msg.author, is_relation=True)
                 self._publish_change(msg.author, "add", relation=msg.relation)
             else:
                 temp = "-"
-                self._wm.removeRelation(utils.msg2relation(msg.relation), msg.author, is_relation=True)
+                self._wm.remove_relation(utils.msg2relation(msg.relation), msg.author, is_relation=True)
                 self._publish_change(msg.author, "remove", relation=msg.relation)
         if self._verbose:
             log.info("[wmSetRelCb]", "[{}] {} Time: {:0.3f} secs".format(temp, msg.relation, self._times.getLast()))
@@ -191,31 +161,31 @@ class WorldModelServer(OntologyServer):
             if msg.action == msg.ADD:
                 e_list = list()
                 for e in msg.elements:
-                    updated_e = self._wm.addElement(utils.msg2element(e), msg.author)
+                    updated_e = self._wm.add_element(utils.msg2element(e), msg.author)
                     to_ret.ids.append(updated_e.id)
                     e_list.append(utils.element2msg(updated_e))
                 self._publish_change(msg.author, "add", elements=e_list)
             elif msg.action == msg.UPDATE:
                 e_list = list()
                 for e in msg.elements:
-                    self._wm.updateElement(utils.msg2element(e), msg.author)
+                    self._wm.update_element(utils.msg2element(e), msg.author)
                     to_ret.ids.append(e.id)
-                    e_list.append(utils.element2msg(self._wm.getElement(e.id)))
+                    e_list.append(utils.element2msg(self._wm.get_element(e.id)))
                 self._publish_change(msg.author, "update", elements=e_list)
             elif msg.action == msg.UPDATE_PROPERTIES:
                 e_list = list()
                 for e in msg.elements:
-                    self._wm.updateProperties(utils.msg2element(e), msg.author, self._wm.get_reasoner(msg.type_filter), False)
+                    self._wm.update_properties(utils.msg2element(e), msg.author, self._wm.get_reasoner(msg.type_filter), False)
                     to_ret.ids.append(e.id)
-                    e_list.append(utils.element2msg(self._wm.getElement(e.id)))
+                    e_list.append(utils.element2msg(self._wm.get_element(e.id)))
                 self._publish_change(msg.author, "update", elements=e_list)
             elif msg.action == msg.REMOVE:
                 for e in msg.elements:
-                    to_ret.ids.append(self._wm.removeElement(utils.msg2element(e), msg.author))
+                    to_ret.ids.append(self._wm.remove_element(utils.msg2element(e), msg.author))
                 self._publish_change(msg.author, "remove", elements=msg.elements)
             elif msg.action == msg.REMOVE_RECURSIVE:
                 for e in msg.elements:
-                    to_ret.ids += self._wm.removeRecursive(utils.msg2element(e), msg.author, msg.relation_filter, msg.type_filter)
+                    to_ret.ids += self._wm.remove_recursive(utils.msg2element(e), msg.author, msg.relation_filter, msg.type_filter)
                 self._publish_change(msg.author, "remove_recursive", elements=[utils.element2msg(Element(eid=cid)) for cid in to_ret.ids])
         if self._verbose:
             log.info("[WmModify]", "{} {} {}. Time: {:0.3f} secs".format(msg.author, msg.action, to_ret.ids, self._times.getLast()))

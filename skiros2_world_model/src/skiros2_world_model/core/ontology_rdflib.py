@@ -122,41 +122,41 @@ class Ontology:
     def query(self, query, cut_prefix=False, context_id=None):
         return self.ontology(context_id).query(query)
 
-    def addRelation(self, r, author):
-        self._ontology.add((self.lightstring2uri(r['src']), self.lightstring2uri(r['type']), self.lightstring2uri(r['dst'])))
+    def add_relation(self, r, context_id, author):
+        self.ontology(context_id).add((self.lightstring2uri(r['src']), self.lightstring2uri(r['type']), self.lightstring2uri(r['dst'])))
 
-    def removeRelation(self, r, author):
-        self._ontology.remove((self.lightstring2uri(r['src']), self.lightstring2uri(r['type']), self.lightstring2uri(r['dst'])))
+    def remove_relation(self, r, context_id, author):
+        self.ontology(context_id).remove((self.lightstring2uri(r['src']), self.lightstring2uri(r['type']), self.lightstring2uri(r['dst'])))
 
-    def get_sub_classes(self, parent_class, recursive=True):
+    def get_sub_classes(self, parent_class, context_id="", recursive=True):
         to_ret = []
         to_ret.append(parent_class)
         uri = self.lightstring2uri(parent_class)
-        for subj in self._ontology.subjects(RDFS.subClassOf, uri):
+        for subj in self.ontology(context_id).subjects(RDFS.subClassOf, uri):
             if recursive:
-                to_ret += self.get_sub_classes(self.uri2lightstring(subj), True)
+                to_ret += self.get_sub_classes(self.uri2lightstring(subj), context_id, True)
             else:
                 to_ret.append(self.uri2lightstring(subj))
         return to_ret
 
-    def get_sub_properties(self, parent_property="topDataProperty", recursive=True):
+    def get_sub_properties(self, parent_property="topDataProperty", context_id="", recursive=True):
         to_ret = []
         to_ret.append(parent_property)
         uri = self.lightstring2uri(parent_property)
-        for subj in self._ontology.subjects(RDFS.subPropertyOf, uri):
+        for subj in self.ontology(context_id).subjects(RDFS.subPropertyOf, uri):
             if recursive:
-                to_ret += self.get_sub_properties(self.uri2lightstring(subj), True)
+                to_ret += self.get_sub_properties(self.uri2lightstring(subj), context_id, True)
             else:
                 to_ret.append(self.uri2lightstring(subj))
         return to_ret
 
-    def get_sub_relations(self, parent_property="topObjectProperty", recursive=True):
+    def get_sub_relations(self, parent_property="topObjectProperty", context_id="", recursive=True):
         to_ret = []
         to_ret.append(parent_property)
         uri = self.lightstring2uri(parent_property)
-        for subj in self._ontology.subjects(RDFS.subPropertyOf, uri):
+        for subj in self.ontology(context_id).subjects(RDFS.subPropertyOf, uri):
             if recursive:
-                to_ret += self.get_sub_relations(self.uri2lightstring(subj), True)
+                to_ret += self.get_sub_relations(self.uri2lightstring(subj), context_id, True)
             else:
                 to_ret.append(self.uri2lightstring(subj))
         return to_ret

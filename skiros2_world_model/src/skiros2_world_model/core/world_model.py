@@ -35,7 +35,7 @@ class WorldModel(Ontology):
                 root = self.get_individual(scene_name)
             else:
                 root = Element("skiros:Scene", scene_name, 0)
-            self.addElement(root, self.__class__.__name__)
+            self.add_element(root, self.__class__.__name__)
 
     def _set(self, statement, author, time=None, probability=1.0):
         """
@@ -94,13 +94,13 @@ class WorldModel(Ontology):
             if r['src']=="-1" or r['src']==e.id:
                 if not self.exists_in_ontology(self.lightstring2uri(r['dst'])):
                     log.error("[element2statements]", "Element with key {} is not defined in ontology. Skipped relation: {}".format(r['dst'], r))
-                    e.removeRelation(r)
+                    e.remove_relation(r)
                     continue
                 to_ret.append(((subject, self.lightstring2uri(r['type']), self.lightstring2uri(r['dst'])), True))
             else:
                 if not self.exists_in_ontology(self.lightstring2uri(r['src'])):
                     log.error("[element2statements]", "Element with key {} is not defined in ontology. Skipped relation: {}".format(r['src'], r))
-                    e.removeRelation(r)
+                    e.remove_relation(r)
                     continue
                 to_ret.append(((self.lightstring2uri(r['src']), self.lightstring2uri(r['type']), subject), True))
         return to_ret
@@ -121,7 +121,7 @@ class WorldModel(Ontology):
         types_filter = self.get_sub_classes(eclass)
         for etype in types_filter:
             for subj in self.wm.subjects(RDF.type, self.lightstring2uri(etype)):
-                to_ret.append(self.getElement(self.uri2lightstring(subj)))
+                to_ret.append(self.get_element(self.uri2lightstring(subj)))
         return to_ret
 
     def _add_reasoners_prop(self, e):
@@ -232,7 +232,7 @@ class WorldModel(Ontology):
         self.wm.serialize(self._workspace+"/"+filename, format='turtle')
 
     @synchronized
-    def addRelation(self, r, author, is_relation):
+    def add_relation(self, r, author, is_relation):
         """
         @brief Add an rdf triple
         """
@@ -241,7 +241,7 @@ class WorldModel(Ontology):
         self._add((s, self.lightstring2uri(r['type']), o), author, is_relation=is_relation)
 
     @synchronized
-    def removeRelation(self, r, author, is_relation):
+    def remove_relation(self, r, author, is_relation):
         """
         @brief Remove an rdf triple
         """
@@ -249,14 +249,14 @@ class WorldModel(Ontology):
         o = self.lightstring2uri(r['dst'])
         self._remove((s, self.lightstring2uri(r['type']), o), author, is_relation=is_relation)
 
-    def getRelations(self, r):
+    def get_relations(self, r):
         to_ret = []
         triples = self.wm.triples((self.lightstring2uri(r['src']), self.lightstring2uri(r['type']), self.lightstring2uri(r['dst'])))
         for s, p, o in triples:
             to_ret.append(utils.makeRelation(self.uri2lightstring(s), self.uri2lightstring(p), self.uri2lightstring(o)))
         return to_ret
 
-    def getElement(self, uri):
+    def get_element(self, uri):
         """
         @brief Get an element from the scene
         """
@@ -281,7 +281,7 @@ class WorldModel(Ontology):
             return None
 
     @synchronized
-    def addElement(self, e, author):
+    def add_element(self, e, author):
         """
         @brief Add an element to the scene
         """
@@ -298,17 +298,17 @@ class WorldModel(Ontology):
         return e
 
     @synchronized
-    def updateElement(self, e, author):
+    def update_element(self, e, author):
         """
         @brief Update an element in the scene
         """
         if not self._id_gen.hasId(self._uri2id(e.id)):
-            log.error("[updateElement]", "Request update from {}, but Id {} is not present in the wm. ".format(author, self._uri2id(e.id)))
+            log.error("[update_element]", "Request update from {}, but Id {} is not present in the wm. ".format(author, self._uri2id(e.id)))
             return
         for name, r in self._reasoners.iteritems():
             if not r.parse(e, "update"):
                 raise Exception("Reasoner {} rejected the element {} update".format(name, e))
-        prev = self._element2statements(self.getElement(e.id))
+        prev = self._element2statements(self.get_element(e.id))
         curr = self._element2statements(e)
         c1, c2 = zip(*curr)
         for s, is_relation in prev:
@@ -321,17 +321,17 @@ class WorldModel(Ontology):
         self._elements_cache[e.id] = e
 
     @synchronized
-    def updateProperties(self, e, author, reasoner=None, publish=True):
+    def update_properties(self, e, author, reasoner=None, publish=True):
         """
         @brief Update properties of an element in the scene
         """
         if not self._id_gen.hasId(self._uri2id(e.id)):
-            log.error("[updateElement]", "Request update from {}, but Id {} is not present in the wm. ".format(author, self._uri2id(e.id)))
+            log.error("[update_element]", "Request update from {}, but Id {} is not present in the wm. ".format(author, self._uri2id(e.id)))
             return
         for name, r in self._reasoners.iteritems():
             if not r.parse(e, "update"):
                 raise Exception("Reasoner {} rejected the element {} update".format(name, e))
-        old_e = self.getElement(e.id)
+        old_e = self.get_element(e.id)
         subject = self.lightstring2uri(e.id)
         if reasoner is not None:
             prop_to_update = reasoner.getAssociatedData()
@@ -356,7 +356,7 @@ class WorldModel(Ontology):
             self._change_cb(author, "update", old_e)
 
     @synchronized
-    def resolveElements(self, description):
+    def resolve_elements(self, description):
         """
         @brief Return all elements matching the profile in input (type, label, properties)
         """
@@ -385,11 +385,11 @@ class WorldModel(Ontology):
         return to_ret
 
     @synchronized
-    def removeElement(self, e, author):
+    def remove_element(self, e, author):
         """
         Remove an element from the scene
         """
-        e = self.getElement(e.id)
+        e = self.get_element(e.id)
         self._id_gen.removeId(self._uri2id(e.id))
         for name, r in self._reasoners.iteritems():
             if not r.parse(e, "remove"):
@@ -399,19 +399,19 @@ class WorldModel(Ontology):
             self._remove(s, author, is_relation)
         return e.id
 
-    def _getRecursive(self, e, rels_filter, types_filter, elist):
+    def _get_recursive(self, e, rels_filter, types_filter, elist):
         """
         Get all elements related to the initial one. Anti-loop guarded
         """
         elist[e.id] = e
         for r in e.getRelations("-1", rels_filter):
             if self.is_scene_element(r['dst']):
-                e2 = self.getElement(r['dst'])
+                e2 = self.get_element(r['dst'])
                 if (e2._type in types_filter or not types_filter) and not elist.has_key(e2._id):
-                    self._getRecursive(e2, rels_filter, types_filter, elist)
+                    self._get_recursive(e2, rels_filter, types_filter, elist)
 
     @synchronized
-    def getRecursive(self, eid, rel_filter="", type_filter=""):
+    def get_recursive(self, eid, rel_filter="", type_filter=""):
         """
         Get an element from the scene and all elements related to the initial one
         """
@@ -422,17 +422,17 @@ class WorldModel(Ontology):
             rels_filter = self.get_sub_relations(rel_filter)
         if type_filter!="":
             types_filter = self.get_sub_classes(type_filter)
-        self._getRecursive(self.getElement(eid), rels_filter, types_filter, to_ret)
+        self._get_recursive(self.get_element(eid), rels_filter, types_filter, to_ret)
         return to_ret
 
-    def removeRecursive(self, e, author, rel_filter="", type_filter=""):
+    def remove_recursive(self, e, author, rel_filter="", type_filter=""):
         """
         Remove an element from the scene and all elements related to the initial one
         """
         to_ret = []
         rels_filter = []
         types_filter = []
-        to_ret.append(self.removeElement(e, author))
+        to_ret.append(self.remove_element(e, author))
         if rel_filter!="":
             rels_filter = self.get_sub_relations(rel_filter)
         if type_filter!="":
@@ -440,7 +440,7 @@ class WorldModel(Ontology):
         for r in e._relations:
             if r['src']=="-1":
                 if (r['type'] in rels_filter or rel_filter=="") and self.is_scene_element(r['dst']):
-                    e2 = self.getElement(r['dst'])
+                    e2 = self.get_element(r['dst'])
                     if e2._type in types_filter or type_filter=="":
-                        to_ret += self.removeRecursive(e2, author, rel_filter, type_filter)
+                        to_ret += self.remove_recursive(e2, author, rel_filter, type_filter)
         return to_ret
