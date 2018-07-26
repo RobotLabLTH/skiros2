@@ -1,103 +1,41 @@
-#################################################################################
-# Software License Agreement (BSD License)
-#
-# Copyright (c) 2016, Francesco Rovida
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-#
-# * Redistributions of source code must retain the above copyright
-#   notice, this list of conditions and the following disclaimer.
-# * Redistributions in binary form must reproduce the above copyright
-#   notice, this list of conditions and the following disclaimer in the
-#   documentation and/or other materials provided with the distribution.
-# * Neither the name of the copyright holder nor the
-#   names of its contributors may be used to endorse or promote products
-#   derived from this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
-# ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#################################################################################
-
-from os import walk, path
-import rospy
+from os import path
 import skiros2_common.tools.logger as log
 import skiros2_common.ros.utils as utils
 from skiros2_common.core.world_element import Element
 from skiros2_world_model.ros.ontology_server import Ontology
-import rospkg
 import rdflib
 from rdflib.namespace import RDF, RDFS, OWL, XSD
 from wrapt.decorators import synchronized
 from skiros2_common.tools.id_generator import IdGen
 
+scene_context = "scene"
+
 class WorldModel(Ontology):
     def __init__(self, verbose, change_cb):
+        Ontology.__init__(self)
+        self.wm = self.add_context(scene_context)
         self._verbose = verbose
         self._id_gen = IdGen()
         self._reasoners = {}
-        self._ontology = rdflib.Graph()
-        self._wm = rdflib.Graph()
-        self._init()
-        self._reset()
         self._change_cb = change_cb
-        init_scene = rospy.get_param('~init_scene', "")
-        if init_scene!="":
-            self.loadScene(init_scene)
 
-    def _bind(self, prefix, uri):
-        self._ontology.namespace_manager.bind(prefix, uri, True, True)
-        self._wm.namespace_manager.bind(prefix, uri, True, True)
+    def set_workspace(self, workspace):
+        self._workspace = workspace
 
-    def _init(self):
-        rospack = rospkg.RosPack()
-        self._skiros_dir = rospack.get_path('skiros2')+'/owl'
-        self._workspace = rospy.get_param('~workspace_dir', self._skiros_dir)
-        log.info("[{}]".format(self.__class__.__name__), "Workspace folder: {}".format(self._workspace))
-        for (dirpath, dirnames, filenames) in walk(self._skiros_dir):
-            for name in filenames:
-                if name.find('.owl')>=0:
-                    self.load(dirpath+'/'+name)
-        for (dirpath, dirnames, filenames) in walk(self._workspace):
-            for name in filenames:
-                if name.find('.owl')>=0:
-                    self.load(dirpath+'/'+name)
-        #TODO: configure prefixes in launch file
-        subjects = self._ontology.subjects(RDF.type, OWL.Ontology)
-        for s in subjects:
-            prefix = s[s.rfind("/")+1:].lower()
-            if prefix.rfind(".")!=-1:
-                prefix = prefix[:prefix.rfind(".")]
-            s = s+"#"
-            self._bind(prefix, s)
-            log.info("[{}]".format(self.__class__.__name__), "Set prefix: {} for ontology: {}".format(prefix, s))
-        self.setDefaultPrefix('skiros', 'http://rvmi.aau.dk/ontologies/skiros.owl#')
-        for prefix, uri1 in self._ontology.namespace_manager.store.namespaces():
-            if prefix.find("default")>-1:
-                self._bind(prefix, "")
-        self._bind("", "")
-        #self.load(self._workspace+'learned_concepts.owl')
-
-    def _reset(self, scene_name="skiros:aau_lab"):
+    def reset(self, add_root=True, scene_name="skiros:blank_scene"):
         """
-        Initialize the scene
+        @brief Initialize the scene
         """
+        self.ontology().remove_context(self.wm)
+        self.wm = self.add_context(scene_context)
         self._id_gen.clear()
         self._elements_cache = dict()
-        if self.hasIndividual(scene_name):
-            root = self.getIndividual(scene_name)
-        else:
-            root = Element("skiros:Scene", scene_name, 0)
-        self.addElement(root, self.__class__.__name__)
+        if add_root:
+            if self.has_individual(scene_name):
+                root = self.get_individual(scene_name)
+            else:
+                root = Element("skiros:Scene", scene_name, 0)
+            self.addElement(root, self.__class__.__name__)
 
     def _set(self, statement, author, time=None, probability=1.0):
         """
@@ -109,19 +47,17 @@ class WorldModel(Ontology):
         if self._verbose:
             log.info(author, log.logColor.RED + log.logColor.BOLD  + "[-] ({}) - ({}) - (*))".format(self.uri2lightstring(statement[0]), self.uri2lightstring(statement[1])))
             log.info(author, log.logColor.GREEN + log.logColor.BOLD  + "[+] ({}) - ({}) - ({})".format(self.uri2lightstring(statement[0]), self.uri2lightstring(statement[1]), self.uri2lightstring(statement[2])))
-        self._ontology.set(statement)
-        self._wm.set(statement)
+        self.wm.set(statement)
         if self._elements_cache.has_key(self.uri2lightstring(statement[0])):
             del self._elements_cache[self.uri2lightstring(statement[0])]
 
     def _remove(self, statement, author, is_relation=False, time=None, probability=1.0):
         """
-        @brief Remove a statement from the scene and from ontology
+        @brief Remove a statement from the scene
         """
         if self._verbose:
             log.info(author, log.logColor.RED + log.logColor.BOLD  + "[-] ({}) - ({}) - ({})".format(self.uri2lightstring(statement[0]), self.uri2lightstring(statement[1]), self.uri2lightstring(statement[2])))
-        self._ontology.remove(statement)
-        self._wm.remove(statement)
+        self.wm.remove(statement)
         if is_relation:
             if self._elements_cache.has_key(self.uri2lightstring(statement[0])):
                 del self._elements_cache[self.uri2lightstring(statement[0])]
@@ -131,12 +67,11 @@ class WorldModel(Ontology):
 
     def _add(self, statement, author, is_relation=False, time=None, probability=1.0):
         """
-        @brief Add a statement to the scene and the ontology
+        @brief Add a statement to the scene
         """
         if self._verbose:
             log.info(author, log.logColor.GREEN + log.logColor.BOLD  + "[+] ({}) - ({}) - ({})".format(self.uri2lightstring(statement[0]), self.uri2lightstring(statement[1]), self.uri2lightstring(statement[2])))
-        self._ontology.add(statement)
-        self._wm.add(statement)
+        self.wm.add(statement)
         if is_relation:
             if self._elements_cache.has_key(self.uri2lightstring(statement[0])):
                 del self._elements_cache[self.uri2lightstring(statement[0])]
@@ -157,13 +92,13 @@ class WorldModel(Ontology):
                 to_ret.append(((subject, predicate, value), False))
         for r in list(e._relations):
             if r['src']=="-1" or r['src']==e.id:
-                if not self.existsInOntology(self.lightstring2uri(r['dst'])):
+                if not self.exists_in_ontology(self.lightstring2uri(r['dst'])):
                     log.error("[element2statements]", "Element with key {} is not defined in ontology. Skipped relation: {}".format(r['dst'], r))
                     e.removeRelation(r)
                     continue
                 to_ret.append(((subject, self.lightstring2uri(r['type']), self.lightstring2uri(r['dst'])), True))
             else:
-                if not self.existsInOntology(self.lightstring2uri(r['src'])):
+                if not self.exists_in_ontology(self.lightstring2uri(r['src'])):
                     log.error("[element2statements]", "Element with key {} is not defined in ontology. Skipped relation: {}".format(r['src'], r))
                     e.removeRelation(r)
                     continue
@@ -178,20 +113,18 @@ class WorldModel(Ontology):
             return -1
         return int(uri.split('-')[1])
 
-    def _getTypes(self, eclass):
+    def _get_types(self, eclass):
         """
         Return all scene elements of a type
         """
         to_ret = []
-        types_filter = self.getSubClasses(eclass)
+        types_filter = self.get_sub_classes(eclass)
         for etype in types_filter:
-            for subj in self._ontology.subjects(RDF.type, self.lightstring2uri(etype)):
-                subj = self.uri2lightstring(subj)
-                if self.isSceneElement(subj):
-                    to_ret.append(self.getElement(subj))
+            for subj in self.wm.subjects(RDF.type, self.lightstring2uri(etype)):
+                to_ret.append(self.getElement(self.uri2lightstring(subj)))
         return to_ret
 
-    def _addReasonersProp(self, e):
+    def _add_reasoners_prop(self, e):
         """
         if the object is marked as associated to a reasoner, check that all properties are present
         """
@@ -200,11 +133,11 @@ class WorldModel(Ontology):
                 if self._reasoners.has_key(v):
                     self._reasoners[v].addProperties(e)
 
-    def _stopReasoners(self):
+    def _stop_reasoners(self):
         for _, r in self._reasoners.iteritems():
             r.stop()
 
-    def _startReasoners(self):
+    def _start_reasoners(self):
         for _, r in self._reasoners.iteritems():
             r.execute()
 
@@ -213,34 +146,34 @@ class WorldModel(Ontology):
             return None
         return self._reasoners[reasoner_class]
 
-    def loadReasoner(self, reasoner_class):
+    def load_reasoner(self, reasoner_class):
         self._reasoners[reasoner_class.__name__] = reasoner_class()
         self._reasoners[reasoner_class.__name__].init(self)
         self._reasoners[reasoner_class.__name__].execute()
-        log.info("[loadReasoner] Loaded {}".format(reasoner_class.__name__))
+        log.info("[load_reasoner] Loaded {}".format(reasoner_class.__name__))
 
-    def hasIndividual(self, name):
+    def has_individual(self, name):
         """
         @brief Returns true if the individual exists in the ontology
         """
         subject = self.lightstring2uri(name)
-        if self._ontology.value(subject, RDF.type):
+        if self.ontology().value(subject, RDF.type):
             return True
         return False
 
     @synchronized
-    def getIndividual(self, name):
+    def get_individual(self, name, context_id=None):
         """
-        @brief Builds an element from a long-term memory individual
+        @brief Builds an element from an individual
         """
         subject = self.lightstring2uri(name)
-        if not self._ontology.value(subject, RDF.type):
-            raise Exception("Element {} doesn't exist in ontology. Uri: {}".format(name, subject))
+        if not self.ontology(context_id).value(subject, RDF.type):
+            raise Exception("Element {} doesn't exist in ontology. Uri: {}. Context: {}".format(name, subject, context_id))
         e = Element()
-        for predicate, obj in self._ontology.predicate_objects(subject):
-            if OWL.DatatypeProperty in self._ontology.objects(predicate, RDF.type) or predicate==RDFS.comment:
+        for predicate, obj in self.ontology(context_id).predicate_objects(subject):
+            if OWL.DatatypeProperty in self.ontology().objects(predicate, RDF.type) or predicate==RDFS.comment:
                 e.setProperty(self.uri2lightstring(predicate), obj.value, self.uri2lightstring(obj.datatype), force_convertion=True)
-            elif OWL.ObjectProperty in self._ontology.objects(predicate, RDF.type):
+            elif OWL.ObjectProperty in self.ontology().objects(predicate, RDF.type):
                 e.addRelation("-1", self.uri2lightstring(predicate), self.uri2lightstring(obj))
             elif predicate==RDF.type and obj!=OWL.NamedIndividual:
                 e._type = self.uri2lightstring(str(obj))
@@ -249,63 +182,54 @@ class WorldModel(Ontology):
             elif predicate==RDFS.label:
                 e._label = obj.value
             else:
-                log.error("[getIndividual]", "Ignoring {}-{}-{}. Predicate is not defined in the ontology.".format(name, self.uri2lightstring(predicate), self.uri2lightstring(obj)))
-        for subj, predicate in self._ontology.subject_predicates(subject):
+                log.error("[get_individual]", "Ignoring {}-{}-{}. Predicate is not defined in the ontology.".format(name, self.uri2lightstring(predicate), self.uri2lightstring(obj)))
+        for subj, predicate in self.ontology(context_id).subject_predicates(subject):
             e.addRelation(self.uri2lightstring(subj), self.uri2lightstring(predicate), "-1")
-        self._addReasonersProp(e)
+        self._add_reasoners_prop(e)
         return e
 
-    def getTemplateIndividual(self, name):
+    def get_template_individual(self, name):
         """
-        @brief Builds an element from an individual
+        @brief Builds an element from an ontology individual
         """
-        e = self.getIndividual(name)
+        e = self.get_individual(name)
         if e:
-            e._label = name
+            e.label = name
             e.setProperty("skiros:Template", name)
         return e
 
-    def isSceneElement(self, uri):
+    def is_scene_element(self, uri):
         return self._uri2id(uri) >= 0
 
-    def existsInOntology(self, uri):
-        return bool(self._ontology.value(uri, RDF.type))
+    def exists_in_ontology(self, uri, context_id=None):
+        return bool(self.ontology(context_id).value(uri, RDF.type))
 
     @synchronized
-    def loadScene(self, filename):
+    def load_scene(self, filename):
         """
         @brief Load scene from file
         """
         if not path.isfile(self._workspace+"/"+filename):
-            log.error("[loadScene]", "Can't load scene {}. File not found. ".format(filename))
+            log.error("[load_scene]", "Can't load scene {}. File not found. ".format(filename))
             return
-        self._stopReasoners()
-        self._ontology = self._ontology - self._wm
-        self._wm = rdflib.Graph()
-        self._wm.parse(self._workspace+"/"+filename, format='turtle')
-        self._ontology = self._ontology + self._wm
-        self._elements_cache = dict()
-        self._id_gen.clear()
-        individuals = self.query("SELECT ?x WHERE { ?x rdf:type <http://www.w3.org/2002/07/owl#NamedIndividual>. } ")
+        self._stop_reasoners()
+        self.reset(add_root=False)
+        self.wm.parse(self._workspace+"/"+filename, format='turtle')
+        individuals = self.wm.query("SELECT ?x WHERE { ?x rdf:type <http://www.w3.org/2002/07/owl#NamedIndividual>. } ")
         for i in individuals:
             i = self.uri2lightstring(i[0])
             iid = self._uri2id(i)
             if iid>=0:
                 self._id_gen.getId(iid)
-        self._startReasoners()
-        log.info("[loadScene]", "Loaded scene {}. ".format(filename))
+        self._start_reasoners()
+        log.info("[load_scene]", "Loaded scene {}. ".format(filename))
 
     @synchronized
-    def saveScene(self, filename):
+    def save_scene(self, filename):
         """
         @brief Save scene to file
         """
-        #ontology_id = rdflib.URIRef(filename)
-        #self._wm.add((ontology_id, RDF.type, OWL.Ontology))
-        #for s in self._ontology.subjects(object=OWL.Ontology):
-        #    self._wm.add((ontology_id, OWL.imports, s))
-        #print self._wm.serialize(format='turtle')
-        self._wm.serialize(self._workspace+"/"+filename, format='turtle')
+        self.wm.serialize(self._workspace+"/"+filename, format='turtle')
 
     @synchronized
     def addRelation(self, r, author, is_relation):
@@ -327,7 +251,7 @@ class WorldModel(Ontology):
 
     def getRelations(self, r):
         to_ret = []
-        triples = self._wm.triples((self.lightstring2uri(r['src']), self.lightstring2uri(r['type']), self.lightstring2uri(r['dst'])))
+        triples = self.wm.triples((self.lightstring2uri(r['src']), self.lightstring2uri(r['type']), self.lightstring2uri(r['dst'])))
         for s, p, o in triples:
             to_ret.append(utils.makeRelation(self.uri2lightstring(s), self.uri2lightstring(p), self.uri2lightstring(o)))
         return to_ret
@@ -338,7 +262,7 @@ class WorldModel(Ontology):
         """
         if self._elements_cache.has_key(uri):
             return self._elements_cache[uri]
-        e = self.getIndividual(uri)
+        e = self.get_individual(uri, self.wm)
         e._id = uri
         self._elements_cache[e.id] = e
         return e
@@ -438,7 +362,7 @@ class WorldModel(Ontology):
         """
         first = []
         to_ret = []
-        for e in self._getTypes(description._type):
+        for e in self._get_types(description._type):
             if description._label=="" or description._label=="Unknown" or e._label==description._label:
                 first.append(e)
         #Filter by properties
@@ -481,7 +405,7 @@ class WorldModel(Ontology):
         """
         elist[e.id] = e
         for r in e.getRelations("-1", rels_filter):
-            if self.isSceneElement(r['dst']):
+            if self.is_scene_element(r['dst']):
                 e2 = self.getElement(r['dst'])
                 if (e2._type in types_filter or not types_filter) and not elist.has_key(e2._id):
                     self._getRecursive(e2, rels_filter, types_filter, elist)
@@ -495,9 +419,9 @@ class WorldModel(Ontology):
         rels_filter = []
         types_filter = []
         if rel_filter!="":
-            rels_filter = self.getSubRelations(rel_filter)
+            rels_filter = self.get_sub_relations(rel_filter)
         if type_filter!="":
-            types_filter = self.getSubClasses(type_filter)
+            types_filter = self.get_sub_classes(type_filter)
         self._getRecursive(self.getElement(eid), rels_filter, types_filter, to_ret)
         return to_ret
 
@@ -510,12 +434,12 @@ class WorldModel(Ontology):
         types_filter = []
         to_ret.append(self.removeElement(e, author))
         if rel_filter!="":
-            rels_filter = self.getSubRelations(rel_filter)
+            rels_filter = self.get_sub_relations(rel_filter)
         if type_filter!="":
-            types_filter = self.getSubClasses(type_filter)
+            types_filter = self.get_sub_classes(type_filter)
         for r in e._relations:
             if r['src']=="-1":
-                if (r['type'] in rels_filter or rel_filter=="") and self.isSceneElement(r['dst']):
+                if (r['type'] in rels_filter or rel_filter=="") and self.is_scene_element(r['dst']):
                     e2 = self.getElement(r['dst'])
                     if e2._type in types_filter or type_filter=="":
                         to_ret += self.removeRecursive(e2, author, rel_filter, type_filter)

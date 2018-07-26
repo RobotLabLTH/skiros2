@@ -26,14 +26,14 @@
     <owl:Class rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#Starter">
         <rdfs:subClassOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Product"/>
     </owl:Class>
-    
+
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#starter -->
     <owl:NamedIndividual rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#starter">
         <rdf:type rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Starter"/>
         <skiros:DiscreteReasoner rdf:datatype="http://www.w3.org/2001/XMLSchema#string">AauSpatialReasoner</skiros:DiscreteReasoner>
         <skiros:Weight rdf:datatype="http://www.w3.org/2001/XMLSchema#double">3.0</skiros:Weight>
     </owl:NamedIndividual>
-    
+
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#LargeBox -->
     <owl:Class rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#LargeBox">
@@ -48,8 +48,8 @@
         <partReference rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#starter"/>
     </owl:NamedIndividual>
 
-    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#aau_lab -->
-    <owl:NamedIndividual rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#aau_lab">
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#blank_scene -->
+    <owl:NamedIndividual rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#blank_scene">
         <rdf:type rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Scene"/>
         <skiros:DiscreteReasoner rdf:datatype="http://www.w3.org/2001/XMLSchema#string">AauSpatialReasoner</skiros:DiscreteReasoner>
         <skiros:FrameId rdf:datatype="http://www.w3.org/2001/XMLSchema#string">map</skiros:FrameId>
@@ -90,16 +90,16 @@
         <skiros:hasA rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#test_gripper"/>
         <skiros:hasA rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#test_camera"/>
     </owl:NamedIndividual>
-    
+
 
     <owl:NamedIndividual rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#test_gripper">
         <rdf:type rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#GripperEffector"/>
         <skiros:ContainerState>Empty</skiros:ContainerState>
-    </owl:NamedIndividual>  
+    </owl:NamedIndividual>
 
     <owl:NamedIndividual rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#test_camera">
         <rdf:type rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Camera"/>
         <skiros:StateProperty>Idle</skiros:StateProperty>
     </owl:NamedIndividual>
 </rdf:RDF>
-    
+

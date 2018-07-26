@@ -64,11 +64,11 @@ class OntologyAbstractInterface:
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
 
-    def getSubClasses(self, parent_class, recursive=False):
+    def get_sub_classes(self, parent_class, recursive=False):
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
 
-    def getSubProperties(self, parent_property, recursive=False):
+    def get_sub_properties(self, parent_property, recursive=False):
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
 

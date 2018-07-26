@@ -43,16 +43,16 @@ class OntologyServer(object):
         rospy.init_node("ontology", anonymous=anonymous)
         self._verbose = rospy.get_param('~verbose', False)
         self._ontology =  Ontology()
-        self.initOntologyServices()
+        self.init_ontology_services()
 
-    def initOntologyServices(self):
+    def init_ontology_services(self):
         self._times = TimeKeeper()
         self._mutex = Lock()
-        self._mutex_srv = rospy.Service('~lock', SetBool, self._lockCb)
-        self._query = rospy.Service('~ontology/query', srvs.WoQuery, self._woQueryCb)
-        self._modify = rospy.Service('~ontology/modify', srvs.WoModify, self._woModifyCb)
+        self._mutex_srv = rospy.Service('~lock', SetBool, self._lock_cb)
+        self._query = rospy.Service('~ontology/query', srvs.WoQuery, self._wo_query_cb)
+        self._modify = rospy.Service('~ontology/modify', srvs.WoModify, self._wo_modify_cb)
 
-    def _lockCb(self, msg):
+    def _lock_cb(self, msg):
         """
         @brief Can be used to get sync access to server
         """
@@ -65,7 +65,7 @@ class OntologyServer(object):
                 return SetBoolResponse(False, "Mutex already unlocked.")
         return SetBoolResponse(True, "Ok")
 
-    def _woQueryCb(self, msg, trial=0):
+    def _wo_query_cb(self, msg, trial=0):
         to_ret = srvs.WoQueryResponse()
         try:
             with self._times:
@@ -87,10 +87,10 @@ class OntologyServer(object):
             if trial<2:
                 trial += 1
                 log.info("[WoQuery]", "Retring query {}.".format(trial))
-                return self._woQueryCb(msg, trial)
+                return self._wo_query_cb(msg, trial)
         return to_ret
 
-    def _woModifyCb(self, msg):
+    def _wo_modify_cb(self, msg):
         with self._times:
             for s in msg.statements:
                 if s.value:
@@ -100,6 +100,16 @@ class OntologyServer(object):
         if self._verbose:
             log.info("[WoModify]", "Done in {} sec".format(self._times.getLast()))
         return srvs.WoModifyResponse(True)
+
+    def _load_and_save_cb(self, msg):
+        with self._times:
+            if msg.action==msg.SAVE:
+                self._ontology.save(msg.filename, msg.context)
+            elif msg.action==msg.LOAD:
+                self._ontology.load(msg.filename, msg.context)
+        if self._verbose:
+            log.info("[WoLoadAndSave]", "{} file {}. Time: {:0.3f} secs".format(msg.action, msg.filename, self._times.getLast()))
+        return srvs.WoLoadAndSaveResponse(True)
 
     def run(self):
         rospy.spin()

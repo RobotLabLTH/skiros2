@@ -135,7 +135,7 @@ class SkirosAddObjectDialog(QDialog):
         Returns:
             dict(str, str): Keys: Short type name. Values: Type identifier (e.g. {'Product': 'skiros:Product'})
         """
-        return utils.ontology_type2name_dict(self.parent()._wmi.getSubClasses(subtype, False))
+        return utils.ontology_type2name_dict(self.parent()._wmi.get_sub_classes(subtype, False))
 
 
     def get_individuals(self, subtype):
@@ -486,7 +486,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
                         if not parent: continue
 
                         # check if the old parent is still parent of the updated element
-                        has_child = elem.getRelations(subj=parent.text(1), pred=self._wmi.getSubProperties('skiros:spatiallyRelated'), obj='-1')
+                        has_child = elem.getRelations(subj=parent.text(1), pred=self._wmi.get_sub_properties('skiros:spatiallyRelated'), obj='-1')
                         if not has_child:
                             # elem moved spatially
                             self._remove_wm_node(elem)
@@ -596,10 +596,10 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
 
     def _add_wm_node(self, elem):
         #print "Adding {}".format(elem.id)
-        parent_rel = elem.getRelation(pred=self._wmi.getSubProperties('skiros:spatiallyRelated'), obj='-1')
+        parent_rel = elem.getRelation(pred=self._wmi.get_sub_properties('skiros:spatiallyRelated'), obj='-1')
         to_expand = True
         if not parent_rel:
-            parent_rel = elem.getRelation(pred=self._wmi.getSubProperties('skiros:skillProperty'), obj='-1')
+            parent_rel = elem.getRelation(pred=self._wmi.get_sub_properties('skiros:skillProperty'), obj='-1')
             to_expand = False
         if not parent_rel:
             to_expand = False
@@ -624,7 +624,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         name = utils.ontology_type2name(elem.id) if not elem.label else utils.ontology_type2name(elem.label)
         item = QTreeWidgetItem(item, [name, elem.id])
 
-        spatialRel = sorted(elem.getRelations(subj='-1', pred=self._wmi.getSubProperties('skiros:spatiallyRelated')), key=lambda r: r['dst'])
+        spatialRel = sorted(elem.getRelations(subj='-1', pred=self._wmi.get_sub_properties('skiros:spatiallyRelated')), key=lambda r: r['dst'])
         for rel in spatialRel:
             self._create_wm_tree(item, scene, scene[rel['dst']])
             item.setExpanded(True)
@@ -636,7 +636,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
                 self._create_wm_tree(skillItem, scene, scene[rel['dst']])
                 skillItem.setExpanded(True)
 
-        skillPropRel = sorted(elem.getRelations(subj='-1', pred=self._wmi.getSubProperties('skiros:skillProperty')), key=lambda r: r['dst'])
+        skillPropRel = sorted(elem.getRelations(subj='-1', pred=self._wmi.get_sub_properties('skiros:skillProperty')), key=lambda r: r['dst'])
         for rel in skillPropRel:
             self._create_wm_tree(item, scene, scene[rel['dst']])
 

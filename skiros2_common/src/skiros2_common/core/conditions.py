@@ -724,7 +724,7 @@ class ConditionOnType(ConditionBase):
         self._params = ph
         self._wm = wmi
         st = self._params[self._subject_key].value.type
-        types = wmi.getSubClasses(st) + [st]
+        types = wmi.get_sub_classes(st) + [st]
         return self._value in types 
         
     def setTrue(self, ph, wmi):   

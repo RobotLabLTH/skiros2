@@ -46,6 +46,7 @@ class OntologyInterface(OntologyAbstractInterface):
         self._lock = rospy.ServiceProxy('wm/lock', SetBool)
         self._ontology_query = rospy.ServiceProxy('wm/ontology/query', srvs.WoQuery)
         self._ontology_modify = rospy.ServiceProxy('wm/ontology/modify', srvs.WoModify)
+        self._load_and_save = rospy.ServiceProxy('wm/ontology/load_and_save', srvs.WoLoadAndSave)
         log.info("[{}] ".format(self.__class__.__name__), "Waiting wm communications...")
         self._ontology_modify.wait_for_service()
         log.info("[{}] ".format(self.__class__.__name__), "Wm communications active.")
@@ -74,22 +75,11 @@ class OntologyInterface(OntologyAbstractInterface):
         """
         return self._call(self._lock, SetBoolRequest(False)).success
 
-    def queryOntology(self, query, cut_prefix=True):
-        """
-        Direct SPARQL interface. query should be a string in SPARQL syntax
 
-        Returns a list of strings
-
-        If cut_prefix = True the prefix in returned values is removed
-        """
-        req = srvs.WoQueryRequest()
-        req.query_string = query
-        req.cut_prefix = cut_prefix
-        return self._call(self._ontology_query, req).answer
-
-    def addClass(self, class_uri, parent_uri):
+    def addClass(self, class_uri, parent_uri, context):
         #print query
         req = srvs.WoModifyRequest()
+        req.context = context
         rmsg = msgs.Statement()
         rmsg.value = True
         rmsg.relation = utils.makeRelationMsg(class_uri, "rdf:type", "owl:class")
@@ -104,19 +94,70 @@ class OntologyInterface(OntologyAbstractInterface):
                 return True
         return False
 
-    def setDefaultPrefix(self, default_prefix):
-        self._def_prefix = default_prefix
+    def add_datatype(self, data_uri):
+        pass
 
-    def addIndividual(self, element, ontology_name):
+    def add_individual(self, element, context):
         """
-        Store an individual in a specified ontology
+        @brief Store an individual in a specified ontology
         """
         #TODO:
         pass
 
+    def add_context_graph(self, context_id):
+        """
+        @brief Creates a new subgraph
+
+        @param context_id the id of the graph
+        """
+
+    def load(self, filename, context='scene'):
+        """
+        @brief Load a file in a context
+        """
+        msg = srvs.WoLoadAndSaveRequest()
+        msg.action = msg.LOAD
+        msg.filename = filename
+        msg.context = context
+        res = self._call(self._load_and_save, msg)
+        if(res):
+            return res.ok
+        return False
+
+    def save(self, filename, context='scene'):
+        """
+        @brief Save a context in a file
+        """
+        msg = srvs.WoLoadAndSaveRequest()
+        msg.action = msg.SAVE
+        msg.filename = filename
+        msg.context = context
+        res = self._call(self._load_and_save, msg)
+        if(res):
+            return res.ok
+        return False
+
+    def queryOntology(self, query, cut_prefix=True, context=""):
+        """
+        @brief Direct SPARQL interface. query should be a string in SPARQL syntax
+
+        @param cut_prefix If True the prefix in returned values is removed
+        @param context The context in which executing the query
+
+        @return a list of strings
+        """
+        req = srvs.WoQueryRequest()
+        req.query_string = query
+        req.context = context
+        req.cut_prefix = cut_prefix
+        return self._call(self._ontology_query, req).answer
+
+    def setDefaultPrefix(self, default_prefix):
+        self._def_prefix = default_prefix
+
     def addPrefix(self, uri):
         """
-        Formats the uri for a SPARQL query
+        @brief Formats the uri for a SPARQL query
 
         Adds prefix to uri or does nothing if uri has already the prefix
 
@@ -141,8 +182,8 @@ class OntologyInterface(OntologyAbstractInterface):
     def getIndividuals(self, parent_class, recursive=True):
         """
         @brief Return a list of all individuals of the type of the parent_class
-        @parent_class The class of individuals
-        @recursive If recursive, returns also individuals of subclasses
+        @param parent_class The class of individuals
+        @param recursive If recursive, returns also individuals of subclasses
         """
         if recursive:
             return self.queryOntology("SELECT ?x WHERE { ?x rdf:type/rdfs:subClassOf* " + self.addPrefix(parent_class) + " . } ")
@@ -154,7 +195,7 @@ class OntologyInterface(OntologyAbstractInterface):
 
     def getTriples(self, subj=None, pred=None, obj=None):
         """
-        Return matching triples.
+        @brief Return matching triples.
 
         Note: at least one between subj, pred or obj must left blank for this function to work.
         """
@@ -168,16 +209,16 @@ class OntologyInterface(OntologyAbstractInterface):
 
     def getSuperClass(self, child_class):
         """
-        Return the parent class of child_class
+        @brief Return the parent class of child_class
         """
         to_ret = self.queryOntology("SELECT ?x WHERE { "+ self.addPrefix(child_class) +" rdfs:subClassOf ?x. } ")
         if not to_ret:
             log.error("[getSuperClass]", "No super class found for {}".format(child_class))
         return to_ret[0]
 
-    def getSubClasses(self, parent_class, recursive=True):
+    def get_sub_classes(self, parent_class, recursive=True):
         """
-        Return the child classes of parent_class. If recursive=True, returns also sub childs classes
+        @brief Return the child classes of parent_class. If recursive=True, returns also sub childs classes
         """
         if(self._sub_classes_cache.has_key(parent_class)):
             return self._sub_classes_cache[parent_class]
@@ -188,9 +229,9 @@ class OntologyInterface(OntologyAbstractInterface):
         self._sub_classes_cache[parent_class] = to_ret
         return to_ret
 
-    def getSubProperties(self, parent_property, recursive=True):
+    def get_sub_properties(self, parent_property, recursive=True):
         """
-        Return the child properties of parent_property. If recursive=True, returns also sub childs properties
+        @brief Return the child properties of parent_property. If recursive=True, returns also sub childs properties
         """
         if(self._sub_properties_cache.has_key(parent_property)):
             return self._sub_properties_cache[parent_property]

@@ -69,7 +69,7 @@ class WorldModel:
         to_ret = []
         if self._types.has_key(etype):
             to_ret += [self._graph.get_node(t) for t in self._types[etype] if self._graph.has_node(t)]
-        for c in self._wmi.getSubClasses(etype, True):
+        for c in self._wmi.get_sub_classes(etype, True):
             if self._types.has_key(c):
                 to_ret += [self._graph.get_node(t) for t in self._types[c] if self._graph.has_node(t)]
         #print "{} {}".format(etype, len(to_ret))            
@@ -315,7 +315,7 @@ class WorldModel:
         to_ret = []
         #print 'description ' + description.printState(True)
         #Get all nodes matching type and label
-        #print getSubClasses(STMN[description._type], True)
+        #print get_sub_classes(STMN[description._type], True)
         for e in self._getTypes(description._type):
             if description._label=="" or description._label=="Unknown" or e['label']==description._label:
                 first.append(self._makeElement(e))
@@ -424,11 +424,11 @@ class WorldModel:
             self.setRelation("-1", "skiros:sceneProperty", eobject, False, push)
           
     def isElementType(self, etype, abstract_type):
-        return etype==abstract_type or (self._wmi.addPrefix(etype) in self._wmi.getSubClasses(abstract_type, True))
+        return etype==abstract_type or (self._wmi.addPrefix(etype) in self._wmi.get_sub_classes(abstract_type, True))
         
     def isRelationType(self, relation, rtype="skiros:sceneProperty"):
-        #print "{}={} is {}".format(relation, rtype, relation==rtype or self._wmi.addPrefix(relation) in self._wmi.getSubProperties(rtype, True))
-        return relation==rtype or self._wmi.addPrefix(relation) in self._wmi.getSubProperties(rtype, True)
+        #print "{}={} is {}".format(relation, rtype, relation==rtype or self._wmi.addPrefix(relation) in self._wmi.get_sub_properties(rtype, True))
+        return relation==rtype or self._wmi.addPrefix(relation) in self._wmi.get_sub_properties(rtype, True)
         
     def _addEdge(self, esubject, relation, eobject):
         if self._verbose:

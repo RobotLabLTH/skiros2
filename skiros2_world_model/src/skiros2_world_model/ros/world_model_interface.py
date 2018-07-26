@@ -44,7 +44,6 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
 
     def __init__(self, author_name="test", make_cache=False):
         OntologyInterface.__init__(self, author_name)
-        self._load_and_save = rospy.ServiceProxy('wm/scene/load_and_save', srvs.WmLoadAndSave)
         self._set_relations = rospy.ServiceProxy('wm/scene/set_relation', srvs.WmSetRelation)
         self._get = rospy.ServiceProxy('wm/scene/get', srvs.WmGet)
         self._modify = rospy.ServiceProxy('wm/scene/modify', srvs.WmModify)
@@ -98,19 +97,21 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
     def setMonitorCallback(self, callback):
         self._monitor = rospy.Subscriber("wm/monitor", msgs.WmMonitor, callback)
 
-    def load(self, filename):
-        msg = srvs.WmLoadAndSaveRequest()
+    def load(self, filename, context='scene'):
+        msg = srvs.WoLoadAndSaveRequest()
         msg.action = msg.LOAD
         msg.filename = filename
+        msg.context = context
         res = self._call(self._load_and_save, msg)
         if(res):
             return res.ok
         return False
 
-    def save(self, filename):
-        msg = srvs.WmLoadAndSaveRequest()
+    def save(self, filename, context='scene'):
+        msg = srvs.WoLoadAndSaveRequest()
         msg.action = msg.SAVE
         msg.filename = filename
+        msg.context = context
         res = self._call(self._load_and_save, msg)
         if(res):
             return res.ok
