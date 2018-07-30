@@ -54,7 +54,7 @@ class Element(object):
         self._relations=list() #Reference to IDs
         self._setLastUpdate()
 
-    def __str__(self):
+    def __repr__(self):
         return self.printState()
 
 

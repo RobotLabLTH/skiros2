@@ -4,23 +4,22 @@ from rdflib.namespace import RDF, RDFS, OWL
 import os.path
 
 class Ontology:
-    def __init__(self):
-        self._ontology = rdflib.ConjunctiveGraph()#store='Sleepycat' #TODO:
+    def __init__(self, graph=None):
+        if graph is not None:
+            self._ontology = graph
+        else:
+            self._ontology = rdflib.ConjunctiveGraph()#store='Sleepycat' #TODO:
 
-    def ontology(self, context_id=None):
+    def ontology(self, context_id=""):
         """
         @brief Returns the ontology graph or a context graph, if contex_id is specified
 
         @param context_id can be a rdflib.Graph, an rdflib.URIRef or a string
         """
-        if context_id is None:
+        if context_id=="":
             return self._ontology
-        elif isinstance(context_id, rdflib.Graph):
-            return context_id
-        elif isinstance(context_id, rdflib.URIRef):
-            return self._ontology.get_context(context_id)
         else:
-            return self._ontology.get_context(rdflib.URIRef(context_id))
+            return self._ontology.get_context(context_id)
 
     def _add_prefix(self, uri, prefix=None):
         if prefix is None:
@@ -92,7 +91,7 @@ class Ontology:
         self._add_prefix(uri, context_id)
         return new
 
-    def load(self, ontology_uri, context_id=None, initialize=False):
+    def load(self, ontology_uri, context_id="", initialize=False):
         """
         @brief Load an ontology
 
@@ -111,7 +110,7 @@ class Ontology:
         if context:
             return self._add_prefix(context, context_id)
 
-    def save(self, file, context_id=None):
+    def save(self, file, context_id=""):
         """
         @brief Save the ontology
 
@@ -119,7 +118,7 @@ class Ontology:
         """
         self.ontology(context_id).serialize(destination=file, format='turtle')
 
-    def query(self, query, cut_prefix=False, context_id=None):
+    def query(self, query, cut_prefix=False, context_id=""):
         return self.ontology(context_id).query(query)
 
     def add_relation(self, r, context_id, author):
@@ -169,8 +168,8 @@ if __name__ == "__main__":
     temp.add_context("scene", imports=["cora:cora.owl"])
     for c in temp._ontology.store.contexts(None):
         print c.identifier
-#    for r in temp.query("SELECT ?x WHERE {?x rdf:type owl:Ontology.}", context_id="scene"):
-#        print r
-    temp.save("test.turtle")
+    for r in temp.query("SELECT ?x WHERE {?x rdf:type ?y.}", context_id=""):
+        print r
+#    temp.save("test.turtle")
 #    for s, p , o in temp._ontology:
 #        print "{} {} {}".format(s, p , o)

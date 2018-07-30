@@ -343,3 +343,9 @@ def makeRelation(subj, pred, obj):
 
 def makeRelationMsg(subj, pred, obj):
     return msgs.Relation(subj, pred, obj)
+
+def makeStatementMsg(subj, pred, obj, value):
+    rmsg = msgs.Statement()
+    rmsg.relation = makeRelationMsg(subj, pred, obj)
+    rmsg.value = value
+    return rmsg

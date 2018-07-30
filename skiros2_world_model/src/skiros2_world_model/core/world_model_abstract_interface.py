@@ -37,30 +37,30 @@ class OntologyAbstractInterface:
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
 
-    def queryOntology(self, query, cut_prefix=False):
+    def query_ontology(self, query, cut_prefix=False):
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
 
-    def setDefaultPrefix(self, default_prefix):
+    def set_default_prefix(self, default_prefix):
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
 
-    def getIndividual(self, name):
+    def get_individual(self, name):
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
 
-    def addIndividual(self, element, ontology_name):
+    def add_individual(self, element, ontology_name):
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
 
-    def addPrefix(self, parent_class):
+    def add_prefix(self, parent_class):
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
-    def removePrefix(self, parent_class):
+    def remove_prefix(self, parent_class):
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
 
-    def getType(self, uri):
+    def get_type(self, uri):
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
 

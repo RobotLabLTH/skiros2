@@ -158,7 +158,7 @@ class SkillManager:
     def __init__(self, prefix, agent_name, verbose=True):
         self._agent_name = agent_name
         self._wmi = wmi.WorldModelInterface(agent_name, make_cache=True)
-        self._wmi.setDefaultPrefix(prefix)
+        self._wmi.set_default_prefix(prefix)
         self._local_wm = self._wmi
         #self._local_wm._verbose = False
         self._plug_loader = PluginLoader()
@@ -212,11 +212,11 @@ class SkillManager:
         e = skill.toElement()
         e.addRelation(self._robot._id, "skiros:hasSkill", "-1")
         #print skill.printInfo(True)
-        if not self._wmi.getType(e._type):
-            self._wmi.addClass(e._type, "skiros:Skill")
+        if not self._wmi.get_type(e.type):
+            self._wmi.add_class(e.type, "skiros:Skill")
         self._wmi.addElement(e)
         self._skills.append(e)
-        return SkillHolder(self._agent_name, skill._type, skill._label, skill.params.getCopy())
+        return SkillHolder(self._agent_name, skill.type, skill.label, skill.params.getCopy())
 
     def addLocalPrimitive(self, name):
         """

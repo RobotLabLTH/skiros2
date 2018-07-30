@@ -8,166 +8,52 @@ from rdflib.namespace import RDF, RDFS, OWL, XSD
 from wrapt.decorators import synchronized
 from skiros2_common.tools.id_generator import IdGen
 
-scene_context = "scene"
-
-class WorldModel(Ontology):
-    def __init__(self, verbose, change_cb):
-        Ontology.__init__(self)
-        self.wm = self.add_context(scene_context)
-        self._verbose = verbose
-        self._id_gen = IdGen()
+class IndividualsDataset(Ontology):
+    """
+    An ontology with methods to handle individuals using the Element class
+    """
+    def __init__(self, verbose, context_id, graph=None, init=False):
+        Ontology.__init__(self, graph)
         self._reasoners = {}
-        self._change_cb = change_cb
+        self._verbose = verbose
+        self._context = self.ontology(context_id)
+        self._workspace = "~"
+        self._elements_cache = dict()
+        if init:
+            self.reset()
+
+    @property
+    def context(self):
+        return self._context
 
     def set_workspace(self, workspace):
+        """
+        @brief Set a folder for load/save operations
+        """
         self._workspace = workspace
 
-    def reset(self, add_root=True, scene_name="skiros:blank_scene"):
+    def reset(self):
         """
-        @brief Initialize the scene
+        @brief Initialize the graph
         """
-        self.ontology().remove_context(self.wm)
-        self.wm = self.add_context(scene_context)
-        self._id_gen.clear()
+        self.ontology().remove_context(self.context)
         self._elements_cache = dict()
-        if add_root:
-            if self.has_individual(scene_name):
-                root = self.get_individual(scene_name)
-            else:
-                root = Element("skiros:Scene", scene_name, 0)
-            self.add_element(root, self.__class__.__name__)
-
-    def _set(self, statement, author, time=None, probability=1.0):
-        """
-        @brief Remove any existing triples for subject and predicate before adding
-        (subject, predicate, object).
-
-        Convenience method to update the value of object
-        """
-        if self._verbose:
-            log.info(author, log.logColor.RED + log.logColor.BOLD  + "[-] ({}) - ({}) - (*))".format(self.uri2lightstring(statement[0]), self.uri2lightstring(statement[1])))
-            log.info(author, log.logColor.GREEN + log.logColor.BOLD  + "[+] ({}) - ({}) - ({})".format(self.uri2lightstring(statement[0]), self.uri2lightstring(statement[1]), self.uri2lightstring(statement[2])))
-        self.wm.set(statement)
-        if self._elements_cache.has_key(self.uri2lightstring(statement[0])):
-            del self._elements_cache[self.uri2lightstring(statement[0])]
-
-    def _remove(self, statement, author, is_relation=False, time=None, probability=1.0):
-        """
-        @brief Remove a statement from the scene
-        """
-        if self._verbose:
-            log.info(author, log.logColor.RED + log.logColor.BOLD  + "[-] ({}) - ({}) - ({})".format(self.uri2lightstring(statement[0]), self.uri2lightstring(statement[1]), self.uri2lightstring(statement[2])))
-        self.wm.remove(statement)
-        if is_relation:
-            if self._elements_cache.has_key(self.uri2lightstring(statement[0])):
-                del self._elements_cache[self.uri2lightstring(statement[0])]
-            if self._elements_cache.has_key(self.uri2lightstring(statement[2])):
-                del self._elements_cache[self.uri2lightstring(statement[2])]
-            self._change_cb(author, "remove", relation={'src': self.uri2lightstring(statement[0]), 'type': self.uri2lightstring(statement[1]), 'dst': self.uri2lightstring(statement[2])})
-
-    def _add(self, statement, author, is_relation=False, time=None, probability=1.0):
-        """
-        @brief Add a statement to the scene
-        """
-        if self._verbose:
-            log.info(author, log.logColor.GREEN + log.logColor.BOLD  + "[+] ({}) - ({}) - ({})".format(self.uri2lightstring(statement[0]), self.uri2lightstring(statement[1]), self.uri2lightstring(statement[2])))
-        self.wm.add(statement)
-        if is_relation:
-            if self._elements_cache.has_key(self.uri2lightstring(statement[0])):
-                del self._elements_cache[self.uri2lightstring(statement[0])]
-            if self._elements_cache.has_key(self.uri2lightstring(statement[2])):
-                del self._elements_cache[self.uri2lightstring(statement[2])]
-            self._change_cb(author, "add", relation={'src': self.uri2lightstring(statement[0]), 'type': self.uri2lightstring(statement[1]), 'dst': self.uri2lightstring(statement[2])})
-
-    def _element2statements(self, e):
-        to_ret = []
-        subject = self.lightstring2uri(e.id)
-        to_ret.append(((subject, RDF.type, OWL.NamedIndividual), False))
-        to_ret.append(((subject, RDF.type, self.lightstring2uri(e.type)), False))
-        to_ret.append(((subject, RDFS.label, rdflib.term.Literal(e.label)), False))
-        for k, p in e._properties.iteritems():
-            predicate = self.lightstring2uri(k)
-            for v in p.getValues():
-                value = rdflib.term.Literal(v, datatype=self._getDatatype(p))
-                to_ret.append(((subject, predicate, value), False))
-        for r in list(e._relations):
-            if r['src']=="-1" or r['src']==e.id:
-                if not self.exists_in_ontology(self.lightstring2uri(r['dst'])):
-                    log.error("[element2statements]", "Element with key {} is not defined in ontology. Skipped relation: {}".format(r['dst'], r))
-                    e.remove_relation(r)
-                    continue
-                to_ret.append(((subject, self.lightstring2uri(r['type']), self.lightstring2uri(r['dst'])), True))
-            else:
-                if not self.exists_in_ontology(self.lightstring2uri(r['src'])):
-                    log.error("[element2statements]", "Element with key {} is not defined in ontology. Skipped relation: {}".format(r['src'], r))
-                    e.remove_relation(r)
-                    continue
-                to_ret.append(((self.lightstring2uri(r['src']), self.lightstring2uri(r['type']), subject), True))
-        return to_ret
-
-    def _uri2type(self, uri):
-        return uri.split('-')[0]
-
-    def _uri2id(self, uri):
-        if uri.find('-')<0:
-            return -1
-        return int(uri.split('-')[1])
-
-    def _get_types(self, eclass):
-        """
-        Return all scene elements of a type
-        """
-        to_ret = []
-        types_filter = self.get_sub_classes(eclass)
-        for etype in types_filter:
-            for subj in self.wm.subjects(RDF.type, self.lightstring2uri(etype)):
-                to_ret.append(self.get_element(self.uri2lightstring(subj)))
-        return to_ret
-
-    def _add_reasoners_prop(self, e):
-        """
-        if the object is marked as associated to a reasoner, check that all properties are present
-        """
-        if e.hasProperty("skiros:DiscreteReasoner"):
-            for v in e.getProperty("skiros:DiscreteReasoner").values:
-                if self._reasoners.has_key(v):
-                    self._reasoners[v].addProperties(e)
-
-    def _stop_reasoners(self):
-        for _, r in self._reasoners.iteritems():
-            r.stop()
-
-    def _start_reasoners(self):
-        for _, r in self._reasoners.iteritems():
-            r.execute()
-
-    def get_reasoner(self, reasoner_class):
-        if not self._reasoners.has_key(reasoner_class):
-            return None
-        return self._reasoners[reasoner_class]
-
-    def load_reasoner(self, reasoner_class):
-        self._reasoners[reasoner_class.__name__] = reasoner_class()
-        self._reasoners[reasoner_class.__name__].init(self)
-        self._reasoners[reasoner_class.__name__].execute()
-        log.info("[load_reasoner] Loaded {}".format(reasoner_class.__name__))
 
     def has_individual(self, name):
         """
         @brief Returns true if the individual exists in the ontology
         """
-        subject = self.lightstring2uri(name)
-        if self.ontology().value(subject, RDF.type):
-            return True
-        return False
+        return self.ontology().value(self.lightstring2uri(name), RDF.type) is not None
 
     @synchronized
-    def get_individual(self, name, context_id=None):
+    def get_individual(self, name, context_id=""):
         """
         @brief Builds an element from an individual
+
+        @param context_id if defined look for the individual only in the context
         """
         subject = self.lightstring2uri(name)
-        if not self.ontology(context_id).value(subject, RDF.type):
+        if not self.uri_exists(subject, context_id):
             raise Exception("Element {} doesn't exist in ontology. Uri: {}. Context: {}".format(name, subject, context_id))
         e = Element()
         for predicate, obj in self.ontology(context_id).predicate_objects(subject):
@@ -198,60 +84,31 @@ class WorldModel(Ontology):
             e.setProperty("skiros:Template", name)
         return e
 
-    def is_scene_element(self, uri):
-        return self._uri2id(uri) >= 0
-
-    def exists_in_ontology(self, uri, context_id=None):
+    def uri_exists(self, uri, context_id=""):
+        """
+        @brief Check if an uri is defined in a context
+        """
+        if isinstance(uri, str):
+            raise Exception()
         return bool(self.ontology(context_id).value(uri, RDF.type))
-
-    @synchronized
-    def load_scene(self, filename):
-        """
-        @brief Load scene from file
-        """
-        if not path.isfile(self._workspace+"/"+filename):
-            log.error("[load_scene]", "Can't load scene {}. File not found. ".format(filename))
-            return
-        self._stop_reasoners()
-        self.reset(add_root=False)
-        self.wm.parse(self._workspace+"/"+filename, format='turtle')
-        individuals = self.wm.query("SELECT ?x WHERE { ?x rdf:type <http://www.w3.org/2002/07/owl#NamedIndividual>. } ")
-        for i in individuals:
-            i = self.uri2lightstring(i[0])
-            iid = self._uri2id(i)
-            if iid>=0:
-                self._id_gen.getId(iid)
-        self._start_reasoners()
-        log.info("[load_scene]", "Loaded scene {}. ".format(filename))
-
-    @synchronized
-    def save_scene(self, filename):
-        """
-        @brief Save scene to file
-        """
-        self.wm.serialize(self._workspace+"/"+filename, format='turtle')
 
     @synchronized
     def add_relation(self, r, author, is_relation):
         """
         @brief Add an rdf triple
         """
-        s = self.lightstring2uri(r['src'])
-        o = self.lightstring2uri(r['dst'])
-        self._add((s, self.lightstring2uri(r['type']), o), author, is_relation=is_relation)
+        self._add((self.lightstring2uri(r['src']), self.lightstring2uri(r['type']), self.lightstring2uri(r['dst'])), author, is_relation=is_relation)
 
     @synchronized
     def remove_relation(self, r, author, is_relation):
         """
         @brief Remove an rdf triple
         """
-        s = self.lightstring2uri(r['src'])
-        o = self.lightstring2uri(r['dst'])
-        self._remove((s, self.lightstring2uri(r['type']), o), author, is_relation=is_relation)
+        self._remove((self.lightstring2uri(r['src']), self.lightstring2uri(r['type']), self.lightstring2uri(r['dst'])), author, is_relation=is_relation)
 
     def get_relations(self, r):
         to_ret = []
-        triples = self.wm.triples((self.lightstring2uri(r['src']), self.lightstring2uri(r['type']), self.lightstring2uri(r['dst'])))
+        triples = self.context.triples((self.lightstring2uri(r['src']), self.lightstring2uri(r['type']), self.lightstring2uri(r['dst'])))
         for s, p, o in triples:
             to_ret.append(utils.makeRelation(self.uri2lightstring(s), self.uri2lightstring(p), self.uri2lightstring(o)))
         return to_ret
@@ -262,30 +119,38 @@ class WorldModel(Ontology):
         """
         if self._elements_cache.has_key(uri):
             return self._elements_cache[uri]
-        e = self.get_individual(uri, self.wm)
+        e = self.get_individual(uri, self.context.identifier)
         e._id = uri
         self._elements_cache[e.id] = e
         return e
 
-    def _getDatatype(self, param):
-        if param.dataTypeIs(str) or param.dataTypeIs(unicode):
-            return XSD.string
-        elif param.dataTypeIs(float):
-            return XSD.float
-        elif param.dataTypeIs(bool):
-            return XSD.boolean
-        elif param.dataTypeIs(int):
-            return XSD.integer
-        else:
-            log.error("[Wm]", "Param {} has type {} that is not supported.".format(param.key, param.dataType))
-            return None
+    @synchronized
+    def load_context(self, filename):
+        """
+        @brief Load context from file
+        """
+        if not path.isfile(self._workspace+"/"+filename):
+            log.error("[load_context]", "Can't load {}. File not found. ".format(filename))
+            return
+        self._stop_reasoners()
+        self.reset()
+        self.context.parse(self._workspace+"/"+filename, format='turtle')
+        self._start_reasoners()
+        log.info("[load_context]", "Loaded context {}. ".format(filename))
+
+    @synchronized
+    def save_context(self, filename):
+        """
+        @brief Save context to file
+        """
+        self.context.serialize(self._workspace+"/"+filename, format='turtle')
 
     @synchronized
     def add_element(self, e, author):
         """
-        @brief Add an element to the scene
+        @brief Add an element to the context
         """
-        e.setUri(self._id_gen.getId(e.getIdNumber()))
+        self._make_unique_uri(e)
         for name, r in self._reasoners.iteritems():
             if not r.parse(e, "add"):
                 raise Exception("Reasoner {} rejected the element {} add".format(name, e))
@@ -302,9 +167,6 @@ class WorldModel(Ontology):
         """
         @brief Update an element in the scene
         """
-        if not self._id_gen.hasId(self._uri2id(e.id)):
-            log.error("[update_element]", "Request update from {}, but Id {} is not present in the wm. ".format(author, self._uri2id(e.id)))
-            return
         for name, r in self._reasoners.iteritems():
             if not r.parse(e, "update"):
                 raise Exception("Reasoner {} rejected the element {} update".format(name, e))
@@ -321,13 +183,11 @@ class WorldModel(Ontology):
         self._elements_cache[e.id] = e
 
     @synchronized
-    def update_properties(self, e, author, reasoner=None, publish=True):
+    def update_properties(self, e, author, reasoner=None):
         """
+        modified
         @brief Update properties of an element in the scene
         """
-        if not self._id_gen.hasId(self._uri2id(e.id)):
-            log.error("[update_element]", "Request update from {}, but Id {} is not present in the wm. ".format(author, self._uri2id(e.id)))
-            return
         for name, r in self._reasoners.iteritems():
             if not r.parse(e, "update"):
                 raise Exception("Reasoner {} rejected the element {} update".format(name, e))
@@ -344,16 +204,14 @@ class WorldModel(Ontology):
             if not old_e.hasProperty(k):
                 old_e.setProperty(k, values)
                 for i in range(0, len(values)):
-                    self._add((subject, predicate, rdflib.term.Literal(values[i], datatype=self._getDatatype(p))), author)
+                    self._add((subject, predicate, rdflib.term.Literal(values[i], datatype=self._get_datatype(p))), author)
             elif old_e.getProperty(k).values!=values:
                 old_e.setProperty(k, values)
                 if values:
-                    self._set((subject, predicate, rdflib.term.Literal(values[0], datatype=self._getDatatype(p))), author)
+                    self._set((subject, predicate, rdflib.term.Literal(values[0], datatype=self._get_datatype(p))), author)
                 for i in range(1, len(values)):
-                    self._add((subject, predicate, rdflib.term.Literal(values[i], datatype=self._getDatatype(p))), author)
+                    self._add((subject, predicate, rdflib.term.Literal(values[i], datatype=self._get_datatype(p))), author)
         self._elements_cache[e.id] = old_e
-        if publish:
-            self._change_cb(author, "update", old_e)
 
     @synchronized
     def resolve_elements(self, description):
@@ -387,33 +245,44 @@ class WorldModel(Ontology):
     @synchronized
     def remove_element(self, e, author):
         """
-        Remove an element from the scene
+        @brief Remove an element from the scene
         """
         e = self.get_element(e.id)
-        self._id_gen.removeId(self._uri2id(e.id))
         for name, r in self._reasoners.iteritems():
             if not r.parse(e, "remove"):
                 raise Exception("Reasoner {} rejected the element {} removal".format(name, e))
         statements = self._element2statements(e)
         for s, is_relation in statements:
             self._remove(s, author, is_relation)
+        if self._elements_cache.has_key(e.id):
+            del self._elements_cache[e.id]
         return e.id
 
-    def _get_recursive(self, e, rels_filter, types_filter, elist):
+    @synchronized
+    def remove_recursive(self, e, author, rel_filter="", type_filter=""):
         """
-        Get all elements related to the initial one. Anti-loop guarded
+        @brief Remove an element from the scene and all elements related to the initial one
         """
-        elist[e.id] = e
-        for r in e.getRelations("-1", rels_filter):
-            if self.is_scene_element(r['dst']):
+        rels_filter = []
+        types_filter = []
+        if rel_filter!="":
+            rels_filter = self.get_sub_relations(rel_filter)
+        if type_filter!="":
+            types_filter = self.get_sub_classes(type_filter)
+        self._remove_recursive(e, author, rels_filter, types_filter)
+
+    def _remove_recursive(self, e, author, rels, types):
+        self.remove_element(e, author)
+        for r in e.getRelations("-1", rels):
+            if self.uri_exists(self.lightstring2uri(r['dst']), self.context.identifier):
                 e2 = self.get_element(r['dst'])
-                if (e2._type in types_filter or not types_filter) and not elist.has_key(e2._id):
-                    self._get_recursive(e2, rels_filter, types_filter, elist)
+                if e2.type in types or not types:
+                    self._remove_recursive(e2, author, rels, types)
 
     @synchronized
     def get_recursive(self, eid, rel_filter="", type_filter=""):
         """
-        Get an element from the scene and all elements related to the initial one
+        @brief Get an element from the scene and all elements related to the initial one
         """
         to_ret = {}
         rels_filter = []
@@ -425,22 +294,245 @@ class WorldModel(Ontology):
         self._get_recursive(self.get_element(eid), rels_filter, types_filter, to_ret)
         return to_ret
 
-    def remove_recursive(self, e, author, rel_filter="", type_filter=""):
+    def get_reasoner(self, reasoner_class):
+        if not self._reasoners.has_key(reasoner_class):
+            return None
+        return self._reasoners[reasoner_class]
+
+    def load_reasoner(self, reasoner_class):
+        self._reasoners[reasoner_class.__name__] = reasoner_class()
+        self._reasoners[reasoner_class.__name__].init(self)
+        self._reasoners[reasoner_class.__name__].execute()
+        log.info("[load_reasoner] Loaded {}".format(reasoner_class.__name__))
+
+    def _add_reasoners_prop(self, e):
         """
-        Remove an element from the scene and all elements related to the initial one
+        if the object is marked as associated to a reasoner, check that all properties are present
+        """
+        if e.hasProperty("skiros:DiscreteReasoner"):
+            for v in e.getProperty("skiros:DiscreteReasoner").values:
+                if self._reasoners.has_key(v):
+                    self._reasoners[v].addProperties(e)
+
+    def _stop_reasoners(self):
+        for r in self._reasoners.values():
+            r.stop()
+
+    def _start_reasoners(self):
+        for r in self._reasoners.values():
+            r.execute()
+
+    def _make_unique_uri(self, e):
+        if e.id=="":
+            e._id = e.label
+        i = 1
+        while self.uri_exists(self.lightstring2uri(e.id)):
+            e._id = "{}{}".format(e.label, i)
+            i+=1
+
+    def _get_recursive(self, e, rels_filter, types_filter, elist):
+        """
+        @brief Get all elements related to the initial one. Anti-loop guarded
+        """
+        elist[e.id] = e
+        for r in e.getRelations("-1", rels_filter):
+            if self.uri_exists(self.lightstring2uri(r['dst']), self.context.identifier):
+                e2 = self.get_element(r['dst'])
+                if (e2._type in types_filter or not types_filter) and not elist.has_key(e2._id):
+                    self._get_recursive(e2, rels_filter, types_filter, elist)
+
+    def _get_datatype(self, param):
+        if param.dataTypeIs(str) or param.dataTypeIs(unicode):
+            return XSD.string
+        elif param.dataTypeIs(float):
+            return XSD.float
+        elif param.dataTypeIs(bool):
+            return XSD.boolean
+        elif param.dataTypeIs(int):
+            return XSD.integer
+        else:
+            log.error("[Wm]", "Param {} has type {} that is not supported.".format(param.key, param.dataType))
+            return None
+
+    def _set(self, statement, author, time=None, probability=1.0):
+        """
+        @brief Remove any existing triples for subject and predicate before adding
+        (subject, predicate, object).
+
+        Convenience method to update the value of object
+        """
+        if self._verbose:
+            log.info("{}->{}".format(author, self.context.identifier.n3()), log.logColor.RED + log.logColor.BOLD  + "[-] ({}) - ({}) - (*))".format(self.uri2lightstring(statement[0]), self.uri2lightstring(statement[1])))
+            log.info("{}->{}".format(author, self.context.identifier.n3()), log.logColor.GREEN + log.logColor.BOLD  + "[+] ({}) - ({}) - ({})".format(self.uri2lightstring(statement[0]), self.uri2lightstring(statement[1]), self.uri2lightstring(statement[2])))
+        self.context.set(statement)
+        if self._elements_cache.has_key(self.uri2lightstring(statement[0])):
+            del self._elements_cache[self.uri2lightstring(statement[0])]
+
+    def _remove(self, statement, author, is_relation=False):
+        """
+        @brief Remove a statement from the scene
+        """
+        if self._verbose:
+            log.info("{}->{}".format(author, self.context.identifier.n3()), log.logColor.RED + log.logColor.BOLD  + "[-] ({}) - ({}) - ({})".format(self.uri2lightstring(statement[0]), self.uri2lightstring(statement[1]), self.uri2lightstring(statement[2])))
+        self.context.remove(statement)
+        if is_relation:
+            if self._elements_cache.has_key(self.uri2lightstring(statement[0])):
+                del self._elements_cache[self.uri2lightstring(statement[0])]
+            if self._elements_cache.has_key(self.uri2lightstring(statement[2])):
+                del self._elements_cache[self.uri2lightstring(statement[2])]
+
+    def _add(self, statement, author, is_relation=False):
+        """
+        @brief Add a statement to the scene
+        """
+        if self._verbose:
+            log.info("{}->{}".format(author, self.context.identifier.n3()), log.logColor.GREEN + log.logColor.BOLD  + "[+] ({}) - ({}) - ({})".format(self.uri2lightstring(statement[0]), self.uri2lightstring(statement[1]), self.uri2lightstring(statement[2])))
+        self.context.add(statement)
+        if is_relation:
+            if self._elements_cache.has_key(self.uri2lightstring(statement[0])):
+                del self._elements_cache[self.uri2lightstring(statement[0])]
+            if self._elements_cache.has_key(self.uri2lightstring(statement[2])):
+                del self._elements_cache[self.uri2lightstring(statement[2])]
+
+    def _element2statements(self, e):
+        to_ret = []
+        subject = self.lightstring2uri(e.id)
+        to_ret.append(((subject, RDF.type, OWL.NamedIndividual), False))
+        to_ret.append(((subject, RDF.type, self.lightstring2uri(e.type)), False))
+        to_ret.append(((subject, RDFS.label, rdflib.term.Literal(e.label)), False))
+        for k, p in e._properties.iteritems():
+            predicate = self.lightstring2uri(k)
+            for v in p.getValues():
+                value = rdflib.term.Literal(v, datatype=self._get_datatype(p))
+                to_ret.append(((subject, predicate, value), False))
+        for r in list(e._relations):
+            if r['src']=="-1" or r['src']==e.id:
+                if not self.uri_exists(self.lightstring2uri(r['dst'])):
+                    log.error("[element2statements]", "Element with key {} is not defined in ontology. Skipped relation: {}".format(r['dst'], r))
+                    e.removeRelation(r)
+                    continue
+                to_ret.append(((subject, self.lightstring2uri(r['type']), self.lightstring2uri(r['dst'])), True))
+            else:
+                if not self.uri_exists(self.lightstring2uri(r['src'])):
+                    log.error("[element2statements]", "Element with key {} is not defined in ontology. Skipped relation: {}".format(r['src'], r))
+                    e.removeRelation(r)
+                    continue
+                to_ret.append(((self.lightstring2uri(r['src']), self.lightstring2uri(r['type']), subject), True))
+        return to_ret
+
+    def _get_types(self, eclass):
+        """
+        @brief Return all elements of a type
         """
         to_ret = []
-        rels_filter = []
-        types_filter = []
-        to_ret.append(self.remove_element(e, author))
-        if rel_filter!="":
-            rels_filter = self.get_sub_relations(rel_filter)
-        if type_filter!="":
-            types_filter = self.get_sub_classes(type_filter)
-        for r in e._relations:
-            if r['src']=="-1":
-                if (r['type'] in rels_filter or rel_filter=="") and self.is_scene_element(r['dst']):
-                    e2 = self.get_element(r['dst'])
-                    if e2._type in types_filter or type_filter=="":
-                        to_ret += self.remove_recursive(e2, author, rel_filter, type_filter)
+        types_filter = self.get_sub_classes(eclass)
+        for etype in types_filter:
+            for subj in self.context.subjects(RDF.type, self.lightstring2uri(etype)):
+                to_ret.append(self.get_element(self.uri2lightstring(subj)))
         return to_ret
+
+class WorldModel(IndividualsDataset):
+    """
+    @brief A set of individuals with unique ID generation
+    """
+    def __init__(self, verbose, context_id, change_cb):
+        self._id_gen = IdGen()
+        self._change_cb = change_cb
+        IndividualsDataset.__init__(self, verbose, context_id, init=False)
+
+    def reset(self, add_root=True, scene_name="skiros:blank_scene"):
+        """
+        @brief Initialize the scene
+        """
+        IndividualsDataset.reset(self)
+        self._id_gen.clear()
+        if add_root:
+            if self.has_individual(scene_name):
+                root = self.get_individual(scene_name)
+            else:
+                root = Element("skiros:Scene", scene_name)
+            self.add_element(root, self.__class__.__name__)
+
+    def _remove(self, statement, author, is_relation=False):
+        """
+        @brief Remove a statement from the scene
+        """
+        IndividualsDataset._remove(self, statement, author, is_relation)
+        if is_relation:
+            self._change_cb(author, "remove", relation={'src': self.uri2lightstring(statement[0]), 'type': self.uri2lightstring(statement[1]), 'dst': self.uri2lightstring(statement[2])})
+
+    def _add(self, statement, author, is_relation=False):
+        """
+        @brief Add a statement to the scene
+        """
+        IndividualsDataset._add(self, statement, author, is_relation)
+        if is_relation:
+            self._change_cb(author, "add", relation={'src': self.uri2lightstring(statement[0]), 'type': self.uri2lightstring(statement[1]), 'dst': self.uri2lightstring(statement[2])})
+
+    def _uri2type(self, uri):
+        return uri.split('-')[0]
+
+    def _uri2id(self, uri):
+        if uri.find('-')<0:
+            return -1
+        return int(uri.split('-')[1])
+
+    @synchronized
+    def load_context(self, filename):
+        """
+        @brief Load scene from file
+        """
+        if not path.isfile(self._workspace+"/"+filename):
+            log.error("[load_scene]", "Can't load scene {}. File not found. ".format(filename))
+            return
+        self._stop_reasoners()
+        self.reset(add_root=False)
+        self.context.parse(self._workspace+"/"+filename, format='turtle')
+        individuals = self.context.query("SELECT ?x WHERE { ?x rdf:type <http://www.w3.org/2002/07/owl#NamedIndividual>. } ")
+        for i in individuals:
+            i = self.uri2lightstring(i[0])
+            iid = self._uri2id(i)
+            if iid>=0:
+                self._id_gen.getId(iid)
+        self._start_reasoners()
+        log.info("[load_scene]", "Loaded scene {}. ".format(filename))
+
+    @synchronized
+    def add_element(self, e, author):
+        """
+        @brief Add an element to the scene
+        """
+        e.setUri(self._id_gen.getId(e.getIdNumber()))
+        IndividualsDataset.add_element(self, e, author)
+        return e
+
+    @synchronized
+    def update_element(self, e, author):
+        """
+        @brief Update an element in the scene
+        """
+        if not self._id_gen.hasId(self._uri2id(e.id)):
+            log.error("[update_element]", "Request update from {}, but Id {} is not present in the wm. ".format(author, self._uri2id(e.id)))
+            return
+        IndividualsDataset.update_element(self, e, author)
+
+    @synchronized
+    def update_properties(self, e, author, reasoner=None, publish=True):
+        """
+        @brief Update properties of an element in the scene
+        """
+        if not self._id_gen.hasId(self._uri2id(e.id)):
+            log.error("[update_element]", "Request update from {}, but Id {} is not present in the wm. ".format(author, self._uri2id(e.id)))
+            return
+        IndividualsDataset.update_properties(self, e, author, reasoner)
+        if publish:
+            self._change_cb(author, "update", self.get_element(e.id))
+
+    @synchronized
+    def remove_element(self, e, author):
+        """
+        Remove an element from the scene
+        """
+        IndividualsDataset.remove_element(self, e, author)
+        self._id_gen.removeId(self._uri2id(e.id))
+        return e.id

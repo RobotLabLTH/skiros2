@@ -34,7 +34,7 @@ import skiros2_msgs.msg as msgs
 import skiros2_common.ros.utils as utils
 import skiros2_common.tools.logger as log
 from std_srvs.srv import SetBool, SetBoolRequest
-from skiros2_common.core.world_element import *
+from skiros2_common.core.world_element import Element
 from skiros2_world_model.core.world_model_abstract_interface import OntologyAbstractInterface
 
 class OntologyInterface(OntologyAbstractInterface):
@@ -46,7 +46,7 @@ class OntologyInterface(OntologyAbstractInterface):
         self._lock = rospy.ServiceProxy('wm/lock', SetBool)
         self._ontology_query = rospy.ServiceProxy('wm/ontology/query', srvs.WoQuery)
         self._ontology_modify = rospy.ServiceProxy('wm/ontology/modify', srvs.WoModify)
-        self._load_and_save = rospy.ServiceProxy('wm/ontology/load_and_save', srvs.WoLoadAndSave)
+        self._load_and_save = rospy.ServiceProxy('wm/load_and_save', srvs.WoLoadAndSave)
         log.info("[{}] ".format(self.__class__.__name__), "Waiting wm communications...")
         self._ontology_modify.wait_for_service()
         log.info("[{}] ".format(self.__class__.__name__), "Wm communications active.")
@@ -54,7 +54,7 @@ class OntologyInterface(OntologyAbstractInterface):
         self._sub_classes_cache = {}
         self._sub_properties_cache = {}
 
-    def isConnected(self):
+    def is_connected(self):
         try:
             rospy.wait_for_service(self._ontology_query.resolved_name, 0.0)
             return True
@@ -76,40 +76,41 @@ class OntologyInterface(OntologyAbstractInterface):
         return self._call(self._lock, SetBoolRequest(False)).success
 
 
-    def addClass(self, class_uri, parent_uri, context):
-        #print query
+    def add_class(self, class_uri, parent_uri, context=""):
         req = srvs.WoModifyRequest()
         req.context = context
-        rmsg = msgs.Statement()
-        rmsg.value = True
-        rmsg.relation = utils.makeRelationMsg(class_uri, "rdf:type", "owl:class")
-        req.statements.append(rmsg)
-        rmsg = msgs.Statement()
-        rmsg.value = True
-        rmsg.relation = utils.makeRelationMsg(class_uri, "rdfs:subClassOf", parent_uri)
-        req.statements.append(rmsg)
+        req.statements.append(utils.makeStatementMsg(class_uri, "rdf:type", "owl:class", True))
+        req.statements.append(utils.makeStatementMsg(class_uri, "rdfs:subClassOf", parent_uri, True))
         res = self._call(self._ontology_modify, req)
         if res:
             if res.ok:
                 return True
         return False
 
-    def add_datatype(self, data_uri):
+    def add_datatype(self, data_uri, parent_uri, context=""):
         pass
 
-    def add_individual(self, element, context):
+    def add_individual(self, element, context=""):
         """
-        @brief Store an individual in a specified ontology
+        @brief Add an individual
         """
         #TODO:
         pass
 
-    def add_context_graph(self, context_id):
+    def add_ontology(self, uri):
         """
-        @brief Creates a new subgraph
+        @brief Creates a new ontology
 
-        @param context_id the id of the graph
+        @param uri the id of the graph
         """
+        req = srvs.WoModifyRequest()
+        req.context = uri
+        req.statements.append(utils.makeStatementMsg(uri, "rdf:type", "owl:Ontology", True))
+        res = self._call(self._ontology_modify, req)
+        if res:
+            if res.ok:
+                return True
+        return False
 
     def load(self, filename, context='scene'):
         """
@@ -137,7 +138,7 @@ class OntologyInterface(OntologyAbstractInterface):
             return res.ok
         return False
 
-    def queryOntology(self, query, cut_prefix=True, context=""):
+    def query_ontology(self, query, cut_prefix=True, context=""):
         """
         @brief Direct SPARQL interface. query should be a string in SPARQL syntax
 
@@ -152,10 +153,10 @@ class OntologyInterface(OntologyAbstractInterface):
         req.cut_prefix = cut_prefix
         return self._call(self._ontology_query, req).answer
 
-    def setDefaultPrefix(self, default_prefix):
+    def set_default_prefix(self, default_prefix):
         self._def_prefix = default_prefix
 
-    def addPrefix(self, uri):
+    def add_prefix(self, uri):
         """
         @brief Formats the uri for a SPARQL query
 
@@ -171,7 +172,7 @@ class OntologyInterface(OntologyAbstractInterface):
             uri = self._def_prefix + uri
         return uri
 
-    def removePrefix(self, parent_class):
+    def remove_prefix(self, parent_class):
         if parent_class.find("#")>=0:
             return parent_class.split("#")[-1]
         elif parent_class.find(":")>=0:
@@ -179,41 +180,41 @@ class OntologyInterface(OntologyAbstractInterface):
         else:
             return parent_class
 
-    def getIndividuals(self, parent_class, recursive=True):
+    def get_individuals(self, parent_class, recursive=True):
         """
         @brief Return a list of all individuals of the type of the parent_class
         @param parent_class The class of individuals
         @param recursive If recursive, returns also individuals of subclasses
         """
         if recursive:
-            return self.queryOntology("SELECT ?x WHERE { ?x rdf:type/rdfs:subClassOf* " + self.addPrefix(parent_class) + " . } ")
+            return self.query_ontology("SELECT ?x WHERE { ?x rdf:type/rdfs:subClassOf* " + self.add_prefix(parent_class) + " . } ")
         else:
-            return self.queryOntology("SELECT ?x where {?x rdf:type+ "+self.addPrefix(parent_class)+"}")
+            return self.query_ontology("SELECT ?x where {?x rdf:type+ "+self.add_prefix(parent_class)+"}")
 
-    def getType(self, uri):
-        return self.queryOntology("SELECT ?x where {"+self.addPrefix(uri)+" rdf:type ?x}")
+    def get_type(self, uri):
+        return self.query_ontology("SELECT ?x where {"+self.add_prefix(uri)+" rdf:type ?x}")
 
-    def getTriples(self, subj=None, pred=None, obj=None):
+    def get_triples(self, subj=None, pred=None, obj=None):
         """
         @brief Return matching triples.
 
         Note: at least one between subj, pred or obj must left blank for this function to work.
         """
-        if subj: subj = self.addPrefix(subj)
+        if subj: subj = self.add_prefix(subj)
         else: subj = "?x"
-        if pred: pred = self.addPrefix(pred)
+        if pred: pred = self.add_prefix(pred)
         else: pred = "?y"
-        if obj:  obj = self.addPrefix(obj)
+        if obj:  obj = self.add_prefix(obj)
         else:  obj = "?z"
-        return self.queryOntology("SELECT * WHERE { "+ "{} {} {}".format(subj, pred, obj)+" . } ")
+        return self.query_ontology("SELECT * WHERE { "+ "{} {} {}".format(subj, pred, obj)+" . } ")
 
-    def getSuperClass(self, child_class):
+    def get_super_class(self, child_class):
         """
         @brief Return the parent class of child_class
         """
-        to_ret = self.queryOntology("SELECT ?x WHERE { "+ self.addPrefix(child_class) +" rdfs:subClassOf ?x. } ")
+        to_ret = self.query_ontology("SELECT ?x WHERE { "+ self.add_prefix(child_class) +" rdfs:subClassOf ?x. } ")
         if not to_ret:
-            log.error("[getSuperClass]", "No super class found for {}".format(child_class))
+            log.error("[get_super_class]", "No super class found for {}".format(child_class))
         return to_ret[0]
 
     def get_sub_classes(self, parent_class, recursive=True):
@@ -223,9 +224,9 @@ class OntologyInterface(OntologyAbstractInterface):
         if(self._sub_classes_cache.has_key(parent_class)):
             return self._sub_classes_cache[parent_class]
         if recursive:
-            to_ret = self.queryOntology("SELECT ?x WHERE { ?x rdfs:subClassOf* " + self.addPrefix(parent_class) + " . } ")
+            to_ret = self.query_ontology("SELECT ?x WHERE { ?x rdfs:subClassOf* " + self.add_prefix(parent_class) + " . } ")
         else:
-            to_ret = self.queryOntology("SELECT ?x WHERE { ?x rdfs:subClassOf " + self.addPrefix(parent_class) + " . } ")
+            to_ret = self.query_ontology("SELECT ?x WHERE { ?x rdfs:subClassOf " + self.add_prefix(parent_class) + " . } ")
         self._sub_classes_cache[parent_class] = to_ret
         return to_ret
 
@@ -236,9 +237,9 @@ class OntologyInterface(OntologyAbstractInterface):
         if(self._sub_properties_cache.has_key(parent_property)):
             return self._sub_properties_cache[parent_property]
         if recursive:
-            to_ret = self.queryOntology("SELECT ?x WHERE { ?x rdfs:subPropertyOf* " + self.addPrefix(parent_property) + " . } ")
+            to_ret = self.query_ontology("SELECT ?x WHERE { ?x rdfs:subPropertyOf* " + self.add_prefix(parent_property) + " . } ")
         else:
-            to_ret = self.queryOntology("SELECT ?x WHERE { ?x rdfs:subPropertyOf " + self.addPrefix(parent_property) + " . } ")
+            to_ret = self.query_ontology("SELECT ?x WHERE { ?x rdfs:subPropertyOf " + self.add_prefix(parent_property) + " . } ")
         self._sub_properties_cache[parent_property] = to_ret
         return to_ret
 

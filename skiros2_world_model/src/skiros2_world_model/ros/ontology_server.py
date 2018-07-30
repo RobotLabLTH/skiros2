@@ -69,7 +69,7 @@ class OntologyServer(object):
         to_ret = srvs.WoQueryResponse()
         try:
             with self._times:
-                for s in self._ontology.query(msg.query_string):
+                for s in self._ontology.query(msg.query_string, context_id=msg.context):
                     temp = ""
                     for r in s:
                         if msg.cut_prefix:
@@ -100,16 +100,6 @@ class OntologyServer(object):
         if self._verbose:
             log.info("[WoModify]", "Done in {} sec".format(self._times.getLast()))
         return srvs.WoModifyResponse(True)
-
-    def _load_and_save_cb(self, msg):
-        with self._times:
-            if msg.action==msg.SAVE:
-                self._ontology.save(msg.filename, msg.context)
-            elif msg.action==msg.LOAD:
-                self._ontology.load(msg.filename, msg.context)
-        if self._verbose:
-            log.info("[WoLoadAndSave]", "{} file {}. Time: {:0.3f} secs".format(msg.action, msg.filename, self._times.getLast()))
-        return srvs.WoLoadAndSaveResponse(True)
 
     def run(self):
         rospy.spin()

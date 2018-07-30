@@ -45,8 +45,8 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
     def __init__(self, author_name="test", make_cache=False):
         OntologyInterface.__init__(self, author_name)
         self._set_relations = rospy.ServiceProxy('wm/scene/set_relation', srvs.WmSetRelation)
-        self._get = rospy.ServiceProxy('wm/scene/get', srvs.WmGet)
-        self._modify = rospy.ServiceProxy('wm/scene/modify', srvs.WmModify)
+        self._get = rospy.ServiceProxy('wm/get', srvs.WmGet)
+        self._modify = rospy.ServiceProxy('wm/modify', srvs.WmModify)
         self._query_relations = rospy.ServiceProxy('wm/scene/query_relations', srvs.WmQueryRelations)
         self._last_snapshot_id = ""
         self._make_cache = make_cache
@@ -86,6 +86,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         msg = srvs.WmGetRequest()
         e = msgs.WmElement()
         e.id = "skiros:Scene-0"
+        msg.context = 'scene'
         msg.element = e
         msg.action = msg.GET_RECURSIVE
         msg.relation_filter = "skiros:sceneProperty"
@@ -96,26 +97,6 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
 
     def setMonitorCallback(self, callback):
         self._monitor = rospy.Subscriber("wm/monitor", msgs.WmMonitor, callback)
-
-    def load(self, filename, context='scene'):
-        msg = srvs.WoLoadAndSaveRequest()
-        msg.action = msg.LOAD
-        msg.filename = filename
-        msg.context = context
-        res = self._call(self._load_and_save, msg)
-        if(res):
-            return res.ok
-        return False
-
-    def save(self, filename, context='scene'):
-        msg = srvs.WoLoadAndSaveRequest()
-        msg.action = msg.SAVE
-        msg.filename = filename
-        msg.context = context
-        res = self._call(self._load_and_save, msg)
-        if(res):
-            return res.ok
-        return False
 
     def setRelation(self, subj, pred, obj, value=True):
         msg = srvs.WmSetRelationRequest()
@@ -139,53 +120,52 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
                     log.error("[{}]".format(self.__class__.__name__), "Failed to update local element {}".format(sub_e))
         e._local_relations = list()
 
-    def addElements(self, es):
+    def addElements(self, es, context_id='scene'):
         msg = srvs.WmModifyRequest()
+        msg.context = context_id
         msg.author = self._author_name
         for e in es:
             msg.elements.append(utils.element2msg(e))
         msg.action = msg.ADD
         res = self._call(self._modify, msg)
-        if(res):
-            for i, e in enumerate(es):
-                e._id = res.ids[i]
-                self._resolveLocalRelations(e)
-            return res.ids
-        return -1
+        to_ret = list()
+        if res:
+            for old, new in zip(es, res.elements):
+                to_ret.append(utils.msg2element(new))
+                old._id = new.id
+                self._resolveLocalRelations(old)
+        return to_ret
 
-    def addElement(self, e):
+    def addElement(self, e, context_id='scene'):
         """
         @brief Add an element to the scene. The id is updated with the one assigned from the world model
         """
-        msg = srvs.WmModifyRequest()
-        msg.author = self._author_name
-        msg.elements.append(utils.element2msg(e))
-        msg.action = msg.ADD
-        res = self._call(self._modify, msg)
-        if(res):
-            e._id = res.ids[0]
-            self._resolveLocalRelations(e)
-            return e.id
-        return -1
+        res = self.addElements([e], context_id)
+        if not res:
+            return None
+        else:
+            return res[0]
 
-    def updateElement(self, e):
+    def updateElement(self, e, context_id='scene'):
         """
         @brief Update properties and relations of an element
         """
         msg = srvs.WmModifyRequest()
+        msg.context = context_id
         msg.author = self._author_name
         msg.elements.append(utils.element2msg(e))
         msg.action = msg.UPDATE
         res = self._call(self._modify, msg)
-        if(res):
-            return e._id
+        if res:
+            return e.id
         return -1
 
-    def updateElementProperties(self, e, reasoner=""):
+    def updateElementProperties(self, e, reasoner="", context_id='scene'):
         """
         @brief Update the properties of an element (ignores the relations)
         """
         msg = srvs.WmModifyRequest()
+        msg.context = context_id
         msg.author = self._author_name
         msg.elements.append(utils.element2msg(e))
         msg.action = msg.UPDATE_PROPERTIES
@@ -195,19 +175,20 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
             return e.id
         return -1
 
-    def removeElement(self, e, recursive=True, rel_filter=":sceneProperty", type_filter=""):
+    def removeElement(self, e, recursive=True, rel_filter=":sceneProperty", type_filter="", context_id='scene'):
         """
         @brief Removes an element from the scene. e can be an Element or an id
         """
         #print "{}".format(eid)
         msg = srvs.WmModifyRequest()
+        msg.context = context_id
         msg.author = self._author_name
         msg.type_filter = type_filter
         msg.relation_filter = rel_filter
         if isinstance(e, Element):
             msg.elements.append(utils.element2msg(e))
         elif isinstance(e, str):
-            e = self.getElement(e)
+            e = Element("", "", e)
             msg.elements.append(utils.element2msg(e))
         if recursive:
             msg.action = msg.REMOVE_RECURSIVE
@@ -218,20 +199,21 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
             return 1
         return -1
 
-    def resolveElements(self, e):
+    def resolveElements(self, e, context_id='scene'):
         msg = srvs.WmGetRequest()
+        msg.context = context_id
         msg.element = utils.element2msg(e)
         msg.action = msg.RESOLVE
         res = self._call(self._get, msg)
         if(res):
             return [utils.msg2element(x) for x in res.elements]
 
-    def resolveElement(self, e):
-        res = self.resolveElements(e)
+    def resolveElement(self, e, context_id='scene'):
+        res = self.resolveElements(e, context_id)
         if res:
             return res[0]
 
-    def instanciate(self, uri, recursive=False, relations=list(), relation_filter=["skiros:hasA", "skiros:contain"], antiloop_bind=set()):
+    def instanciate(self, uri, recursive=False, relations=list(), relation_filter=["skiros:hasA", "skiros:contain"], antiloop_bind=set(), context_id='scene'):
         """
         Gets a template individual, adds it to the scene and returns a corresponding element
 
@@ -243,34 +225,36 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
             template = uri
         relcopy = copy.deepcopy(template._relations)
         template._relations = relations
-        self.addElement(template)
+        template = self.addElement(template, context_id=context_id)
         if recursive:
-            antiloop_bind.add(template._id)
+            antiloop_bind.add(template.id)
             for r in relcopy:
                 if (r['type'] in relation_filter or not relation_filter) and r['src']=="-1":
                     if not r['dst'] in antiloop_bind:
                         rcopy = copy.deepcopy(r)
-                        rcopy['src'] = template._id
+                        rcopy['src'] = template.id
                         rcopy['dst'] = "-1"
-                        r['dst'] = self.instanciate(r['dst'], True, [rcopy], relation_filter, antiloop_bind)._id
+                        r['dst'] = self.instanciate(r['dst'], True, [rcopy], relation_filter, antiloop_bind, context_id).id
                         template._relations.append(r)
         return template
 
-    def getTemplateElement(self, uri):
+    def getTemplateElement(self, uri, context_id='scene'):
         msg = srvs.WmGetRequest()
         e = msgs.WmElement()
         e.label = uri
+        msg.context = context_id
         msg.element = e
         msg.action = msg.GET_TEMPLATE
         res = self._call(self._get, msg)
         if(res):
             return utils.msg2element(res.elements[0])
 
-    def getElement(self, eid):
+    def getElement(self, eid, context_id='scene'):
         if not WorldModelInterface._elements_cache.has_key(eid):
             msg = srvs.WmGetRequest()
             e = msgs.WmElement()
             e.id = eid
+            msg.context = context_id
             msg.element = e
             msg.action = msg.GET
             res = self._call(self._get, msg)
@@ -282,13 +266,14 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
                 return utils.msg2element(res.elements[0])
         return WorldModelInterface._elements_cache[eid]
 
-    def getBranch(self, eid, relation_filter=":sceneProperty", type_filter=""):
+    def getBranch(self, eid, relation_filter=":sceneProperty", type_filter="", context_id='scene'):
         """
         Get all elements related to the starting one. Answer can be filtered
         """
         msg = srvs.WmGetRequest()
         e = msgs.WmElement()
         e.id = eid
+        msg.context = context_id
         msg.element = e
         msg.action = msg.GET_RECURSIVE
         msg.relation_filter = relation_filter
@@ -305,7 +290,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
             else:
                 return list()
         except KeyError:
-            #No reasoner associated to the relation
+            #No reasoner associated with the relation
             pass
             return None
 
@@ -323,16 +308,6 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         res = self._call(self._query_relations, msg)
         if(res):
             return [utils.msg2relation(x) for x in res.matches]
-
-    def removeRelations(self, relations):
-        msg = srvs.WmModifyRequest()
-        msg.author = self._author_name
-        msg.relations = relations
-        msg.action = msg.REMOVE
-        res = self._call(self._modify, msg)
-        if(res):
-            return res.return_code
-
 
     def checkRelation(self, subj, pred, obj, state, abstract):
         if abstract:
