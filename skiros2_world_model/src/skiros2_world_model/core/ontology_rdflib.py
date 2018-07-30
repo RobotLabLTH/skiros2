@@ -16,7 +16,7 @@ class Ontology:
 
         @param context_id can be a rdflib.Graph, an rdflib.URIRef or a string
         """
-        if context_id=="":
+        if context_id=="" or context_id==self._ontology.identifier:
             return self._ontology
         else:
             return self._ontology.get_context(context_id)

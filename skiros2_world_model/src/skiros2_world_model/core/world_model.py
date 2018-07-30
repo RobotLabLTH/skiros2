@@ -54,7 +54,7 @@ class IndividualsDataset(Ontology):
         """
         subject = self.lightstring2uri(name)
         if not self.uri_exists(subject, context_id):
-            raise Exception("Element {} doesn't exist in ontology. Uri: {}. Context: {}".format(name, subject, context_id))
+            raise Exception("Element {} doesn't exist in ontology. Uri: {}. Context: {}. Existing: {}".format(name, subject, context_id, [self.uri2lightstring(s) for s in self.context.subjects(RDF.type, OWL.NamedIndividual)]))
         e = Element()
         for predicate, obj in self.ontology(context_id).predicate_objects(subject):
             if OWL.DatatypeProperty in self.ontology().objects(predicate, RDF.type) or predicate==RDFS.comment:
@@ -88,8 +88,6 @@ class IndividualsDataset(Ontology):
         """
         @brief Check if an uri is defined in a context
         """
-        if isinstance(uri, str):
-            raise Exception()
         return bool(self.ontology(context_id).value(uri, RDF.type))
 
     @synchronized
