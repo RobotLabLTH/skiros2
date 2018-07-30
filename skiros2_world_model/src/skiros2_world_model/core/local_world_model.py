@@ -88,12 +88,12 @@ class WorldModel:
         if self._keep_sync:
             #print "Pushing {} {}".format(e.printState(), action)
             if action=="add":
-                self._wmi.addElement(e)   
+                self._wmi.add_element(e)   
             elif action=="update":
                 e._relations = self.getContextRelations(e) 
-                self._wmi.updateElement(e)    
+                self._wmi.update_element(e)    
             elif action=="remove":
-                self._wmi.removeElement(e)     
+                self._wmi.remove_element(e)     
         
     def pushRelation(self, sub, rel, obj, value):
         """
@@ -101,13 +101,13 @@ class WorldModel:
         """
         if self._keep_sync:
             #print "Pushing {} {} {} {}".format(sub, rel, obj, value)
-            self._wmi.setRelation(sub, rel, obj, value)
+            self._wmi.set_relation(sub, rel, obj, value)
             
     def sync(self):
         """
         Pull the graph from the main world model
         """
-        self.importGraph(self._wmi.getBranch("skiros:Scene-0"))                 
+        self.importGraph(self._wmi.get_branch("skiros:Scene-0"))                 
         
     def importGraph(self, elements):
         self.reset()
@@ -124,7 +124,7 @@ class WorldModel:
                     
     def importRelations(self, relations):
         for r in relations:
-            self.setRelation(*r)
+            self.set_relation(*r)
         
     def _printRecursive(self, root, indend, relation_filter):
         s = root.printState()
@@ -134,7 +134,7 @@ class WorldModel:
             self._printRecursive(e, indend, relation_filter)
         
     def printModel(self, relation_filter="skiros:sceneProperty"):
-        root = self.getElement("skiros:Scene-0")
+        root = self.get_element("skiros:Scene-0")
         #print str(self._graph) 
         self._printRecursive(root, "", relation_filter)
         #nx.draw(self._graph.networkx_graph())
@@ -142,10 +142,10 @@ class WorldModel:
         
     def getAbstractElement(self, etype, elabel):
         e = Element(etype, elabel)
-        self.addElement(e, 0, 'hasAbstract')
+        self.add_element(e, 0, 'hasAbstract')
         return e
     
-    def resolveElements2(self, keys, ph):
+    def resolve_elements2(self, keys, ph):
         """
         Return all elements matching the profile in input (type, label, properties and relations)
 
@@ -157,9 +157,9 @@ class WorldModel:
         couples = {}
         print_out = False
         for key in keys:
-            first[key] = np.array(self.resolveElement(ph.getParamValue(key)))
+            first[key] = np.array(self.resolve_element(ph.getParamValue(key)))
             if not first[key].any():
-                log.warn("resolveElements", "No input found for param {}. Resolving: {}".format(key, ph.getParamValue(key).printState(True)))
+                log.warn("resolve_elements", "No input found for param {}. Resolving: {}".format(key, ph.getParamValue(key).printState(True)))
         all_keys = [key for key, _ in ph._params.iteritems()]
         coupled_keys = []
         overlap_keys = []
@@ -204,20 +204,20 @@ class WorldModel:
                     if ph.getParam(key2).paramType()==params.ParamTypes.Optional: continue 
                     else: set2 = first[key2]
                 if (key, key2) in couples:
-                    temp = [np.array([e1, e2]) for e1 in set1 for e2 in set2 if bool(self.getRelations(e1._id, j["type"], e2._id)) == j['state']]
+                    temp = [np.array([e1, e2]) for e1 in set1 for e2 in set2 if bool(self.get_relations(e1._id, j["type"], e2._id)) == j['state']]
                     if temp:
                         couples[(key, key2)] = np.concatenate(couples[(key, key2)], np.array(temp))
                     else:
-                        log.warn("resolveElements", "No input for params {} {}. Resolving: {} {}".format(key, key2, ph.getParamValue(key).printState(True), ph.getParamValue(key2).printState(True)))
+                        log.warn("resolve_elements", "No input for params {} {}. Resolving: {} {}".format(key, key2, ph.getParamValue(key).printState(True), ph.getParamValue(key2).printState(True)))
                 else:
                     if key in coupled_keys: overlap_keys.append(key)
                     else: coupled_keys.append(key)
                     if key2 in coupled_keys: overlap_keys.append(key2)
                     else: coupled_keys.append(key2)
-                    temp = [np.array([e1, e2]) for e1 in set1 for e2 in set2 if bool(self.getRelations(e1._id, j["type"], e2._id)) == j['state']]
+                    temp = [np.array([e1, e2]) for e1 in set1 for e2 in set2 if bool(self.get_relations(e1._id, j["type"], e2._id)) == j['state']]
                     couples[(key, key2)] = np.array(temp)
                     if not temp:
-                        log.warn("resolveElements", "No input for params {} {}. Resolving: {} {}".format(key, key2, ph.getParamValue(key).printState(True), ph.getParamValue(key2).printState(True)))
+                        log.warn("resolve_elements", "No input for params {} {}. Resolving: {} {}".format(key, key2, ph.getParamValue(key).printState(True), ph.getParamValue(key2).printState(True)))
         #Merge the tuples with an overlapping key
         if overlap_keys:
             loop = True
@@ -307,7 +307,7 @@ class WorldModel:
                     sets.append(np.array(self._concatenate(v1[c], v2[d])))
         return tuple(keys), np.array(sets)
         
-    def resolveElement(self, description):
+    def resolve_element(self, description):
         """
         Return all elements matching the profile in input (type, label, properties)
         """
@@ -348,7 +348,7 @@ class WorldModel:
         e._properties = copy
         return e
     
-    def getElement(self, eid):
+    def get_element(self, eid):
         try:
             eprops = self._graph.get_node(eid)
         except KeyError:
@@ -364,51 +364,51 @@ class WorldModel:
         self._graph.add_node(dict(chain(props.items(),element._properties.items())), element._id)
         self._addType(element._type, element._id)
                 
-    def _resolveLocalRelations(self, e, lr):    
+    def _resolve_local_relations(self, e, lr):    
         for r in lr:
             sub_e = r['dst']
             sub_e.addRelation(e._id, r['type'], "-1")
             if sub_e._id=="":
-                if self.addElement2(sub_e)<0:
+                if self.add_element2(sub_e)<0:
                     log.error("[{}]".format(self.__class__.__name__), "Failed to add local element {}".format(sub_e))
             else:
-                if self.updateElement(sub_e)<0:
+                if self.update_element(sub_e)<0:
                     log.error("[{}]".format(self.__class__.__name__), "Failed to update local element {}".format(sub_e))
         
-    def addElement2(self, element):
+    def add_element2(self, element):
         lr = copy(element._local_relations)
         element._local_relations = list()
         self.pushElement(element, "add")
         self._addNode(element)
         for r in element._relations:
             if r['src']=="-1":
-                self.setRelation(element._id, r['type'], r['dst'], True, push=False)
+                self.set_relation(element._id, r['type'], r['dst'], True, push=False)
             else:
-                self.setRelation(r['src'], r['type'], element._id, True, push=False)
-        self._resolveLocalRelations(element, lr)
+                self.set_relation(r['src'], r['type'], element._id, True, push=False)
+        self._resolve_local_relations(element, lr)
         return element._id
         
-    def addElement(self, element, parent_id, relation):
+    def add_element(self, element, parent_id, relation):
         self.pushElement(element, "add")
         self._addNode(element)
-        self.setRelation(parent_id, relation, element._id, True, push=False)
+        self.set_relation(parent_id, relation, element._id, True, push=False)
         return element._id
         
-    def updateElement(self, element):
+    def update_element(self, element):
         for r in element._relations:
             if r['src']=="-1":
-                self.setRelation(element._id, r['type'], r['dst'], True, push=False)
+                self.set_relation(element._id, r['type'], r['dst'], True, push=False)
             else:
-                self.setRelation(r['src'], r['type'], element._id, True, push=False)
+                self.set_relation(r['src'], r['type'], element._id, True, push=False)
         self.pushElement(element, "update")
         if not self._graph.has_node(element._id):
-            log.warn("updateElement", "No element found with key {}".format(element._id))
+            log.warn("update_element", "No element found with key {}".format(element._id))
             return
         props = { "type" : element._type, "label" : element._label}
         self._graph.add_node(dict(chain(props.items(),element._properties.items())), element._id)
         return element._id
         
-    def removeElement(self, eid):
+    def remove_element(self, eid):
         if self._verbose:
             log.debug('remove', str(eid))
         self.pushElement(eid, "remove")
@@ -416,12 +416,12 @@ class WorldModel:
         self._removeType(eprops["type"], eid)
         self._graph.remove_node(eid)
         
-    def _checkRelation(self, esubject, relation, eobject, value, push):
+    def _check_relation(self, esubject, relation, eobject, value, push):
         """
         Remove the old contain relation, to maintain the tree structure
         """
         if(self.isRelationType(relation, "skiros:sceneProperty") and value):  
-            self.setRelation("-1", "skiros:sceneProperty", eobject, False, push)
+            self.set_relation("-1", "skiros:sceneProperty", eobject, False, push)
           
     def isElementType(self, etype, abstract_type):
         return etype==abstract_type or (self._wmi.addPrefix(etype) in self._wmi.get_sub_classes(abstract_type, True))
@@ -435,15 +435,15 @@ class WorldModel:
             log.debug('add', str(esubject) + "-"+relation+ "-" +str(eobject))
         self._graph.add_edge(esubject, eobject, { "type" : relation })
         
-    def setRelation(self, esubject, relation, eobject, value=True, push=True):
-        if self.getRelations(esubject, relation, eobject) and value: #Avoid adding twice the same statement
+    def set_relation(self, esubject, relation, eobject, value=True, push=True):
+        if self.get_relations(esubject, relation, eobject) and value: #Avoid adding twice the same statement
             return True
-        self._checkRelation(esubject, relation, eobject, value, push)
+        self._check_relation(esubject, relation, eobject, value, push)
         try:
             if value:
                 self._addEdge(esubject, relation, eobject)
             else:
-                for e in self.getRelations(esubject, relation, eobject, True):
+                for e in self.get_relations(esubject, relation, eobject, True):
                     self._graph.remove_edge(e)
             if push:
                 self.pushRelation(esubject, relation, eobject, value)
@@ -459,7 +459,7 @@ class WorldModel:
                 return instance
         return None
         
-    def getRelations(self, esubject, relation, eobject, getId=False):
+    def get_relations(self, esubject, relation, eobject, getId=False):
         rel = []
         for _, edge in self._graph.get_edges().items():
             if (esubject=="" or edge['src']==esubject) and (eobject=="" or edge['dst']==eobject) and (relation=="" or self.isRelationType(edge['type'], relation)):
@@ -470,8 +470,8 @@ class WorldModel:
                     rel.append(new_edge)
         if not getId and relation!="" and esubject!="" and eobject!="":
             try:
-                s = self.getElement(esubject)
-                o = self.getElement(eobject)
+                s = self.get_element(esubject)
+                o = self.get_element(eobject)
                 reasoner = s._getReasoner(relation)
                 if relation in reasoner.computeRelations(s, o):
                     rel.append({"src": esubject, "type": relation, "dst": eobject})
@@ -500,11 +500,11 @@ class WorldModel:
         
     def getChildren(self, eid, relation="skiros:sceneProperty"):
         to_ret=[]
-        for edge in self.getRelations(eid, relation, ""):
-            e = self.getElement(edge['dst'])
+        for edge in self.get_relations(eid, relation, ""):
+            e = self.get_element(edge['dst'])
             to_ret.append(e)
         return to_ret
         
     def getParent(self, eid):
-        for edge in self.getRelations("", "skiros:sceneProperty", eid, getReasonersRel=False):
-            return self.getElement(edge['src'])   
+        for edge in self.get_relations("", "skiros:sceneProperty", eid, getReasonersRel=False):
+            return self.get_element(edge['src'])   

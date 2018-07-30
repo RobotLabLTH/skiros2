@@ -316,8 +316,8 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         self.refresh_timer.start(1000)
 
         #World model tab
-        self._wmi.setMonitorCallback(lambda d: self.wm_update_signal.emit(d))
-        self._sli.setMonitorCallback(lambda d: self.sl_progress_signal.emit(d))
+        self._wmi.set_monitor_cb(lambda d: self.wm_update_signal.emit(d))
+        self._sli.set_monitor_cb(lambda d: self.sl_progress_signal.emit(d))
         self._snapshot_id = ""
         self._snapshot_stamp = rospy.Time.now()
         self._wm_mutex = Lock()
@@ -342,8 +342,8 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
 
     def restore_settings(self, plugin_settings, instance_settings):
         # TODO restore intrinsic configuration, usually using:
-        if self._wmi.getSceneName()!="":
-            self.scene_file_lineEdit.setText(self._wmi.getSceneName())
+        if self._wmi.get_scene_name()!="":
+            self.scene_file_lineEdit.setText(self._wmi.get_scene_name())
         elif instance_settings.value("scene_name") is not None and instance_settings.value("scene_name")!="":
             self.scene_file_lineEdit.setText(instance_settings.value("scene_name"))
         if instance_settings.value("logs_file_name") is not None:
@@ -418,7 +418,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         if not parent_id: return
 
 
-        elem = self._wmi.getTemplateElement(dialog.object)
+        elem = self._wmi.get_template_element(dialog.object)
         elem.label = utils.ontology_type2name(dialog.object)
         elem_id = self._wmi.instanciate(elem, recursive=True, relations=[{'src': parent_id, 'type': 'skiros:contain', 'dst': '-1'}])
 
@@ -438,8 +438,8 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         parent = item.parent()
         self.wm_tree_widget.setCurrentItem(parent)
 
-        elem = self._wmi.getElement(item_id)
-        self._wmi.removeElement(elem)
+        elem = self._wmi.get_element(item_id)
+        self._wmi.remove_element(elem)
 
         # parent = self.wm_tree_widget.currentItem()
         # parent_id = parent.text(1)
@@ -453,8 +453,8 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
     # def remove_wm_tree_widget_item(self, item):
     #     if hasattr(item, 'id'):
     #         log.debug(self.__class__.__name__, 'Removing item: <{}>'.format(item.text(0)))
-    #         elem = self._wmi.getElement(item.text(1))
-    #         self._wmi.removeElement(elem)
+    #         elem = self._wmi.get_element(item.text(1))
+    #         self._wmi.remove_element(elem)
     #     else:
     #         [self.remove_wm_tree_widget_item(child) for child in item.takeChildren()]
 
@@ -511,16 +511,16 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
 
     def on_marker_feedback(self, feedback):
         if feedback.event_type == InteractiveMarkerFeedback.POSE_UPDATE:
-            elem = self._wmi.getElement(feedback.marker_name)
+            elem = self._wmi.get_element(feedback.marker_name)
             elem.setData(":PoseStampedMsg", feedback)
-            self._wmi.updateElement(elem)
+            self._wmi.update_element(elem)
 
     @Slot()
     def on_wm_tree_widget_item_selection_changed(self, item):
         self.wm_properties_widget.blockSignals(True)
         self.clear_markers()
         if item.text(1).find("_skills")<0:
-            elem = self._wmi.getElement(item.text(1))
+            elem = self._wmi.get_element(item.text(1))
             self.fill_properties_table(elem)
             self.fill_relations_table(elem)
             if elem.hasProperty("skiros:DiscreteReasoner", "AauSpatialReasoner"):
@@ -540,7 +540,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         item_val = self.wm_properties_widget.item(row, 1)
         key = item_key.id
         value = item_val.text()
-        elem = self._wmi.getElement(item.text(1))
+        elem = self._wmi.get_element(item.text(1))
 
         if elem.hasProperty(key):
             prop = elem.getProperty(key)
@@ -560,7 +560,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         else:
             log.error(self.__class__.__name__, 'Changing <{}> property {} to {} failed'.format(item.text(1), key, val))
 
-        self._wmi.updateElement(elem)
+        self._wmi.update_element(elem)
         name = utils.ontology_type2name(elem.id) if not elem.label else utils.ontology_type2name(elem.label)
         item.setText(0, name)
 
@@ -575,7 +575,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
 
 
     def create_wm_tree(self):
-        scene_tuple = self._wmi.getScene()
+        scene_tuple = self._wmi.get_scene()
         #print "GOT SCENE {}".format([e.id for e in scene_tuple[0]])
         self._snapshot_id = scene_tuple[1]
         self._snapshot_stamp = rospy.Time.now()
@@ -763,7 +763,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
             elif params[key].dataTypeIs(Element):
                 data = widget.itemData(widget.currentIndex())
                 if data:
-                    params[key].setValue(self._wmi.getElement(data))
+                    params[key].setValue(self._wmi.get_element(data))
                     #print "Set param {} to {}".format(params[key].key, params[key].value.printState())
             else:
                 try:
@@ -787,7 +787,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         elif param.dataTypeIs(Element):
             combobox = QComboBox()
             layout.addWidget(combobox, row, 1)
-            matches = self._wmi.resolveElements(param.default)
+            matches = self._wmi.resolve_elements(param.default)
             if param.paramTypeIs(ParamTypes.Optional):
                 combobox.addItem("", None)
             for e in matches:

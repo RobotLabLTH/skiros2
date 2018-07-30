@@ -43,13 +43,13 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
             if WorldModelInterface._elements_cache.has_key(rel['dst']):
                 del WorldModelInterface._elements_cache[rel['dst']]
 
-    def getSceneName(self):
+    def get_scene_name(self):
         """
         @brief Return the name of the scene
         """
         return rospy.get_param('wm/init_scene', "")
 
-    def getScene(self):
+    def get_scene(self):
         """
         @brief Returns a triple with all elements in the scene and the associated uuid
         """
@@ -65,10 +65,10 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         if(res):
             return ([utils.msg2element(x) for x in res.elements], res.snapshot_id)
 
-    def setMonitorCallback(self, callback):
+    def set_monitor_cb(self, callback):
         self._monitor = rospy.Subscriber("wm/monitor", msgs.WmMonitor, callback)
 
-    def setRelation(self, subj, pred, obj, value=True):
+    def set_relation(self, subj, pred, obj, value=True):
         msg = srvs.WmSetRelationRequest()
         msg.author = self._author_name
         msg.relation = utils.relation2msg(utils.makeRelation(subj, pred, obj))
@@ -78,19 +78,19 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
             return res.ok
         return False
 
-    def _resolveLocalRelations(self, e):
+    def _resolve_local_relations(self, e):
         for r in e._local_relations:
             sub_e = r['dst']
             sub_e.addRelation(e._id, r['type'], "-1")
             if sub_e._id=="":
-                if self.addElement(sub_e)<0:
+                if self.add_element(sub_e)<0:
                     log.error("[{}]".format(self.__class__.__name__), "Failed to add local element {}".format(sub_e))
             else:
-                if self.updateElement(sub_e)<0:
+                if self.update_element(sub_e)<0:
                     log.error("[{}]".format(self.__class__.__name__), "Failed to update local element {}".format(sub_e))
         e._local_relations = list()
 
-    def addElements(self, es, context_id='scene'):
+    def add_elements(self, es, context_id='scene'):
         msg = srvs.WmModifyRequest()
         msg.context = context_id
         msg.author = self._author_name
@@ -103,20 +103,20 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
             for old, new in zip(es, res.elements):
                 to_ret.append(utils.msg2element(new))
                 old._id = new.id
-                self._resolveLocalRelations(old)
+                self._resolve_local_relations(old)
         return to_ret
 
-    def addElement(self, e, context_id='scene'):
+    def add_element(self, e, context_id='scene'):
         """
         @brief Add an element to the scene. The id is updated with the one assigned from the world model
         """
-        res = self.addElements([e], context_id)
+        res = self.add_elements([e], context_id)
         if not res:
             return None
         else:
             return res[0]
 
-    def updateElement(self, e, context_id='scene'):
+    def update_element(self, e, context_id='scene'):
         """
         @brief Update properties and relations of an element
         """
@@ -130,7 +130,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
             return e.id
         return -1
 
-    def updateElementProperties(self, e, reasoner="", context_id='scene'):
+    def update_element_properties(self, e, reasoner="", context_id='scene'):
         """
         @brief Update the properties of an element (ignores the relations)
         """
@@ -145,7 +145,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
             return e.id
         return -1
 
-    def removeElement(self, e, recursive=True, rel_filter=":sceneProperty", type_filter="", context_id='scene'):
+    def remove_element(self, e, recursive=True, rel_filter=":sceneProperty", type_filter="", context_id='scene'):
         """
         @brief Removes an element from the scene. e can be an Element or an id
         """
@@ -169,7 +169,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
             return 1
         return -1
 
-    def resolveElements(self, e, context_id='scene'):
+    def resolve_elements(self, e, context_id='scene'):
         msg = srvs.WmGetRequest()
         msg.context = context_id
         msg.element = utils.element2msg(e)
@@ -178,8 +178,8 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         if(res):
             return [utils.msg2element(x) for x in res.elements]
 
-    def resolveElement(self, e, context_id='scene'):
-        res = self.resolveElements(e, context_id)
+    def resolve_element(self, e, context_id='scene'):
+        res = self.resolve_elements(e, context_id)
         if res:
             return res[0]
 
@@ -190,12 +190,12 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         If recursive, instanciate all individuals related to the starting individual
         """
         if isinstance(uri, basestring):
-            template = self.getTemplateElement(uri)
+            template = self.get_template_element(uri)
         else:
             template = uri
         relcopy = copy.deepcopy(template._relations)
         template._relations = relations
-        template = self.addElement(template, context_id=context_id)
+        template = self.add_element(template, context_id=context_id)
         if recursive:
             antiloop_bind.add(template.id)
             for r in relcopy:
@@ -208,7 +208,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
                         template._relations.append(r)
         return template
 
-    def getTemplateElement(self, uri, context_id='scene'):
+    def get_template_element(self, uri, context_id='scene'):
         msg = srvs.WmGetRequest()
         e = msgs.WmElement()
         e.label = uri
@@ -219,7 +219,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         if(res):
             return utils.msg2element(res.elements[0])
 
-    def getElement(self, eid, context_id='scene'):
+    def get_element(self, eid, context_id='scene'):
         if not WorldModelInterface._elements_cache.has_key(eid):
             msg = srvs.WmGetRequest()
             e = msgs.WmElement()
@@ -236,7 +236,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
                 return utils.msg2element(res.elements[0])
         return WorldModelInterface._elements_cache[eid]
 
-    def getBranch(self, eid, relation_filter=":sceneProperty", type_filter="", context_id='scene'):
+    def get_branch(self, eid, relation_filter=":sceneProperty", type_filter="", context_id='scene'):
         """
         Get all elements related to the starting one. Answer can be filtered
         """
@@ -252,7 +252,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         if(res):
             return [utils.msg2element(x) for x in res.elements]
 
-    def getReasonerRelations(self, subj, pred, obj):
+    def get_reasoner_relations(self, subj, pred, obj):
         try:
             reasoner = subj._getReasoner(pred)
             if pred in reasoner.computeRelations(subj, obj):
@@ -264,22 +264,22 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
             pass
             return None
 
-    def getRelations(self, subj, pred, obj):
+    def get_relations(self, subj, pred, obj):
         if pred!="" and subj!="" and obj!="" and subj!="-1" and obj!="-1":
-            subj = self.getElement(subj)
-            obj = self.getElement(obj)
-            rels = self.getReasonerRelations(subj, pred, obj)
+            subj = self.get_element(subj)
+            obj = self.get_element(obj)
+            rels = self.get_reasoner_relations(subj, pred, obj)
             if rels is not None:
                 return rels
             else:
-                return subj.getRelations(pred=pred, obj=obj.id)
+                return subj.get_relations(pred=pred, obj=obj.id)
         msg = srvs.WmQueryRelationsRequest()
         msg.relation = utils.relation2msg(utils.makeRelation(subj, pred, obj))
         res = self._call(self._query_relations, msg)
         if(res):
             return [utils.msg2relation(x) for x in res.matches]
 
-    def checkRelation(self, subj, pred, obj, state, abstract):
+    def check_relation(self, subj, pred, obj, state, abstract):
         if abstract:
             if subj.hasProperty("skiros:Template"):
                 e1 = subj.getProperty("skiros:Template").value
@@ -292,9 +292,9 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
             #print "CHECKING {} {} {} = {}".format(e1, pred, e2, (e2 in self.getTriples(e1, pred)) == state)
             return (e2 in self.getTriples(e1, pred)) == state
         else:
-            return bool(self.getRelations(subj.id, pred, obj.id)) == state
+            return bool(self.get_relations(subj.id, pred, obj.id)) == state
 
-    def resolveElements2(self, keys, ph, verbose=False):
+    def resolve_elements2(self, keys, ph, verbose=False):
         """
         Return all elements matching the profile in input (type, label, properties and relations)
 
@@ -305,9 +305,9 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         first = {}
         couples = {}
         for key in keys:
-            first[key] = np.array(self.resolveElements(ph.getParamValue(key)))
+            first[key] = np.array(self.resolve_elements(ph.getParamValue(key)))
             if not first[key].any():
-                log.warn("resolveElements", "No input found for param {}. Resolving: {}".format(key, ph.getParamValue(key).printState(True)))
+                log.warn("resolve_elements", "No input found for param {}. Resolving: {}".format(key, ph.getParamValue(key).printState(True)))
         all_keys = ph.keys()
         coupled_keys = []
         overlap_keys = []
@@ -361,23 +361,23 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
                     else:
                         set2 = first[key2]
                 if (key, key2) in couples:
-                    temp = [np.array([e1, e2]) for e1 in set1 for e2 in set2 if self.checkRelation(e1, j["type"], e2, j['state'], j['abstract'])]
+                    temp = [np.array([e1, e2]) for e1 in set1 for e2 in set2 if self.check_relation(e1, j["type"], e2, j['state'], j['abstract'])]
                     if temp:
                         try:
                             couples[(key, key2)] = np.concatenate(couples[(key, key2)], np.array(temp))
                         except:
                             log.error("", "MERGING: {} and {} ".format(couples[(key, key2)], np.array(temp)))
                     else:
-                        log.warn("resolveElements", "No input for params {} {}. Resolving: {} {}".format(key, key2, ph.getParamValue(key).printState(verbose), ph.getParamValue(key2).printState(verbose)))
+                        log.warn("resolve_elements", "No input for params {} {}. Resolving: {} {}".format(key, key2, ph.getParamValue(key).printState(verbose), ph.getParamValue(key2).printState(verbose)))
                 else:
                     if key in coupled_keys: overlap_keys.append(key)
                     else: coupled_keys.append(key)
                     if key2 in coupled_keys: overlap_keys.append(key2)
                     else: coupled_keys.append(key2)
-                    temp = [np.array([e1, e2]) for e1 in set1 for e2 in set2 if self.checkRelation(e1, j["type"], e2, j['state'], j['abstract'])]
+                    temp = [np.array([e1, e2]) for e1 in set1 for e2 in set2 if self.check_relation(e1, j["type"], e2, j['state'], j['abstract'])]
                     couples[(key, key2)] = np.array(temp)
                     if not temp:
-                        log.warn("resolveElements", "No input for params {} {}. Resolving: {} {}".format(key, key2, ph.getParamValue(key).printState(verbose), ph.getParamValue(key2).printState(verbose)))
+                        log.warn("resolve_elements", "No input for params {} {}. Resolving: {} {}".format(key, key2, ph.getParamValue(key).printState(verbose), ph.getParamValue(key2).printState(verbose)))
         #Merge the tuples with an overlapping key
         if overlap_keys:
             loop = True

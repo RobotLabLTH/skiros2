@@ -170,26 +170,26 @@ class TaskManagerNode(PrettyObject):
             planned_map = self._pddl_interface.getActionParamMap(skill.name, tokens)
 #            print "{}".format(planned_map)
             for k,v in planned_map.iteritems():
-                skill.ph[k].setValue(self.getElement(v))
+                skill.ph[k].setValue(self.get_element(v))
             self._task.append(skill)
 
 
     def initDomain(self):
-        skills = self._wmi.resolveElements(wmi.Element(":Skill"))
+        skills = self._wmi.resolve_elements(wmi.Element(":Skill"))
         for skill in skills:
             params = {}
             preconds = []
             postconds = []
             #Note: Only skills with pre AND post conditions are considered for planning
             for p in skill.getRelations(pred="skiros:hasParam"):
-                e = self._wmi.getElement(p['dst'])
+                e = self._wmi.get_element(p['dst'])
                 params[e._label] = e.getProperty("skiros:DataType").value
             for p in skill.getRelations(pred="skiros:hasPreCondition"):
-                e = self._wmi.getElement(p['dst'])
+                e = self._wmi.get_element(p['dst'])
                 if e._type.find("ConditionRelation")!=-1 or e._type == "skiros:ConditionProperty" or e._type == "skiros:ConditionHasProperty":
                     preconds.append(pddl.Predicate(e, params, e._type.find("Abs")!=-1))
             for p in skill.getRelations(pred="skiros:hasPostCondition"):
-                e = self._wmi.getElement(p['dst'])
+                e = self._wmi.get_element(p['dst'])
                 if e._type.find("ConditionRelation")!=-1 or e._type == "skiros:ConditionProperty" or e._type == "skiros:ConditionHasProperty":
                     postconds.append(pddl.Predicate(e, params, e._type.find("Abs")!=-1))
             self._pddl_interface.addAction(pddl.Action(skill, params, preconds, postconds))
@@ -197,7 +197,7 @@ class TaskManagerNode(PrettyObject):
             log.info("[Domain]", self._pddl_interface.printDomain(False))
 
 
-    def getElement(self, uid):
+    def get_element(self, uid):
         return self._elements[uid]
 
     def initProblem(self):
@@ -206,7 +206,7 @@ class TaskManagerNode(PrettyObject):
         self._elements = {}
         #Find objects
         for objType in self._pddl_interface._types._types["thing"]:
-            temp = self._wmi.resolveElements(wmi.Element(objType))
+            temp = self._wmi.resolve_elements(wmi.Element(objType))
             elements[objType] = temp
             if len(temp)>0:
                 objects[objType] = []
@@ -215,7 +215,7 @@ class TaskManagerNode(PrettyObject):
                 self._elements[e.id] = e
                 self._elements[e.id.lower()] = e
         for e in self._abstract_objects:
-            ctype = self._wmi.getSuperClass(e._type)
+            ctype = self._wmi.get_super_class(e._type)
             if not objects.has_key(ctype):
                  objects[ctype] = []
                  elements[ctype] = []
@@ -280,7 +280,7 @@ class TaskManagerNode(PrettyObject):
                 for x in subx:
                     for y in suby:
                         query_str = query_str_template.format(relation=p.name, xtype=x, ytype=y)
-                        answer = self._wmi.queryOntology(query_str)
+                        answer = self._wmi.query_ontology(query_str)
                         for line in answer:
                             tokens = line.strip().split(" ")
                             self._pddl_interface.addInitState(pddl.GroundPredicate(p.name, tokens))
@@ -307,13 +307,13 @@ class TaskManagerNode(PrettyObject):
                     if len(tokens)==3:
                         self._pddl_interface.addGoal(pddl.GroundPredicate(tokens[0], [tokens[1], tokens[2]]))
                         if tokens[1].find("-")==-1: #If isAbstractObject
-                            self._abstract_objects.append(self._wmi.getTemplateElement(tokens[1]))
+                            self._abstract_objects.append(self._wmi.get_template_element(tokens[1]))
                         if tokens[2].find("-")==-1: #If isAbstractObject
-                            self._abstract_objects.append(self._wmi.getTemplateElement(tokens[2]))
+                            self._abstract_objects.append(self._wmi.get_template_element(tokens[2]))
                     else:
                         self._pddl_interface.addGoal(pddl.GroundPredicate(tokens[0], [tokens[1]]))
                         if tokens[1].find("-")==-1: #If isAbstractObject
-                            self._abstract_objects.append(self._wmi.getTemplateElement(tokens[1]))
+                            self._abstract_objects.append(self._wmi.get_template_element(tokens[1]))
         except:
             raise Exception("Error while parsing input goal: {}".format(goal))
 

@@ -46,7 +46,7 @@ class SkillLayerInterface(DiscoveryInterface):
         self._monitor_cb = None
         self.init_discovery("skill_managers", self._discovery_cb)
         if skill_monitor_cb:
-            self.setMonitorCallback(skill_monitor_cb)
+            self.set_monitor_cb(skill_monitor_cb)
 
     def getAgent(self, agent):
         if isinstance(agent, str):
@@ -64,7 +64,7 @@ class SkillLayerInterface(DiscoveryInterface):
             return True
         return False
 
-    def setMonitorCallback(self, cb):
+    def set_monitor_cb(self, cb):
         self._monitor_cb = cb
 
     def _discovery_cb(self, msg):

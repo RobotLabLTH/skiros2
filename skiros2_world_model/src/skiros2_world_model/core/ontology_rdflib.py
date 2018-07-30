@@ -104,7 +104,7 @@ class Ontology:
         if initialize and context_id is not None:
             self._ontology.remove_context(context_id)
         if not context_id:
-            context_id = ontology_uri[ontology_uri.rfind("/")+1:ontology_uri.rfind(".")]
+            context_id = ontology_uri[ontology_uri.rfind("/")+1:ontology_uri.rfind(".")].lower()
         contextg = self._ontology.parse(ontology_uri, publicID=context_id)
         context = contextg.value(predicate=RDF.type, object=OWL.Ontology)
         if context:

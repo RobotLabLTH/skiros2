@@ -43,9 +43,9 @@ class PrimitiveBase(SkillCore):
             if p.dataTypeIs(Element()) and p.hasChanges(time):
                 for e in vs:
                     if not e.isAbstract():
-                        self._wmi.updateElement(e)
+                        self._wmi.update_element(e)
                     else:
-                        self._wmi.addElement(e)
+                        self._wmi.add_element(e)
 
     #-------- User's functions--------
     def startError(self, msg, code):

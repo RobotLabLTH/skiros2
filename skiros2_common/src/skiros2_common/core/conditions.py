@@ -221,7 +221,7 @@ class ConditionProperty(ConditionBase):
             while subj.hasProperty(self._owl_label, self._value):
                 subj.removePropertyValue(self._owl_label, self._value)
         self._params.specify(self._subject_key, subj)
-        self._wm.updateElement(subj)
+        self._wm.update_element(subj)
         return True
 
     def revert(self, ph, wmi):
@@ -230,7 +230,7 @@ class ConditionProperty(ConditionBase):
             self._wm = wmi
             #print self._description + "\n{}".format(self._cache.printState(True))
             self._params.specify(self._subject_key, self._cache)
-            self._wm.updateElement(self._cache)
+            self._wm.update_element(self._cache)
             self._has_cache = False
             return True
         return False
@@ -312,9 +312,9 @@ class ConditionRelation(ConditionBase):
         else:
             obj = obj.id
         if additional=="":
-            v = self._wm.getRelations(subj, self._owl_label, obj)
+            v = self._wm.get_relations(subj, self._owl_label, obj)
         else:
-            v = self._wm.queryOntology("SELECT * WHERE {" + "{} {} {}".format(subj, self._owl_label, obj) + additional + ".}")
+            v = self._wm.query_ontology("SELECT * WHERE {" + "{} {} {}".format(subj, self._owl_label, obj) + additional + ".}")
         #print "{} {} {} {}".format(subj, self._owl_label, obj, v)
         if v:
             return self._desired_state
@@ -330,9 +330,9 @@ class ConditionRelation(ConditionBase):
             return False
         #print self._description + "{} {}".format(subj.printState(), obj.printState())
         self._has_cache = True
-        self._cache = self._wm.getRelations("-1", "", obj.id)
+        self._cache = self._wm.get_relations("-1", "", obj.id)
         #print self._description + "{} {}".format(subj.printState(), obj.printState())
-        if not self._wm.setRelation(subj.id, self._owl_label, obj.id, self._desired_state):
+        if not self._wm.set_relation(subj.id, self._owl_label, obj.id, self._desired_state):
             return False
         return True
 
@@ -343,9 +343,9 @@ class ConditionRelation(ConditionBase):
             subj = self._params.getParamValue(self._subject_key)
             obj = self._params.getParamValue(self._object_key)
             #print self._description + "{} {}".format(subj.printState(), obj.printState())
-            self._wm.setRelation(subj._id, self._owl_label, obj._id, not self._desired_state)
+            self._wm.set_relation(subj._id, self._owl_label, obj._id, not self._desired_state)
             for edge in self._cache:
-                self._wm.setRelation(edge['src'], edge['type'], edge['dst'], True)
+                self._wm.set_relation(edge['src'], edge['type'], edge['dst'], True)
             self._has_cache = False
             return True
         return False
@@ -508,7 +508,7 @@ class ConditionHasProperty(ConditionBase):
             if subj.hasProperty(self._owl_label):
                 subj.removeProperty(self._owl_label)
         self._params.specify(self._subject_key, subj)
-        self._wm.updateElement(subj)
+        self._wm.update_element(subj)
         return True
 
     def revert(self, ph, wmi):
@@ -517,7 +517,7 @@ class ConditionHasProperty(ConditionBase):
             self._wm = wmi
             self._params.specify(self._subject_key, self._cache)
             #print self._description + " {}".format(self._cache.printState())
-            self._wm.updateElement(self._cache)
+            self._wm.update_element(self._cache)
             self._has_cache = False
             return True
         return False
@@ -658,12 +658,12 @@ class ConditionGenerate(ConditionBase):
         #print subj.printState(True)
         if subj.getIdNumber() < 0 and self._desired_state:
             self._cache_new = Element(subj._type, "==FAKE==")
-            self._wm.addElement(self._cache_new, ":Scene-0", "contain")
+            self._wm.add_element(self._cache_new, ":Scene-0", "contain")
             #print self._wm.printModel()
             self._params.specify(self._subject_key, self._cache_new)
             self._cache_new = deepcopy(self._cache_new)
         elif subj.getIdNumber() >= 0 and not self._desired_state:
-            self._wm.removeElement(subj._id)
+            self._wm.remove_element(subj._id)
             subj._id = ""
             self._cache_new = subj
             self._params.specify(self._subject_key, self._cache_new)
@@ -677,9 +677,9 @@ class ConditionGenerate(ConditionBase):
             self._wm = wmi
             #print self._description + " {}".format(self._cache_new.printState())
             if self._cache_new.getIdNumber()>=0 and self._cache.getIdNumber()<0:
-                self._wm.removeElement(self._cache_new._id)
+                self._wm.remove_element(self._cache_new._id)
             elif self._cache_new.getIdNumber()<0 and self._cache.getIdNumber()>=0:
-                self._wm.addElement(self._cache, ":Scene-0", "contain")
+                self._wm.add_element(self._cache, ":Scene-0", "contain")
             self._params.specify(self._subject_key, self._cache)
             self._has_cache = False
             return True

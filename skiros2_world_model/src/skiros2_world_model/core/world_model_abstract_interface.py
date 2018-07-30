@@ -73,31 +73,31 @@ class OntologyAbstractInterface:
         raise NotImplementedError("Not implemented in abstract class")
 
 class WorldModelAbstractInterface:
-    def addElement(self, e):
+    def add_element(self, e):
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
 
-    def updateElement(self, e):
+    def update_element(self, e):
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
 
-    def removeElement(self, eid):
+    def remove_element(self, eid):
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
 
-    def setRelation(self, subj_id, predicate, obj_id, value=True):
+    def set_relation(self, subj_id, predicate, obj_id, value=True):
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
 
-    def resolveElement(self, e):
+    def resolve_element(self, e):
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
 
-    def getTemplateElement(self, individual):
+    def get_template_element(self, individual):
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
 
-    def getElement(self, eid):
+    def get_element(self, eid):
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
 
@@ -105,7 +105,7 @@ class WorldModelAbstractInterface:
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
 
-    def getBranch(self, root_id, relation_filter="", type_filter=""):
+    def get_branch(self, root_id, relation_filter="", type_filter=""):
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
 

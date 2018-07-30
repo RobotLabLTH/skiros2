@@ -174,27 +174,27 @@ class SkillManager:
         self._ticker.observe_progress(func)
 
     def _registerAgent(self, agent_name):
-        res = self._wmi.resolveElement(wm.Element("cora:Robot", agent_name))
+        res = self._wmi.resolve_element(wm.Element("cora:Robot", agent_name))
         if res:
             log.info("[{}]".format(self.__class__.__name__), "Found robot {}, skipping registration.".format(res))
             self._robot = res
             for r in self._robot.getRelations("-1", "skiros:hasSkill"):
-                self._wmi.removeElement(self._wmi.getElement(r['dst']))
-            self._robot = self._wmi.getElement(self._robot.id)
+                self._wmi.remove_element(self._wmi.get_element(r['dst']))
+            self._robot = self._wmi.get_element(self._robot.id)
         else:
             self._robot = self._wmi.instanciate(agent_name, True)
-            startLocUri = self._wmi.getTemplateElement(agent_name).getRelations(pred="skiros:hasStartLocation")
+            startLocUri = self._wmi.get_template_element(agent_name).getRelations(pred="skiros:hasStartLocation")
             if startLocUri:
                 start_location = self._wmi.instanciate(startLocUri[0]["dst"], False, [])
-                self._wmi.setRelation(self._robot._id, "skiros:at", start_location._id)
+                self._wmi.set_relation(self._robot._id, "skiros:at", start_location._id)
         log.info("[{}]".format(self.__class__.__name__), "Registered robot {}".format(self._robot))
         self._robot.setProperty("skiros:SkillMgr", self._agent_name[self._agent_name.rfind(":")+1:])
-        self._wmi.updateElement(self._robot)
+        self._wmi.update_element(self._robot)
 
 
     def shutdown(self):
         for s in self._skills:
-            self._wmi.removeElement(s)
+            self._wmi.remove_element(s)
         self._wmi.unlock() #Ensures the world model's mutex gets unlocked
 
     def loadSkills(self, package):
@@ -214,7 +214,7 @@ class SkillManager:
         #print skill.printInfo(True)
         if not self._wmi.get_type(e.type):
             self._wmi.add_class(e.type, "skiros:Skill")
-        self._wmi.addElement(e)
+        self._wmi.add_element(e)
         self._skills.append(e)
         return SkillHolder(self._agent_name, skill.type, skill.label, skill.params.getCopy())
 

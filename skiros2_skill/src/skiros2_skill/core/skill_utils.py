@@ -53,7 +53,7 @@ class NodeExecutor():
             if p.dataTypeIs(wm.Element):
                 for i, e in enumerate(vs):
                     if e.id!="":
-                        vs[i] = self._wm.getElement(e.id)
+                        vs[i] = self._wm.get_element(e.id)
                 p.values = vs
 
     def trackParam(self, key, prop="", relation="", print_all=False):
@@ -101,7 +101,7 @@ class NodeExecutor():
                 skill._params.setDefault(k)
                 p = skill._params.getParam(k)
                 if p.dataTypeIs(wm.Element()) and p.getValue().getIdNumber()>=0:
-                    skill._params.specify(k, self._wm.getElement(p.getValue()._id))
+                    skill._params.specify(k, self._wm.get_element(p.getValue()._id))
             return self._autoParametrizeBB(skill)
         return True
 
@@ -188,7 +188,7 @@ class NodeExecutor():
         """
         ground undefined parameters with elements in the world model
         """
-        matches = self._wm.resolveElements2(to_resolve, cp)
+        matches = self._wm.resolve_elements2(to_resolve, cp)
         _grounded = ''
         for key, match in matches.iteritems():
             if match.any():
