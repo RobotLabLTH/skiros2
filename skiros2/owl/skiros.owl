@@ -22,8 +22,6 @@
      -->
 
 
-
-
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#hasTemplate -->
 
     <owl:ObjectProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#hasTemplate">
@@ -537,6 +535,11 @@
      -->
 
 
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#DepthCamera -->
+
+    <owl:Class rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#DepthCamera">
+        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#Sensor"/>
+    </owl:Class>
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#CompoundSkill -->
