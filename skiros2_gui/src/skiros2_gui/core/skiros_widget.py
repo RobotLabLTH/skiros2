@@ -147,7 +147,7 @@ class SkirosAddObjectDialog(QDialog):
         Returns:
             dict(str, str): Keys: Short type name. Values: Type identifier (e.g. {'starter': 'skiros:starter'})
         """
-        return utils.ontology_type2name_dict(self.parent()._wmi.getIndividuals(subtype, True))
+        return utils.ontology_type2name_dict(self.parent()._wmi.get_individuals(subtype, True))
 
 
 class SkirosInteractiveMarkers:
@@ -349,7 +349,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         if instance_settings.value("logs_file_name") is not None:
             self.logs_file_lineEdit.setText(instance_settings.value("logs_file_name"))
         if instance_settings.value("save_logs") is not None:
-            self.save_logs_checkBox.setChecked(bool(instance_settings.value("save_logs")))
+            self.save_logs_checkBox.setChecked(instance_settings.value("save_logs")=='true')
             self.on_save_logs_checkBox_clicked()
 
 #    def trigger_configuration(self):

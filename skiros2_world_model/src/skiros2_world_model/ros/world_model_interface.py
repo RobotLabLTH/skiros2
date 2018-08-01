@@ -272,7 +272,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
             if rels is not None:
                 return rels
             else:
-                return subj.get_relations(pred=pred, obj=obj.id)
+                return subj.getRelations(pred=pred, obj=obj.id)
         msg = srvs.WmQueryRelationsRequest()
         msg.relation = utils.relation2msg(utils.makeRelation(subj, pred, obj))
         res = self._call(self._query_relations, msg)
