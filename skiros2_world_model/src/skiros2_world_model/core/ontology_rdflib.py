@@ -108,7 +108,7 @@ class Ontology:
         contextg = self._ontology.parse(ontology_uri, publicID=context_id)
         context = contextg.value(predicate=RDF.type, object=OWL.Ontology)
         if context:
-            return self._add_prefix(context, context_id)
+            return self._add_prefix(context)
 
     def save(self, file, context_id=""):
         """

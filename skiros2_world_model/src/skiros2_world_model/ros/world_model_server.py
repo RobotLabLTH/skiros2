@@ -58,10 +58,9 @@ class WorldModelServer(OntologyServer):
                 self._ontology._bind(prefix, "")
         self._ontology._bind("", "")
         init_scene = rospy.get_param('~init_scene', "")
+        self._ontology.reset()
         if init_scene!="":
             self._ontology.load_context(init_scene)
-        else:
-            self._ontology.reset()
 
     def _load_reasoners(self):
         """
