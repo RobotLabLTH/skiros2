@@ -245,7 +245,11 @@ class IndividualsDataset(Ontology):
         """
         @brief Remove an element from the scene
         """
-        e = self.get_element(e.id)
+        try:
+            e = self.get_element(e.id)
+        except:
+            log.warn("[remove_element]", "Trying to remove element {}, but doesn't exist.".format(e.id))
+            return e.id
         for name, r in self._reasoners.iteritems():
             if not r.parse(e, "remove"):
                 raise Exception("Reasoner {} rejected the element {} removal".format(name, e))

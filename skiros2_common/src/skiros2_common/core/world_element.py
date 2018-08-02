@@ -323,7 +323,7 @@ class Element(object):
         Return true if this is a valid instance, false otherwise
         """
         #Filter by type
-        if not self._type==abstract._type and not (wmi.addPrefix(self._type) in wmi.get_sub_classes(abstract._type, True)):
+        if not self._type==abstract._type and not (wmi.add_prefix(self._type) in wmi.get_sub_classes(abstract._type, True)):
             return False
         #Filter by label
         if not (abstract._label=="" or abstract._label=="Unknown" or self._label==abstract._label):
