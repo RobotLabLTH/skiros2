@@ -339,11 +339,11 @@ class Element(object):
         for r in abstract._relations:
             if r["src"]=="-1" or r["src"]==abstract._id:#-1 is the special autoreferencial value
                 #print wmi.getRelations(self._id, r["type"], -1)
-                if not wmi.getRelations(self._id, r["type"], "-1"):
+                if not wmi.get_relations(self._id, r["type"], "-1"):
                     return False
             else:
                 #print wmi.getRelations(-1, r["type"], self._id)
-                if not wmi.getRelations("-1", r["type"], self._id):
+                if not wmi.get_relations("-1", r["type"], self._id):
                     return False
         return True
 

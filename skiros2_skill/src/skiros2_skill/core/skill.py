@@ -217,16 +217,19 @@ class SkillInterface(SkillCore):
     def hasChildren(self):
         return len(self._children)>0
 
-    def addChild(self, p, latch=False):
-        if isinstance(p, list):
-            for i in p:
-                i._parent = self
-                self._children.append(i)
-                i._copyRemaps(self)
-        else:
-            p._parent = self
-            self._children.append(p)
-            p._copyRemaps(self)
+    def addChild(self, p, latch=False, remap={}, specify={}, preconditions=[]):
+        if not isinstance(p, list):
+            p = [p]
+        for c in p:
+            c._parent = self
+            self._children.append(c)
+            c._copyRemaps(self)
+            for k in remap:
+                c.remap(k, remap[k])
+            for k in specify:
+                c.specifyParamDefault(k, specify[k])
+            for cond in preconditions:
+                c.addPreCondition(cond)
         if latch and len(self._children)>1:
             for c in self._children[-2]._post_conditions:
                 for key in c.getKeys():
