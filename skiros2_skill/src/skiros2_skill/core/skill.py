@@ -31,6 +31,15 @@ class SkillInterface(SkillCore):
         self._input_cache = []
         self._remaps_cache=defaultdict(list)
 
+    def __call__(self, *children):
+        """
+        @brief Add a set of children skills
+        @return self for nested children declarations
+        """
+        for c in children:
+            self.addChild(c)
+        return self
+
     @property
     def parent(self):
         return self._parent
@@ -217,24 +226,15 @@ class SkillInterface(SkillCore):
     def hasChildren(self):
         return len(self._children)>0
 
-    def addChild(self, p, latch=False, remap={}, specify={}, preconditions=[]):
-        if not isinstance(p, list):
-            p = [p]
-        for c in p:
-            c._parent = self
-            self._children.append(c)
-            c._copyRemaps(self)
-            for k in remap:
-                c.remap(k, remap[k])
-            for k in specify:
-                c.specifyParamDefault(k, specify[k])
-            for cond in preconditions:
-                c.addPreCondition(cond)
+    def addChild(self, p, latch=False):
+        p._parent = self
+        self._children.append(p)
+        p._copyRemaps(self)
         if latch and len(self._children)>1:
             for c in self._children[-2]._post_conditions:
                 for key in c.getKeys():
-                    if not p._params.hasParam(key):
-                        p._params._params[key] = deepcopy(self._children[-2]._params._params[key])
+                    if not p.params.hasParam(key):
+                        p.params[key] = deepcopy(self._children[-2]._params._params[key])
             p._pre_conditions += deepcopy(self._children[-2]._post_conditions)
         return self
 
@@ -452,6 +452,7 @@ class SkillWrapper(SkillInterface):
         #self._setState(self._instance.getState())
         self._instance.modifyDescription(self)
         self._children = list()
+        self._instance.specifyParams(self.getParamsNoRemaps(), False)
         instance.expand(self)
 
     def getInstance(self):
@@ -536,6 +537,22 @@ class SkillBase(SkillInterface, object):
         @brief Expand the subtree.
         """
         raise NotImplementedError("Not implemented in abstract class")
+
+    def skill(self, stype, slabel, remap={}, specify={}, preconditions=[]):
+        """
+        @brief Utility function to wrapt getSkill and getNode and apply remaps, fixed parameters and pre-conditions
+        """
+        if isinstance(stype, str):
+            s = self.getSkill(stype, slabel)
+        else:
+            s = self.getNode(stype)
+        for k in remap:
+            s.remap(k, remap[k])
+        for k in specify:
+            s.specifyParamDefault(k, specify[k])
+        for cond in preconditions:
+            s.addPreCondition(cond)
+        return s
 
     def getSkill(self, ptype, plabel):
         """

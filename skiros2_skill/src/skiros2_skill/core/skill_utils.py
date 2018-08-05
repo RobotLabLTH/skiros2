@@ -105,10 +105,10 @@ class NodeExecutor():
             return self._autoParametrizeBB(skill)
         return True
 
-    def _importParentsConditions(self, skill, to_resolve):            
+    def _importParentsConditions(self, skill, to_resolve):
         """
         @brief Import additional conditions coming from skill's parents
-        
+
         The conditions applied on parameters of the skill are imported in the skill description,
         so they are taken into consideration when grounding
         """
@@ -254,6 +254,7 @@ class NodeExecutor():
 
     def init(self, skill):
         if not skill.hasInstance():
+            skill.specifyParams(self._params)
             self._instanciator.assignInstance(skill)
 
     def execute(self, skill):
