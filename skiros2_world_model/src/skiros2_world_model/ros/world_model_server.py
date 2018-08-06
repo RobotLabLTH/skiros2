@@ -50,7 +50,7 @@ class WorldModelServer(OntologyServer):
                     self._ontology.load(dirpath+'/'+name)
         if not self._workspace:
             self._workspace = self._skiros_dir
-        self._ontology.set_workspace(self._workspace)
+        self._ontology.workspace = self._workspace
         log.info("[{}]".format(self.__class__.__name__), "Workspace folder: {}".format(self._workspace))
         self._ontology.set_default_prefix('skiros', 'http://rvmi.aau.dk/ontologies/skiros.owl#')
         for prefix, uri1 in self._ontology._ontology.namespace_manager.store.namespaces():
@@ -109,7 +109,7 @@ class WorldModelServer(OntologyServer):
             log.info("[get_context]", "Creating context: {}.".format(context_id))
             self.contexts[context_id] = IndividualsDataset(self._verbose, context_id, self._ontology._ontology)
             self.contexts[context_id].set_default_prefix('skiros', 'http://rvmi.aau.dk/ontologies/skiros.owl#')
-            self.contexts[context_id].set_workspace(self._workspace)
+            self.contexts[context_id].workspace = self._workspace
         return self.contexts[context_id]
 
     def _load_and_save_cb(self, msg):
@@ -119,8 +119,10 @@ class WorldModelServer(OntologyServer):
             elif msg.action==msg.LOAD:
                 self._get_context(msg.context).load_context(msg.filename)
                 self._publish_change("", "reset", elements=[], context_id=msg.context)
+            else:
+                return srvs.WoLoadAndSaveResponse(False)
         if self._verbose:
-            log.info("[wmLoadAndSave]", "{} {} to file {}. Time: {:0.3f} secs".format(msg.action, msg.context, msg.filename, self._times.getLast()))
+            log.info("[wmLoadAndSave]", "{} {} to file {}. Time: {:0.3f} secs".format(msg.action, msg.context, self._get_context(msg.context).filename, self._times.getLast()))
         return srvs.WoLoadAndSaveResponse(True)
 
     def _wm_query_rel_cb(self, msg):

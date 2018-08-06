@@ -112,9 +112,11 @@ class OntologyInterface(OntologyAbstractInterface):
                 return True
         return False
 
-    def load(self, filename, context='scene'):
+    def load(self, filename="", context='scene'):
         """
         @brief Load a file in a context
+
+        If no filename is provided use the default name specified when booting the world model
         """
         msg = srvs.WoLoadAndSaveRequest()
         msg.action = msg.LOAD
@@ -125,7 +127,7 @@ class OntologyInterface(OntologyAbstractInterface):
             return res.ok
         return False
 
-    def save(self, filename, context='scene'):
+    def save(self, filename="", context='scene'):
         """
         @brief Save a context in a file
         """

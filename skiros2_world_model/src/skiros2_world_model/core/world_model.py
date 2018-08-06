@@ -18,6 +18,7 @@ class IndividualsDataset(Ontology):
         self._verbose = verbose
         self._context = self.ontology(context_id)
         self._workspace = "~"
+        self._filename = "{}.turtle".format(context_id)
         self._elements_cache = dict()
         if init:
             self.reset()
@@ -26,11 +27,27 @@ class IndividualsDataset(Ontology):
     def context(self):
         return self._context
 
-    def set_workspace(self, workspace):
+    @property
+    def filedir(self):
+        return "{}/{}".format(self.workspace, self.filename)
+
+    @property
+    def filename(self):
+        """
+        @brief Default name for load/save operations
+        """
+        return self._filename
+
+    @property
+    def workspace(self):
+        return self._workspace
+
+    @workspace.setter
+    def workspace(self, value):
         """
         @brief Set a folder for load/save operations
         """
-        self._workspace = workspace
+        self._workspace = value
 
     def reset(self):
         """
@@ -127,21 +144,25 @@ class IndividualsDataset(Ontology):
         """
         @brief Load context from file
         """
-        if not path.isfile(self._workspace+"/"+filename):
-            log.error("[load_context]", "Can't load {}. File not found. ".format(filename))
+        if filename:
+            self._filename = filename
+        if not path.isfile(self.filedir):
+            log.error("[load_context]", "Can't load {}. File not found. ".format(self.filename))
             return
         self._stop_reasoners()
         self.reset()
-        self.context.parse(self._workspace+"/"+filename, format='turtle')
+        self.context.parse(self.filedir, format='turtle')
         self._start_reasoners()
-        log.info("[load_context]", "Loaded context {}. ".format(filename))
+        log.info("[load_context]", "Loaded context {}. ".format(self.filename))
 
     @synchronized
     def save_context(self, filename):
         """
         @brief Save context to file
         """
-        self.context.serialize(self._workspace+"/"+filename, format='turtle')
+        if filename:
+            self._filename = filename
+        self.context.serialize(self.filedir, format='turtle')
 
     @synchronized
     def add_element(self, e, author):
@@ -325,7 +346,7 @@ class IndividualsDataset(Ontology):
             r.execute()
 
     def _make_unique_uri(self, e):
-        if e.id=="" or e.id.find("-")>=0:
+        if e.id=="":
             e._id = e.label
         i = 1
         while self.uri_exists(self.lightstring2uri(e.id)):
@@ -484,12 +505,14 @@ class WorldModel(IndividualsDataset):
         """
         @brief Load scene from file
         """
-        if not path.isfile(self._workspace+"/"+filename):
-            log.error("[load_scene]", "Can't load scene {}. File not found. ".format(filename))
+        if filename:
+            self._filename = filename
+        if not path.isfile(self.filedir):
+            log.error("[load_scene]", "Can't load scene {}. File not found. ".format(self.filename))
             return
         self._stop_reasoners()
         self.reset(add_root=False)
-        self.context.parse(self._workspace+"/"+filename, format='turtle')
+        self.context.parse(self.filedir, format='turtle')
         individuals = self.context.query("SELECT ?x WHERE { ?x rdf:type <http://www.w3.org/2002/07/owl#NamedIndividual>. } ")
         for i in individuals:
             i = self.uri2lightstring(i[0])
@@ -497,7 +520,7 @@ class WorldModel(IndividualsDataset):
             if iid>=0:
                 self._id_gen.getId(iid)
         self._start_reasoners()
-        log.info("[load_scene]", "Loaded scene {}. ".format(filename))
+        log.info("[load_scene]", "Loaded scene {}. ".format(self.filename))
 
     @synchronized
     def add_element(self, e, author):
