@@ -325,11 +325,11 @@ class IndividualsDataset(Ontology):
             r.execute()
 
     def _make_unique_uri(self, e):
-        if e.id=="":
+        if e.id=="" or e.id.find("-")>=0:
             e._id = e.label
         i = 1
         while self.uri_exists(self.lightstring2uri(e.id)):
-            e._id = "{}{}".format(e.label, i)
+            e._id = "{}_{}".format(e.label, i)
             i+=1
 
     def _get_recursive(self, e, rels_filter, types_filter, elist):

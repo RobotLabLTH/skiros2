@@ -61,6 +61,11 @@ class WorldModelServer(OntologyServer):
         self._ontology.reset()
         if init_scene!="":
             self._ontology.load_context(init_scene)
+        for context in rospy.get_param('~load_contexts', []):
+            context_id, filename = context.split(" ")
+            log.info("[{}]".format(self.__class__.__name__), "Loading context {} from {}".format(context_id, filename))
+            graph = self._get_context(context_id)
+            graph.load_context(filename)
 
     def _load_reasoners(self):
         """
@@ -104,6 +109,7 @@ class WorldModelServer(OntologyServer):
             log.info("[get_context]", "Creating context: {}.".format(context_id))
             self.contexts[context_id] = IndividualsDataset(self._verbose, context_id, self._ontology._ontology)
             self.contexts[context_id].set_default_prefix('skiros', 'http://rvmi.aau.dk/ontologies/skiros.owl#')
+            self.contexts[context_id].set_workspace(self._workspace)
         return self.contexts[context_id]
 
     def _load_and_save_cb(self, msg):
@@ -185,10 +191,12 @@ class WorldModelServer(OntologyServer):
             elif msg.action == msg.REMOVE:
                 for e in msg.elements:
                     self._get_context(msg.context).remove_element(utils.msg2element(e), msg.author)
+                to_ret.elements = msg.elements
                 self._publish_change(msg.author, "remove", elements=msg.elements, context_id=msg.context)
             elif msg.action == msg.REMOVE_RECURSIVE:
                 for e in msg.elements:
                     self._get_context(msg.context).remove_recursive(utils.msg2element(e), msg.author, msg.relation_filter, msg.type_filter)
+                to_ret.elements = msg.elements
                 self._publish_change(msg.author, "remove_recursive", elements=msg.elements, context_id=msg.context)
         if self._verbose:
             log.info("[WmModify]", "{} {} {}. Time: {:0.3f} secs".format(msg.author, msg.action, [e.id for e in to_ret.elements], self._times.getLast()))

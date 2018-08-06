@@ -166,6 +166,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
             msg.action = msg.REMOVE
         res = self._call(self._modify, msg)
         if(res):
+            e._id = ""
             return 1
         return -1
 
