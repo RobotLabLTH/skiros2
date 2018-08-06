@@ -347,6 +347,8 @@ class IndividualsDataset(Ontology):
 
     def _make_unique_uri(self, e):
         if e.id=="":
+            if not e.label:
+                e.label = "unknown"
             e._id = e.label
         i = 1
         while self.uri_exists(self.lightstring2uri(e.id)):
