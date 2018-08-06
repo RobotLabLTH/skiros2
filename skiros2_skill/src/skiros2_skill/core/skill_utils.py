@@ -137,7 +137,7 @@ class NodeExecutor():
         if not to_resolve:
             return True
         if self._verbose:
-            log.info("[Autoparametrize]", "To resolve {}".format(to_resolve))
+            log.info("[Autoparametrize]", "Resolving {}:{}".format(skill.type, to_resolve))
         self._importParentsConditions(skill, to_resolve)
         remap = {}
         cp = params.ParamHandler()
@@ -181,7 +181,7 @@ class NodeExecutor():
             if key != remap[key][l[index]]:
                 skill.remap(key, remap[key][l[index]])
                 remapped += "[{}={}]".format(key, remap[key][l[index]])
-        log.info("MatchBB","{}: {}".format(skill._label, remapped))
+        log.info("MatchBB","{}: {}".format(skill.type, remapped))
         return True
 
     def _autoParametrizeWm(self, skill, to_resolve, cp):

@@ -86,9 +86,7 @@ class VisitorPrint(VisitorInterface, NodePrinter, NodeExecutor):
         #Execution
         VisitorInterface.__init__(self)
         NodePrinter.__init__(self)
-        self._verbose=False
-        self._wm = wmi
-        self._instanciator = instanciator
+        NodeExecutor.__init__(self, wmi, instanciator)
         self._processor = Serial()
 
     def setVerbose(self, verbose):
