@@ -229,6 +229,20 @@ class Element(object):
         else:
             raise ValueError('Subject/Object must be of type string: subject type is {}. object type is {}'.format(type(subj), type(obj)))
 
+    def hasRelation(self, subj, predicate, obj, value=True, abstract=False):
+        """
+        @brief Add a relation with another element
+        @subj An element or an element id
+        @obj An element or an element id
+        @value The state of the relation should be True or False
+        @abstract Whether the relation is between abstract objects or instances
+        """
+        if subj=="-1":
+            subj = self.id
+        elif obj=="-1":
+            obj = self.id
+        return {'src': subj, 'type': predicate, 'dst': obj, 'state': value, 'abstract': abstract} in self._relations
+
     def hasProperty(self, key, value=None):
         """
         @brief Return true if element has the property.

@@ -354,9 +354,11 @@ class ConditionRelation(ConditionBase):
         subj = ph.getParamValue(self._subject_key)
         obj = ph.getParamValue(self._object_key)
         if subj.getIdNumber()<0:
-            subj.addRelation("-1", self._owl_label, self._object_key, self._desired_state)
-        if obj.getIdNumber()<0:
-            obj.addRelation(self._subject_key, self._owl_label, "-1", self._desired_state)
+            if not subj.hasRelation("-1", self._owl_label, self._object_key, self._desired_state):
+                subj.addRelation("-1", self._owl_label, self._object_key, self._desired_state)
+        elif obj.getIdNumber()<0:
+            if not obj.hasRelation("-1", self._owl_label, self._object_key, self._desired_state):
+                obj.addRelation(self._subject_key, self._owl_label, "-1", self._desired_state)
 
     def toElement(self):
         to_ret = Element("skiros:" + self.__class__.__name__, self._label)
@@ -437,9 +439,11 @@ class AbstractConditionRelation(ConditionBase):
         subj = ph.getParamValue(self._subject_key)
         obj = ph.getParamValue(self._object_key)
         if subj.getIdNumber()<0:
-            subj.addRelation("-1", self._owl_label, self._object_key, self._desired_state, abstract=True)
+            if not subj.hasRelation("-1", self._owl_label, self._object_key, self._desired_state, abstract=True):
+                subj.addRelation("-1", self._owl_label, self._object_key, self._desired_state, abstract=True)
         if obj.getIdNumber()<0:
-            obj.addRelation(self._subject_key, self._owl_label, "-1", self._desired_state, abstract=True)
+            if not obj.hasRelation("-1", self._owl_label, self._object_key, self._desired_state, abstract=True):
+                obj.addRelation(self._subject_key, self._owl_label, "-1", self._desired_state, abstract=True)
 
     def toElement(self):
         to_ret = Element("skiros:" + self.__class__.__name__, self._label)
@@ -693,53 +697,53 @@ class ConditionGenerate(ConditionBase):
         to_ret.setProperty("skiros:hasSubject", self._subject_key)
         to_ret.setProperty("skiros:desiredState", self._desired_state)
         return to_ret
-        
-        
-class ConditionOnType(ConditionBase):  
+
+
+class ConditionOnType(ConditionBase):
     def __init__(self, clabel, subj, value):
-        self._subject_key=subj      
-        self._label=clabel   
-        self._value=value  
-        self._params = None 
+        self._subject_key=subj
+        self._label=clabel
+        self._value=value
+        self._params = None
         self._setDescription()
-               
+
     def isEqual(self, other):
         if isinstance(other, ConditionOnType):
-            return self._subject_key==other._subject_key and self._value==other._value 
+            return self._subject_key==other._subject_key and self._value==other._value
         else:
             return False
-             
+
     def hasConflict(self, other):
         if isinstance(other, ConditionOnType):
             return self._subject_key==other._subject_key
         else:
             return False
-            
-    def _setDescription(self):  
-        self._description = "[{}] {} is of type {}".format(self._label, 
-                              self._subject_key, 
-                              self._value) 
-                                  
+
+    def _setDescription(self):
+        self._description = "[{}] {} is of type {}".format(self._label,
+                              self._subject_key,
+                              self._value)
+
     def evaluate(self, ph, wmi):
         self._params = ph
         self._wm = wmi
         st = self._params[self._subject_key].value.type
         types = wmi.get_sub_classes(st) + [st]
-        return self._value in types 
-        
-    def setTrue(self, ph, wmi):   
+        return self._value in types
+
+    def setTrue(self, ph, wmi):
         return True
-        
-    def revert(self, ph, wmi):       
+
+    def revert(self, ph, wmi):
         return True
-        
+
     def setDesiredState(self, ph):
         e = ph.getParamValue(self._subject_key)
-        if e.id>=0: 
+        if e.id>=0:
             return
-        else: 
+        else:
             e._type = self._value
-            
+
     def toElement(self):
         to_ret = Element("skiros:" + self.__class__.__name__, self._label)
         to_ret.setProperty("skiros:hasSubject", self._subject_key)

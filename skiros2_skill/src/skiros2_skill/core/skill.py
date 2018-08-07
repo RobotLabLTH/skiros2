@@ -126,16 +126,16 @@ class SkillInterface(SkillCore):
         #Ignore harmful remappings
         if self._remaps.has_key(initial_key):
             if self._remaps[initial_key]==target_key:#Redundant
-                #log.warn(self._label, "Ignoring redundant remap {}->{}".format(initial_key, target_key))
+                #log.warn(self.type, "Ignoring redundant remap {}->{}".format(initial_key, target_key))
                 return
             else:#Already remapped
-                log.warn(self._label, "Key {} already remapped to {}. Can t remap to {}".format(initial_key, self._remaps[initial_key], target_key))
+                log.warn(self.type, "Key {} already remapped to {}. Can t remap to {}".format(initial_key, self._remaps[initial_key], target_key))
                 return
 
         #log.warn("Remap", "{} {} {}. Existing: {}".format(self.type, initial_key, target_key, self._remaps))
         #The current 2->3 is related to an existing remap 1->2
-        if initial_key in self._remaps.values():
-            log.info("ChainRemap", "{}: {}->{}->{}".format(self.type, self._remaps.keys()[self._remaps.values()(initial_key)], initial_key, target_key))
+#        if initial_key in self._remaps.values():
+#            log.info("ChainRemap", "{}: {}->{}->{}".format(self.type, self._remaps.keys()[self._remaps.values().index(initial_key)], initial_key, target_key))
 
         for c in self._children:
             c.remap(initial_key, target_key)
@@ -145,7 +145,7 @@ class SkillInterface(SkillCore):
             target_key = self.get_remap(target_key)
 
         if self.params.hasParam(target_key):
-            log.warn(self.type, "Key {} already present in the map, remapping would shadow a parameter.".format(target_key))
+            log.error("Remap", "{}: Invalid remapping {}->{}, target key is already present.".format(self.type, initial_key, target_key))
             return
 
         if self.params.hasParam(initial_key):
@@ -541,7 +541,7 @@ class SkillBase(SkillInterface, object):
         """
         raise NotImplementedError("Not implemented in abstract class")
 
-    def skill(self, stype, slabel, remap={}, specify={}, preconditions=[]):
+    def skill(self, stype, slabel="", remap={}, specify={}, preconditions=[]):
         """
         @brief Utility function to wrapt getSkill and getNode and apply remaps, fixed parameters and pre-conditions
         """

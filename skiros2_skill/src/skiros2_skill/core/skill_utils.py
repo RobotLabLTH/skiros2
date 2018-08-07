@@ -136,8 +136,7 @@ class NodeExecutor():
         to_resolve = [key for key, param in skill._params.getParamMap().iteritems() if param.paramType!=params.ParamTypes.Optional and param.dataTypeIs(wm.Element) and param.getValue().getIdNumber() < 0]
         if not to_resolve:
             return True
-        if self._verbose:
-            log.info("[Autoparametrize]", "Resolving {}:{}".format(skill.type, to_resolve))
+        log.assertInfo(self._verbose, "[Autoparametrize]", "Resolving {}:{}".format(skill.type, to_resolve))
         self._importParentsConditions(skill, to_resolve)
         remap = {}
         cp = params.ParamHandler()

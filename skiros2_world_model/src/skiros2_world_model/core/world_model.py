@@ -123,9 +123,12 @@ class IndividualsDataset(Ontology):
 
     def get_relations(self, r):
         to_ret = []
-        triples = self.context.triples((self.lightstring2uri(r['src']), self.lightstring2uri(r['type']), self.lightstring2uri(r['dst'])))
-        for s, p, o in triples:
-            to_ret.append(utils.makeRelation(self.uri2lightstring(s), self.uri2lightstring(p), self.uri2lightstring(o)))
+        predicates = self.context.predicates(self.lightstring2uri(r['src']), self.lightstring2uri(r['dst']))
+        ptypes = self.get_sub_properties(r['type'])
+        for p in predicates:
+            p = self.uri2lightstring(p)
+            if p in ptypes:
+                to_ret.append(utils.makeRelation(r['src'], p, r['dst']))
         return to_ret
 
     def get_element(self, uri):
@@ -270,7 +273,7 @@ class IndividualsDataset(Ontology):
             e = self.get_element(e.id)
         except:
             log.warn("[remove_element]", "Trying to remove element {}, but doesn't exist.".format(e.id))
-            return e.id
+            return False
         for name, r in self._reasoners.iteritems():
             if not r.parse(e, "remove"):
                 raise Exception("Reasoner {} rejected the element {} removal".format(name, e))
@@ -279,7 +282,7 @@ class IndividualsDataset(Ontology):
             self._remove(s, author, is_relation)
         if self._elements_cache.has_key(e.id):
             del self._elements_cache[e.id]
-        return e.id
+        return True
 
     @synchronized
     def remove_recursive(self, e, author, rel_filter="", type_filter=""):
@@ -560,6 +563,7 @@ class WorldModel(IndividualsDataset):
         """
         Remove an element from the scene
         """
-        IndividualsDataset.remove_element(self, e, author)
-        self._id_gen.removeId(self._uri2id(e.id))
-        return e.id
+        if IndividualsDataset.remove_element(self, e, author):
+            self._id_gen.removeId(self._uri2id(e.id))
+            return True
+        return False

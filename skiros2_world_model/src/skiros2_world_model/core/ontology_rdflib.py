@@ -118,7 +118,7 @@ class Ontology:
         """
         self.ontology(context_id).serialize(destination=file, format='turtle')
 
-    def query(self, query, cut_prefix=False, context_id=""):
+    def query(self, query, context_id=""):
         return self.ontology(context_id).query(query)
 
     def add_relation(self, r, context_id, author):

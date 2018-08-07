@@ -68,19 +68,21 @@ class OntologyServer(object):
     def _wo_query_cb(self, msg, trial=0):
         to_ret = srvs.WoQueryResponse()
         try:
+            log.assertInfo(self._verbose, "[WoQuery]", "Query: {}. Context: {}".format(msg.query_string, msg.context))
             with self._times:
                 for s in self._ontology.query(msg.query_string, context_id=msg.context):
                     temp = ""
                     for r in s:
-                        if msg.cut_prefix:
+                        if r is None:
+                            continue
+                        elif msg.cut_prefix:
                             temp += self._ontology.uri2lightstring(r)
                         else:
                             temp += r.n3()
                         if len(s)>1:
                             temp += " "
                     to_ret.answer.append(temp)
-            if self._verbose:
-                log.info("[WoQuery]", "Query: {}. Answer: {}. Time: {:0.3f} sec".format(msg.query_string, to_ret.answer, self._times.getLast()))
+            log.assertInfo(self._verbose, "[WoQuery]", "Answer: {}. Time: {:0.3f} sec".format(to_ret.answer, self._times.getLast()))
         except (AttributeError, ParseException) as e:
             #TODO: Understand what is going wrong here. For now just retry the query a couple of times seems to cover the bug
             log.error("[WoQuery]", "Parse error with following query: {}. Error: {}".format(msg.query_string, e))
@@ -97,8 +99,7 @@ class OntologyServer(object):
                     self._ontology.add_relation(utils.msg2relation(s.relation), msg.context, msg.author)
                 else:
                     self._ontology.remove_relation(utils.msg2relation(s.relation), msg.context, msg.author)
-        if self._verbose:
-            log.info("[WoModify]", "Done in {} sec".format(self._times.getLast()))
+        log.assertInfo(self._verbose, "[WoModify]", "Done in {} sec".format(self._times.getLast()))
         return srvs.WoModifyResponse(True)
 
     def run(self):
