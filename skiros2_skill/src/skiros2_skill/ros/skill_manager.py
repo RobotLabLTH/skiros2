@@ -316,7 +316,7 @@ class SkillManagerNode(DiscoverableNode):
         #self._sm._local_wm.printModel()
         #Start communications
         self._command = rospy.Service('~command', srvs.SkillCommand, self._commandCb)
-        self._monitor = rospy.Publisher("skill_managers/monitor", msgs.SkillProgress, queue_size=20)
+        self._monitor = rospy.Publisher("~monitor", msgs.SkillProgress, queue_size=20)
         rospy.on_shutdown(self.shutdown)
         self.init_discovery("skill_managers", robot_name)
 
@@ -362,7 +362,7 @@ class SkillManagerNode(DiscoverableNode):
     def _onProgressUpdate(self, *args, **kwargs):
         log.debug("[{}]".format(self.__class__.__name__), "{}:Task[{task_id}]{type}:{label}[{id}]: Message[{code}]: {msg} ({state})".format(self._sm._agent_name[1:], **kwargs))
         msg = msgs.SkillProgress()
-        msg.robot = self._sm._agent_name
+        msg.robot = rospy.get_name()
         msg.task_id = kwargs['task_id']
         msg.id = kwargs['id']
         msg.type = kwargs['type']

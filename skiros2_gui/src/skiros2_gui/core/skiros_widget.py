@@ -295,10 +295,11 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         self.wm_update_signal.connect(lambda d: self.on_wm_update(d))
         self.sl_progress_signal.connect(lambda d: self.on_progress_update(d))
 
-        self.tableWidget_output.setColumnWidth(0, 120)
+        self.tableWidget_output.setColumnWidth(0, 60)
         self.tableWidget_output.setColumnWidth(1, 120)
-        self.tableWidget_output.setColumnWidth(2,  80)
-        self.tableWidget_output.setColumnWidth(3,  50)
+        self.tableWidget_output.setColumnWidth(2, 120)
+        self.tableWidget_output.setColumnWidth(3, 60)
+        self.tableWidget_output.setColumnWidth(4, 40)
         self.reset()
 
 
@@ -308,7 +309,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         #because they are running in a different thread.
         self.initInteractiveServer(SkirosWidget.widget_id)
         self._wmi = wmi.WorldModelInterface(SkirosWidget.widget_id)
-        self._sli = sli.SkillLayerInterface()
+        self._sli = sli.SkillLayerInterface(SkirosWidget.widget_id)
 
         #Setup a timer to keep interface updated
         self.refresh_timer = QTimer()
@@ -323,7 +324,6 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         self._wm_mutex = Lock()
 
         #Skill tab
-        self._curr_task = None
 
         #Log tab
         self.log_file = None
@@ -365,14 +365,17 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
 #==============================================================================
 
     def on_progress_update(self, msg):
-        last_msg = self.tableWidget_output.item(self.tableWidget_output.rowCount()-1, 4).text() if self.tableWidget_output.rowCount()>0 else ""
-        if msg.progress_message!="Start" and msg.progress_message!="End" and msg.progress_message!=last_msg:
+        last_msg = self.tableWidget_output.item(self.tableWidget_output.rowCount()-1, 5).text() if self.tableWidget_output.rowCount()>0 else ""
+        if msg.progress_message!="Start" and (msg.label.find("task")>=0 or (msg.progress_message!="End" and msg.progress_message!=last_msg)):
             self.tableWidget_output.insertRow(self.tableWidget_output.rowCount())
-            self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 0, QTableWidgetItem(msg.label))
-            self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 1, QTableWidgetItem(msg.type))
-            self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 2, QTableWidgetItem(State(msg.state).name))
-            self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 3, QTableWidgetItem(str(msg.progress_code)))
-            self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 4, QTableWidgetItem(msg.progress_message))
+            self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 0, QTableWidgetItem("{:0.3f}".format(msg.progress_time)))
+            self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 1, QTableWidgetItem(msg.parent_id))
+            self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 2, QTableWidgetItem(msg.label))
+            self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 3, QTableWidgetItem(State(msg.state).name))
+            self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 4, QTableWidgetItem(str(msg.progress_code)))
+            progress = QTableWidgetItem(str(msg.progress_message))
+            progress.setToolTip(str(msg.progress_message))
+            self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 5, progress)
             self.tableWidget_output.scrollToBottom()
         self.save_log(msg, "skill")
 
@@ -381,7 +384,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         """
         Keeps interface updated
         """
-        if self._sli.hasChanges():
+        if self._sli.has_changes:
             self.skill_combo_box.clear()
             for ak, e in self._sli._agents.iteritems():
                 for sk, s in e._skill_list.iteritems():
@@ -753,7 +756,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
 #==============================================================================
 # Skill
 #==============================================================================
-    def _getParameters(self, layout, params):
+    def _get_parameters(self, layout, params):
         i = -1
         for i in range(0, layout.count()/2):
             key = layout.itemAtPosition(i, 0).widget().text()
@@ -774,8 +777,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
                     return False
         return True
 
-
-    def _addParameter(self, layout, row, param):
+    def _add_parameter(self, layout, row, param):
         layout.setColumnStretch(2, 10)
         layout.setRowMinimumHeight(row, 2)
         layout.addWidget(QLabel(param._key), row, 0)
@@ -808,9 +810,9 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
                 item.widget().deleteLater()
             #Add params
             i = 0
-            for _, p in skill.ph.iteritems():
+            for p in skill.ph.values():
                 if self.modality_checkBox.isChecked() or not p.paramTypeIs(ParamTypes.Optional):
-                    self._addParameter(self.skill_params_layout, i, p)
+                    self._add_parameter(self.skill_params_layout, i, p)
                     i += 1
 
     @Slot()
@@ -820,19 +822,20 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
     @Slot()
     def on_skill_exe_button_clicked(self):
         skill = deepcopy(self.skill_combo_box.itemData(self.skill_combo_box.currentIndex()))
-        if self._getParameters(self.skill_params_layout, skill.ph):
-            self._curr_task = [skill.manager, self._sli.getAgent(skill.manager).execute([skill], SkirosWidget.widget_id)]
-            if self._curr_task[1]<0:
-                self._curr_task = None
-
+        #Start logger
+        if not self._sli.has_active_tasks:
+            prefix = self.logs_file_lineEdit.text()
+            prefix = prefix[0:prefix.rfind("/")]
+            self.logs_file_lineEdit.setText("{}/{}_{}".format(prefix, datetime.now().strftime("%Y-%m-%d:%H:%M:%S"), skill.name))
+            self.on_save_logs_checkBox_clicked()
+        #Send command
+        if self._get_parameters(self.skill_params_layout, skill.ph):
+            self._sli.execute(skill.manager, [skill])
 
     @Slot()
     def on_skill_stop_button_clicked(self):
-        if self._curr_task is not None:
-            self._sli.getAgent(self._curr_task[0]).preempt(self._curr_task[1], SkirosWidget.widget_id)
-            self._curr_task[1] -= 1
-            if self._curr_task[1]<0:
-                self._curr_task = None
+        if self._sli.has_active_tasks:
+            self._sli.preempt_one()
 
 #==============================================================================
 # Logs
@@ -858,13 +861,13 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
 
     def save_log(self, msg, log_type):
         if log_type=="skill":
-            string = "{} {} {} {} [{}] {} {:0.4f}".format(datetime.now(), msg.parent_id, msg.label, State(msg.state).name, msg.progress_code, msg.progress_message, msg.progress_time)
+            string = "{} {:0.4f} {} {} {} [{}] {}".format(datetime.now().strftime("%H:%M:%S"), msg.progress_time, msg.parent_id, msg.label, State(msg.state).name, msg.progress_code, msg.progress_message)
         elif log_type=="wm_edit":
             if not msg.relation:
                 string = "{} {} {} {}".format(datetime.now(), "WM", msg.action, [e.id for e in msg.elements])
             else:
                 relation = rosutils.msg2relation(msg.relation[0])
-                string = "{} {} {}_relation {}-{}-{}".format(datetime.now(), "WM", msg.action, relation['src'], relation['type'], relation['dst'])
+                string = "{} {} {}_relation {}-{}-{}".format(datetime.now().strftime("%H:%M:%S"), "WM", msg.action, relation['src'], relation['type'], relation['dst'])
         if self.save_logs_checkBox.isChecked():
             self.logs_textEdit.append(string)
             self.log_file.write(string+"\n")

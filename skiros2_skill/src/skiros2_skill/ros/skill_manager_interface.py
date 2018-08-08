@@ -40,7 +40,7 @@ from multiprocessing import Lock, Event
 class SkillManagerInterface:
     def __init__(self, manager_name):
         self._skill_mgr_name = manager_name
-        self._monitored_tasks = dict()
+        self._active_tasks = list()
         self._module_list = dict()
         self._skill_list = dict()
         self._msg_lock = Lock()
@@ -48,52 +48,27 @@ class SkillManagerInterface:
         rospy.wait_for_service(self._skill_mgr_name + '/get_skills')
         self._skill_exe_client = rospy.ServiceProxy(self._skill_mgr_name + '/command', srvs.SkillCommand)
         self._get_skills = rospy.ServiceProxy(self._skill_mgr_name + '/get_skills', srvs.ResourceGetDescriptions)
-        self.getSkillList(True)
+        self._monitor_sub = rospy.Subscriber(self._skill_mgr_name + '/monitor', msgs.SkillProgress, self._progress_cb)
+        self._monitor_cb = None
+        self.get_skill_list(True)
 
-    def printState(self):
+    @property
+    def name(self):
+        return self._skill_mgr_name
+
+    @property
+    def active_tasks(self):
+        return self._active_tasks
+
+    def print_state(self):
         temp = "Skills: { "
-        for c in self.getSkillList():
+        for c in self.get_skill_list():
             temp += c
             temp += ", "
         temp += "}"
         return temp
 
-    def _smMonitorCB(self, msg):
-        #with self._mutex:
-        print msg
-        execution_id = msg.owner
-        if self._monitored_tasks.has_key(execution_id):
-            with self._msg_lock:
-                self._monitored_tasks[execution_id] = msg
-                self._msg_rec.set()
-
-    def waitResult(self, execution_id, timeout=None):
-        if not self._monitored_tasks.has_key(execution_id):
-            log.warn("SkillManagerInterface.waitResult", "No task {} in list ".format(execution_id))
-            return False
-        if not self._monitored_tasks[execution_id]:
-            self._msg_rec.wait(timeout)
-        with self._msg_lock:
-            while not self._monitored_tasks[execution_id].state in ['failure', 'preempted', 'success']:
-                self._msg_lock.release()
-                if not self._msg_rec.wait(timeout):
-                    pass #Unreliable: it returns false if it fails to lock the event
-                    #log.warn("SkillManagerInterface.waitResult", "Hit timeout {}".format(timeout))
-                    #return False
-                self._msg_lock.acquire()
-                self._msg_rec.clear()
-        if(self._monitored_tasks[execution_id].status == 'success'):
-            return True
-        else:
-            log.warn("SkillManagerInterface.waitResult", "Final status {}".format(self._monitored_tasks[execution_id].status))
-            return False
-
-    def getResult(self, execution_id):
-        if not self._monitored_tasks.has_key(execution_id):
-            return False
-        return utils.deserializeParamMap(self._monitored_tasks[execution_id].resource.status)
-
-    def getSkillList(self, update=False):
+    def get_skill_list(self, update=False):
         if update or not self._skill_list:
             msg = srvs.ResourceGetDescriptionsRequest()
             res = self.call(self._get_skills, msg)
@@ -105,7 +80,7 @@ class SkillManagerInterface:
                 self._skill_list[c.name] = SkillHolder("", c.type, c.name, utils.deserializeParamMap(c.params))
         return self._skill_list
 
-    def getSkill(self, name):
+    def get_skill(self, name):
         return self._skill_list[name]
 
     def execute(self, skill_list, author):
@@ -120,21 +95,55 @@ class SkillManagerInterface:
         if not res.ok:
             log.error("Can t execute task ")
             return -1
-        self._monitored_tasks[res.execution_id] = None
+        self._active_tasks.append(res.execution_id)
         return res.execution_id
 
-    def preempt(self, execution_id, author):
+    def preempt(self, author, execution_id=None):
         msg = srvs.SkillCommandRequest()
         msg.action = msg.PREEMPT;
         msg.author = author;
+        if not self.active_tasks:
+            return False
+        if execution_id is None:
+            execution_id = self.active_tasks[-1]
         msg.execution_id = execution_id
         res = self.call(self._skill_exe_client, msg)
         if res is None:
             return False
-        if not res.ok:
+        elif not res.ok:
             log.error("Can t stop task " + execution_id)
             return False
+        self._active_tasks.remove(execution_id)
         return True
+
+    def preempt_all(self, author):
+        msg = srvs.SkillCommandRequest()
+        msg.action = msg.PREEMPT;
+        msg.author = author;
+        msg.execution_id = -1
+        res = self.call(self._skill_exe_client, msg)
+        if res is None:
+            return False
+        elif not res.ok:
+            log.error("Can t stop tasks.")
+            return False
+        self._active_tasks = list()
+        return True
+
+    def set_monitor_cb(self, cb):
+        """
+        @brief Set an external callback on skill execution feedback
+        """
+        self._monitor_cb = cb
+
+    def _progress_cb(self, msg):
+        if msg.label.find("task")>=0 and msg.progress_message=="End" and msg.state!=msg.IDLE:
+            try:
+                self._active_tasks.remove(int(msg.task_id))
+            except Exception:
+                pass
+        if self._monitor_cb:
+            self._monitor_cb(msg)
 
     def call(self, service, msg):
         try:

@@ -45,8 +45,9 @@ class TaskManagerNode(PrettyObject):
         self._skills = {}
         self._abstract_objects = []
 
-        self._wmi = wmi.WorldModelInterface()
-        self._sli = sli.SkillLayerInterface(self._onMonitorMsg)
+        self._wmi = wmi.WorldModelInterface(self._author_name)
+        self._sli = sli.SkillLayerInterface(self._author_name)
+        self._sli.set_monitor_cb(self._onMonitorMsg)
         self._pddl_interface = pddl.PddlInterface(rospkg.RosPack().get_path("skiros2_task"))
 
         self._verbose=rospy.get_param('~verbose', True)
@@ -67,7 +68,7 @@ class TaskManagerNode(PrettyObject):
         Returns:
             dict: {Skill name : instance? }
         """
-        if self._sli.hasChanges():
+        if self._sli.has_changes:
             self._skills.clear()
             for ak, e in self._sli._agents.iteritems():
                 for sk, s in e._skill_list.iteritems():
@@ -323,10 +324,10 @@ class TaskManagerNode(PrettyObject):
 
     def execute(self):
         if self._task:
-            self._curr_task = (self._task[0].manager, self._sli.getAgent(self._task[0].manager).execute(self._task, self._author_name))
+            self._sli.execute(self._task[0].manager, self._task)
 
     def preempt(self):
-        self._sli.getAgent(self._curr_task[0]).preempt(self._curr_task[1], self._author_name)
+        self._sli.preempt()
 
     def run(self):
         rospy.spin()

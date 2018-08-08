@@ -44,7 +44,7 @@
       </size>
      </property>
      <property name="currentIndex">
-      <number>2</number>
+      <number>0</number>
      </property>
      <property name="usesScrollButtons">
       <bool>false</bool>
@@ -650,7 +650,7 @@
       <set>QAbstractItemView::NoEditTriggers</set>
      </property>
      <property name="columnCount">
-      <number>5</number>
+      <number>6</number>
      </property>
      <attribute name="horizontalHeaderCascadingSectionResizes">
       <bool>true</bool>
@@ -669,12 +669,17 @@
      </attribute>
      <column>
       <property name="text">
-       <string>Skill</string>
+       <string>Time</string>
       </property>
      </column>
      <column>
       <property name="text">
-       <string>Type</string>
+       <string>Parent</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Skill</string>
       </property>
      </column>
      <column>

@@ -20,28 +20,31 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         self._query_relations = rospy.ServiceProxy('wm/scene/query_relations', srvs.WmQueryRelations)
         self._last_snapshot_id = ""
         self._make_cache = make_cache
-        if make_cache:
-            self._monitor = rospy.Subscriber("wm/monitor", msgs.WmMonitor, self._monitor_cb, queue_size=100)
+        self._external_monitor_cb = None
+        self._monitor = rospy.Subscriber("wm/monitor", msgs.WmMonitor, self._monitor_cb, queue_size=100)
 
     def _monitor_cb(self, msg):
-        if self._last_snapshot_id!=msg.prev_snapshot_id or msg.action=='reset':
-            WorldModelInterface._elements_cache.clear()
-        self._last_snapshot_id = msg.snapshot_id
-        for elem in msg.elements:
-            elem = utils.msg2element(elem)
-            if msg.action == 'update' or msg.action == 'update_properties' or msg.action == 'add':
-                WorldModelInterface._elements_cache[elem.id] = elem
-            elif msg.action == 'remove' or msg.action == 'remove_recursive':
-                if WorldModelInterface._elements_cache.has_key(elem.id):
-                    del WorldModelInterface._elements_cache[elem.id]
-            else:
-                log.error("[WmMonitor]", "Command {} not recognized.".format(msg.action))
-        if msg.relation:
-            rel = utils.msg2relation(msg.relation[0])
-            if WorldModelInterface._elements_cache.has_key(rel['src']):
-                del WorldModelInterface._elements_cache[rel['src']]
-            if WorldModelInterface._elements_cache.has_key(rel['dst']):
-                del WorldModelInterface._elements_cache[rel['dst']]
+        if self._make_cache:
+            if self._last_snapshot_id!=msg.prev_snapshot_id or msg.action=='reset':
+                WorldModelInterface._elements_cache.clear()
+            self._last_snapshot_id = msg.snapshot_id
+            for elem in msg.elements:
+                elem = utils.msg2element(elem)
+                if msg.action == 'update' or msg.action == 'update_properties' or msg.action == 'add':
+                    WorldModelInterface._elements_cache[elem.id] = elem
+                elif msg.action == 'remove' or msg.action == 'remove_recursive':
+                    if WorldModelInterface._elements_cache.has_key(elem.id):
+                        del WorldModelInterface._elements_cache[elem.id]
+                else:
+                    log.error("[WmMonitor]", "Command {} not recognized.".format(msg.action))
+            if msg.relation:
+                rel = utils.msg2relation(msg.relation[0])
+                if WorldModelInterface._elements_cache.has_key(rel['src']):
+                    del WorldModelInterface._elements_cache[rel['src']]
+                if WorldModelInterface._elements_cache.has_key(rel['dst']):
+                    del WorldModelInterface._elements_cache[rel['dst']]
+        if self._external_monitor_cb:
+            self._external_monitor_cb(msg)
 
     def get_scene_name(self):
         """
@@ -65,8 +68,8 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         if(res):
             return ([utils.msg2element(x) for x in res.elements], res.snapshot_id)
 
-    def set_monitor_cb(self, callback):
-        self._monitor = rospy.Subscriber("wm/monitor", msgs.WmMonitor, callback)
+    def set_monitor_cb(self, cb):
+        self._external_monitor_cb = cb
 
     def set_relation(self, subj, pred, obj, value=True):
         msg = srvs.WmSetRelationRequest()
