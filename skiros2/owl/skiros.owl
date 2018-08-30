@@ -474,6 +474,7 @@
 
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#Weight">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#PhysicalObjectProperty"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#float"/>
     </owl:DatatypeProperty>
 
 
