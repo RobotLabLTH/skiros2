@@ -51,6 +51,13 @@ class SkillLayerInterface(DiscoveryInterface):
             return self._agents[agent.getProperty("skiros:SkillMgr").value]
 
     @property
+    def agents(self):
+        """
+        @brief Return the list of available skill managers
+        """
+        return self._agents
+
+    @property
     def has_changes(self):
         if self._new_changes:
             self._new_changes = False

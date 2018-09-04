@@ -60,6 +60,13 @@ class SkillManagerInterface:
     def active_tasks(self):
         return self._active_tasks
 
+    @property
+    def skills(self):
+        """
+        @brief Return the list of available skills
+        """
+        return self.get_skill_list(update=False)
+
     def print_state(self):
         temp = "Skills: { "
         for c in self.get_skill_list():
