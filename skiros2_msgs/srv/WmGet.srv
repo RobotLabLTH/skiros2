@@ -5,6 +5,7 @@ string RESOLVE=resolve
 string GET_RECURSIVE=get_recursive
 
 string action
+string context
 WmElement element
 string relation_filter
 string type_filter

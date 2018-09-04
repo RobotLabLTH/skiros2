@@ -39,13 +39,13 @@ class PrimitiveBase(SkillCore):
         @time The time to evaluate if a parameter was changed
         """
         for k, p in self.params.iteritems():
-            vs = p.values
             if p.dataTypeIs(Element()) and p.hasChanges(time):
-                for e in vs:
+                vs = p.values
+                for i, e in enumerate(vs):
                     if not e.isAbstract():
-                        self._wmi.updateElement(e)
+                        self._wmi.update_element(e)
                     else:
-                        self._wmi.addElement(e)
+                        vs[i] = self._wmi.add_element(e)
 
     #-------- User's functions--------
     def startError(self, msg, code):

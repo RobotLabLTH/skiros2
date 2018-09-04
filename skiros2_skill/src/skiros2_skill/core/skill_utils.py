@@ -53,7 +53,7 @@ class NodeExecutor():
             if p.dataTypeIs(wm.Element):
                 for i, e in enumerate(vs):
                     if e.id!="":
-                        vs[i] = self._wm.getElement(e.id)
+                        vs[i] = self._wm.get_element(e.id)
                 p.values = vs
 
     def trackParam(self, key, prop="", relation="", print_all=False):
@@ -101,14 +101,14 @@ class NodeExecutor():
                 skill._params.setDefault(k)
                 p = skill._params.getParam(k)
                 if p.dataTypeIs(wm.Element()) and p.getValue().getIdNumber()>=0:
-                    skill._params.specify(k, self._wm.getElement(p.getValue()._id))
+                    skill._params.specify(k, self._wm.get_element(p.getValue()._id))
             return self._autoParametrizeBB(skill)
         return True
 
-    def _importParentsConditions(self, skill, to_resolve):            
+    def _importParentsConditions(self, skill, to_resolve):
         """
         @brief Import additional conditions coming from skill's parents
-        
+
         The conditions applied on parameters of the skill are imported in the skill description,
         so they are taken into consideration when grounding
         """
@@ -136,8 +136,7 @@ class NodeExecutor():
         to_resolve = [key for key, param in skill._params.getParamMap().iteritems() if param.paramType!=params.ParamTypes.Optional and param.dataTypeIs(wm.Element) and param.getValue().getIdNumber() < 0]
         if not to_resolve:
             return True
-        if self._verbose:
-            log.info("[Autoparametrize]", "To resolve {}".format(to_resolve))
+        log.assertInfo(self._verbose, "[Autoparametrize]", "Resolving {}:{}".format(skill.type, to_resolve))
         self._importParentsConditions(skill, to_resolve)
         remap = {}
         cp = params.ParamHandler()
@@ -181,14 +180,14 @@ class NodeExecutor():
             if key != remap[key][l[index]]:
                 skill.remap(key, remap[key][l[index]])
                 remapped += "[{}={}]".format(key, remap[key][l[index]])
-        log.info("MatchBB","{}: {}".format(skill._label, remapped))
+        log.info("MatchBB","{}: {}".format(skill.type, remapped))
         return True
 
     def _autoParametrizeWm(self, skill, to_resolve, cp):
         """
         ground undefined parameters with elements in the world model
         """
-        matches = self._wm.resolveElements2(to_resolve, cp)
+        matches = self._wm.resolve_elements2(to_resolve, cp)
         _grounded = ''
         for key, match in matches.iteritems():
             if match.any():
@@ -254,6 +253,7 @@ class NodeExecutor():
 
     def init(self, skill):
         if not skill.hasInstance():
+            skill.specifyParams(self._params)
             self._instanciator.assignInstance(skill)
 
     def execute(self, skill):

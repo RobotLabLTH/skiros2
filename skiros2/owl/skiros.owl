@@ -22,8 +22,6 @@
      -->
 
 
-
-
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#hasTemplate -->
 
     <owl:ObjectProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#hasTemplate">
@@ -476,6 +474,7 @@
 
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#Weight">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#PhysicalObjectProperty"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#float"/>
     </owl:DatatypeProperty>
 
 
@@ -537,6 +536,11 @@
      -->
 
 
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#DepthCamera -->
+
+    <owl:Class rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#DepthCamera">
+        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/RParts.owl#Sensor"/>
+    </owl:Class>
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#CompoundSkill -->

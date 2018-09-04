@@ -43,16 +43,16 @@ class OntologyServer(object):
         rospy.init_node("ontology", anonymous=anonymous)
         self._verbose = rospy.get_param('~verbose', False)
         self._ontology =  Ontology()
-        self.initOntologyServices()
+        self.init_ontology_services()
 
-    def initOntologyServices(self):
+    def init_ontology_services(self):
         self._times = TimeKeeper()
         self._mutex = Lock()
-        self._mutex_srv = rospy.Service('~lock', SetBool, self._lockCb)
-        self._query = rospy.Service('~ontology/query', srvs.WoQuery, self._woQueryCb)
-        self._modify = rospy.Service('~ontology/modify', srvs.WoModify, self._woModifyCb)
+        self._mutex_srv = rospy.Service('~lock', SetBool, self._lock_cb)
+        self._query = rospy.Service('~ontology/query', srvs.WoQuery, self._wo_query_cb)
+        self._modify = rospy.Service('~ontology/modify', srvs.WoModify, self._wo_modify_cb)
 
-    def _lockCb(self, msg):
+    def _lock_cb(self, msg):
         """
         @brief Can be used to get sync access to server
         """
@@ -65,40 +65,41 @@ class OntologyServer(object):
                 return SetBoolResponse(False, "Mutex already unlocked.")
         return SetBoolResponse(True, "Ok")
 
-    def _woQueryCb(self, msg, trial=0):
+    def _wo_query_cb(self, msg, trial=0):
         to_ret = srvs.WoQueryResponse()
         try:
+            log.assertInfo(self._verbose, "[WoQuery]", "Query: {}. Context: {}".format(msg.query_string, msg.context))
             with self._times:
-                for s in self._ontology.query(msg.query_string):
+                for s in self._ontology.query(msg.query_string, context_id=msg.context):
                     temp = ""
                     for r in s:
-                        if msg.cut_prefix:
+                        if r is None:
+                            continue
+                        elif msg.cut_prefix:
                             temp += self._ontology.uri2lightstring(r)
                         else:
                             temp += r.n3()
                         if len(s)>1:
                             temp += " "
                     to_ret.answer.append(temp)
-            if self._verbose:
-                log.info("[WoQuery]", "Query: {}. Answer: {}. Time: {:0.3f} sec".format(msg.query_string, to_ret.answer, self._times.getLast()))
+            log.assertInfo(self._verbose, "[WoQuery]", "Answer: {}. Time: {:0.3f} sec".format(to_ret.answer, self._times.getLast()))
         except (AttributeError, ParseException) as e:
             #TODO: Understand what is going wrong here. For now just retry the query a couple of times seems to cover the bug
             log.error("[WoQuery]", "Parse error with following query: {}. Error: {}".format(msg.query_string, e))
             if trial<2:
                 trial += 1
                 log.info("[WoQuery]", "Retring query {}.".format(trial))
-                return self._woQueryCb(msg, trial)
+                return self._wo_query_cb(msg, trial)
         return to_ret
 
-    def _woModifyCb(self, msg):
+    def _wo_modify_cb(self, msg):
         with self._times:
             for s in msg.statements:
                 if s.value:
-                    self._ontology.addRelation(utils.msg2relation(s.relation), msg.author, is_relation=False)
+                    self._ontology.add_relation(utils.msg2relation(s.relation), msg.context, msg.author)
                 else:
-                    self._ontology.removeRelation(utils.msg2relation(s.relation), msg.author, is_relation=False)
-        if self._verbose:
-            log.info("[WoModify]", "Done in {} sec".format(self._times.getLast()))
+                    self._ontology.remove_relation(utils.msg2relation(s.relation), msg.context, msg.author)
+        log.assertInfo(self._verbose, "[WoModify]", "Done in {} sec".format(self._times.getLast()))
         return srvs.WoModifyResponse(True)
 
     def run(self):

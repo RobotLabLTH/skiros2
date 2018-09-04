@@ -1,5 +1,7 @@
 from skiros2_skill.core.skill_utils import *
 from skiros2_common.core.abstract_skill import State, Event
+import skiros2_common.tools.logger as log
+import traceback
 
 class VisitorInterface:
     """
@@ -86,9 +88,7 @@ class VisitorPrint(VisitorInterface, NodePrinter, NodeExecutor):
         #Execution
         VisitorInterface.__init__(self)
         NodePrinter.__init__(self)
-        self._verbose=False
-        self._wm = wmi
-        self._instanciator = instanciator
+        NodeExecutor.__init__(self, wmi, instanciator)
         self._processor = Serial()
 
     def setVerbose(self, verbose):
@@ -124,14 +124,26 @@ class VisitorExecutor(VisitorInterface, NodeExecutor, NodeMemorizer):
 
     def processNode(self, procedure):
         if not procedure.hasState(State.Running):
-            state = self.execute(procedure)
+            try:
+                state = self.execute(procedure)
+            except Exception, e:
+                log.error(self.__class__.__name__, traceback.format_exc())
+                procedure._setProgress("Error on start: {}".format(traceback.format_exc()), -404)
+                procedure._setState(State.Failure)
+                state = State.Failure
             self.memorizeProgress(procedure)
         else:
             state = State.Running
         return state
 
     def postProcessNode(self, procedure):
-        state = self.postExecute(procedure)
+        try:
+            state = self.postExecute(procedure)
+        except Exception, e:
+            log.error(self.__class__.__name__, traceback.format_exc())
+            procedure._setProgress("Error on execution: {}".format(traceback.format_exc()), -405)
+            procedure._setState(State.Failure)
+            state = State.Failure
         self.memorizeProgress(procedure)
         return state
 

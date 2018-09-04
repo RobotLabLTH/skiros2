@@ -54,7 +54,7 @@ class Element(object):
         self._relations=list() #Reference to IDs
         self._setLastUpdate()
 
-    def __str__(self):
+    def __repr__(self):
         return self.printState()
 
 
@@ -229,6 +229,20 @@ class Element(object):
         else:
             raise ValueError('Subject/Object must be of type string: subject type is {}. object type is {}'.format(type(subj), type(obj)))
 
+    def hasRelation(self, subj, predicate, obj, value=True, abstract=False):
+        """
+        @brief Add a relation with another element
+        @subj An element or an element id
+        @obj An element or an element id
+        @value The state of the relation should be True or False
+        @abstract Whether the relation is between abstract objects or instances
+        """
+        if subj=="-1":
+            subj = self.id
+        elif obj=="-1":
+            obj = self.id
+        return {'src': subj, 'type': predicate, 'dst': obj, 'state': value, 'abstract': abstract} in self._relations
+
     def hasProperty(self, key, value=None):
         """
         @brief Return true if element has the property.
@@ -323,7 +337,7 @@ class Element(object):
         Return true if this is a valid instance, false otherwise
         """
         #Filter by type
-        if not self._type==abstract._type and not (wmi.addPrefix(self._type) in wmi.getSubClasses(abstract._type, True)):
+        if not self._type==abstract._type and not (wmi.add_prefix(self._type) in wmi.get_sub_classes(abstract._type, True)):
             return False
         #Filter by label
         if not (abstract._label=="" or abstract._label=="Unknown" or self._label==abstract._label):
@@ -339,11 +353,11 @@ class Element(object):
         for r in abstract._relations:
             if r["src"]=="-1" or r["src"]==abstract._id:#-1 is the special autoreferencial value
                 #print wmi.getRelations(self._id, r["type"], -1)
-                if not wmi.getRelations(self._id, r["type"], "-1"):
+                if not wmi.get_relations(self._id, r["type"], "-1"):
                     return False
             else:
                 #print wmi.getRelations(-1, r["type"], self._id)
-                if not wmi.getRelations("-1", r["type"], self._id):
+                if not wmi.get_relations("-1", r["type"], self._id):
                     return False
         return True
 

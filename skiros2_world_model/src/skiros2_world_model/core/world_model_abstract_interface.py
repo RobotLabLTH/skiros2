@@ -37,67 +37,67 @@ class OntologyAbstractInterface:
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
 
-    def queryOntology(self, query, cut_prefix=False):
+    def query_ontology(self, query, cut_prefix=False):
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
 
-    def setDefaultPrefix(self, default_prefix):
+    def set_default_prefix(self, default_prefix):
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
 
-    def getIndividual(self, name):
+    def get_individual(self, name):
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
 
-    def addIndividual(self, element, ontology_name):
+    def add_individual(self, element, ontology_name):
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
 
-    def addPrefix(self, parent_class):
+    def add_prefix(self, parent_class):
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
-    def removePrefix(self, parent_class):
-        """ Not implemented in abstract class. """
-        raise NotImplementedError("Not implemented in abstract class")
-
-    def getType(self, uri):
+    def remove_prefix(self, parent_class):
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
 
-    def getSubClasses(self, parent_class, recursive=False):
+    def get_type(self, uri):
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
 
-    def getSubProperties(self, parent_property, recursive=False):
+    def get_sub_classes(self, parent_class, recursive=False):
+        """ Not implemented in abstract class. """
+        raise NotImplementedError("Not implemented in abstract class")
+
+    def get_sub_properties(self, parent_property, recursive=False):
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
 
 class WorldModelAbstractInterface:
-    def addElement(self, e):
+    def add_element(self, e):
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
 
-    def updateElement(self, e):
+    def update_element(self, e):
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
 
-    def removeElement(self, eid):
+    def remove_element(self, eid):
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
 
-    def setRelation(self, subj_id, predicate, obj_id, value=True):
+    def set_relation(self, subj_id, predicate, obj_id, value=True):
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
 
-    def resolveElement(self, e):
+    def resolve_element(self, e):
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
 
-    def getTemplateElement(self, individual):
+    def get_template_element(self, individual):
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
 
-    def getElement(self, eid):
+    def get_element(self, eid):
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
 
@@ -105,7 +105,7 @@ class WorldModelAbstractInterface:
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
 
-    def getBranch(self, root_id, relation_filter="", type_filter=""):
+    def get_branch(self, root_id, relation_filter="", type_filter=""):
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
 

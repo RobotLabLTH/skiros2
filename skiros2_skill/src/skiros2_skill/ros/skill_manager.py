@@ -158,7 +158,7 @@ class SkillManager:
     def __init__(self, prefix, agent_name, verbose=True):
         self._agent_name = agent_name
         self._wmi = wmi.WorldModelInterface(agent_name, make_cache=True)
-        self._wmi.setDefaultPrefix(prefix)
+        self._wmi.set_default_prefix(prefix)
         self._local_wm = self._wmi
         #self._local_wm._verbose = False
         self._plug_loader = PluginLoader()
@@ -174,27 +174,27 @@ class SkillManager:
         self._ticker.observe_progress(func)
 
     def _registerAgent(self, agent_name):
-        res = self._wmi.resolveElement(wm.Element("cora:Robot", agent_name))
+        res = self._wmi.resolve_element(wm.Element("cora:Robot", agent_name))
         if res:
             log.info("[{}]".format(self.__class__.__name__), "Found robot {}, skipping registration.".format(res))
             self._robot = res
             for r in self._robot.getRelations("-1", "skiros:hasSkill"):
-                self._wmi.removeElement(self._wmi.getElement(r['dst']))
-            self._robot = self._wmi.getElement(self._robot.id)
+                self._wmi.remove_element(self._wmi.get_element(r['dst']))
+            self._robot = self._wmi.get_element(self._robot.id)
         else:
             self._robot = self._wmi.instanciate(agent_name, True)
-            startLocUri = self._wmi.getTemplateElement(agent_name).getRelations(pred="skiros:hasStartLocation")
+            startLocUri = self._wmi.get_template_element(agent_name).getRelations(pred="skiros:hasStartLocation")
             if startLocUri:
                 start_location = self._wmi.instanciate(startLocUri[0]["dst"], False, [])
-                self._wmi.setRelation(self._robot._id, "skiros:at", start_location._id)
+                self._wmi.set_relation(self._robot._id, "skiros:at", start_location._id)
         log.info("[{}]".format(self.__class__.__name__), "Registered robot {}".format(self._robot))
         self._robot.setProperty("skiros:SkillMgr", self._agent_name[self._agent_name.rfind(":")+1:])
-        self._wmi.updateElement(self._robot)
+        self._wmi.update_element(self._robot)
 
 
     def shutdown(self):
         for s in self._skills:
-            self._wmi.removeElement(s)
+            self._wmi.remove_element(s)
         self._wmi.unlock() #Ensures the world model's mutex gets unlocked
 
     def loadSkills(self, package):
@@ -212,11 +212,11 @@ class SkillManager:
         e = skill.toElement()
         e.addRelation(self._robot._id, "skiros:hasSkill", "-1")
         #print skill.printInfo(True)
-        if not self._wmi.getType(e._type):
-            self._wmi.addClass(e._type, "skiros:Skill")
-        self._wmi.addElement(e)
+        if not self._wmi.get_type(e.type):
+            self._wmi.add_class(e.type, "skiros:Skill")
+        self._wmi.add_element(e)
         self._skills.append(e)
-        return SkillHolder(self._agent_name, skill._type, skill._label, skill.params.getCopy())
+        return SkillHolder(self._agent_name, skill.type, skill.label, skill.params.getCopy())
 
     def addLocalPrimitive(self, name):
         """
@@ -316,7 +316,7 @@ class SkillManagerNode(DiscoverableNode):
         #self._sm._local_wm.printModel()
         #Start communications
         self._command = rospy.Service('~command', srvs.SkillCommand, self._commandCb)
-        self._monitor = rospy.Publisher("skill_managers/monitor", msgs.SkillProgress, queue_size=20)
+        self._monitor = rospy.Publisher("~monitor", msgs.SkillProgress, queue_size=20)
         rospy.on_shutdown(self.shutdown)
         self.init_discovery("skill_managers", robot_name)
 
@@ -362,7 +362,7 @@ class SkillManagerNode(DiscoverableNode):
     def _onProgressUpdate(self, *args, **kwargs):
         log.debug("[{}]".format(self.__class__.__name__), "{}:Task[{task_id}]{type}:{label}[{id}]: Message[{code}]: {msg} ({state})".format(self._sm._agent_name[1:], **kwargs))
         msg = msgs.SkillProgress()
-        msg.robot = self._sm._agent_name
+        msg.robot = rospy.get_name()
         msg.task_id = kwargs['task_id']
         msg.id = kwargs['id']
         msg.type = kwargs['type']

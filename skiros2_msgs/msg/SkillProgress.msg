@@ -1,3 +1,9 @@
+#Possible states
+int16 SUCCESS=1
+int16 FAILURE=2
+int16 RUNNING=3
+int16 IDLE=4
+
 string robot
 int16 task_id
 int16 id

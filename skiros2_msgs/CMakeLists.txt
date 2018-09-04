@@ -37,7 +37,7 @@ add_service_files(
   WoQuery.srv
   WoModify.srv
   WmGet.srv
-  WmLoadAndSave.srv
+  WoLoadAndSave.srv
   WmSetRelation.srv
   WmQueryRelations.srv
   WmModify.srv
