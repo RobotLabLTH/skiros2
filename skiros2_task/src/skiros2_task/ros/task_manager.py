@@ -79,23 +79,23 @@ class TaskManagerNode(PrettyObject):
 
     def _onMonitorMsg(self, msg):
         if self._assign_task_action.is_active() and self._is_ready:
-            if msg.type=="Task":
+            if msg.label.find("task")>=0 and msg.state<3:#1 success or 2 failure
                 if msg.state==1:
                     self._done = True
-                    self._result = msgs.AssignTaskResult(msg.state, msg.progress_message)
+                    self._result = msgs.AssignTaskResult(msg.state, "{}:{}".format(msg.label, msg.progress_message))
                     self._assign_task_action.set_succeeded(self._result)
                 else:
                     if self._replan_count>20:
                         self._assign_task_action.set_aborted()
                     else:
-                        log.info("Task execution failed. Replanning.")
+                        log.warn("Task execution failed. Replanning.")
                         self._replan_count += 1
                         self.plan_and_execute()
                         if not self._task:
                             self._result = msgs.AssignTaskResult(1, "No skills to execute.")
                             self._assign_task_action.set_succeeded(self._result)
             else:
-                self._feedback = msgs.AssignTaskFeedback(msg.state, msg.progress_message)
+                self._feedback = msgs.AssignTaskFeedback(msg.state, "{}:{}".format(msg.label, msg.progress_message))
                 self._assign_task_action.publish_feedback(self._feedback)
 
     def _onRobotDiscovery(self, msg):
@@ -327,7 +327,7 @@ class TaskManagerNode(PrettyObject):
             self._sli.execute(self._task[0].manager, self._task)
 
     def preempt(self):
-        self._sli.preempt()
+        self._sli.preempt_all()
 
     def run(self):
         rospy.spin()

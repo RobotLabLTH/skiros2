@@ -104,7 +104,7 @@ class PluginLoader(object):
 
 
     def __init__(self):
-        self._plugins = None
+        self._plugins = list()
 
     def __iter__(self):
         if self._plugins:
@@ -120,7 +120,7 @@ class PluginLoader(object):
 
 
     def load(self, folder, base_class):
-        self._plugins = self.__import_plugins(folder, base_class)
+        self._plugins += self.__import_plugins(folder, base_class)
         if self.size() == 0:
             raise Exception("No " + str(base_class) + " found!")
         else:
