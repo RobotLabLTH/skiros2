@@ -39,7 +39,7 @@ class SkillLayerInterface(DiscoveryInterface):
     def __init__(self, author="unknown"):
         self._author = author
         self._agents = dict()
-        self._new_changes = True
+        self._new_changes = False
         self._active_sm = list()
         self.set_monitor_cb(None)
         self.init_discovery("skill_managers", self._discovery_cb)

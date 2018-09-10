@@ -471,6 +471,7 @@ class SkillWrapper(SkillInterface):
         return self._instance.reset()
 
     def onPreempt(self):
+        self._instance.specifyParams(self.getParamsNoRemaps(), False)
         res = self._instance.preempt()
         self._copyInstanceParams()
         self._progress_msg = self._instance.progress_msg

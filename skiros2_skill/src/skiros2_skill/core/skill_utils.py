@@ -83,9 +83,9 @@ class NodeExecutor():
     def setSimulate(self, sim=True):
         self._simulate=sim
 
-    def specifyParams(self, input_params):
-        self._params.reset(input_params)
-        self._printTracked(self._params, "[specifyParams] ")
+#    def specifyParams(self, input_params):
+#        self._params.reset(input_params)
+#        self._printTracked(self._params, "[specifyParams] ")
 
     def mergeParams(self, skill):
         self._params.reset(self._params.merge(skill._params))

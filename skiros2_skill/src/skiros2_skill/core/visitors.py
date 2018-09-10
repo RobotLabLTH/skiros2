@@ -152,7 +152,13 @@ class VisitorExecutor(VisitorInterface, NodeExecutor, NodeMemorizer):
         for c in procedure._children:
             c.visitPreempt(self)
         #Preempt node
-        self.preemptSkill(procedure)
+        try:
+            self.preemptSkill(procedure)
+        except Exception, e:
+            log.error(self.__class__.__name__, traceback.format_exc())
+            procedure._setProgress("Error on start: {}".format(traceback.format_exc()), -404)
+            procedure._setState(State.Failure)
+            state = State.Failure
         self.memorizeProgress(procedure)
 
     def processingStart(self, procedure):
