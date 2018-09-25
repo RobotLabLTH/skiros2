@@ -117,8 +117,10 @@ class ParallelFf():
         state = State.Success
         for c in children:
             cstate = c.visit(visitor)
-            if cstate==State.Running or cstate==State.Idle:
-                state = cstate
+            if cstate==State.Running:
+                state = State.Running
+            if cstate==State.Idle and state!=State.Running:
+                state = State.Idle
             if cstate==State.Failure:
                 self.stopAll(children, visitor)
                 return State.Failure
@@ -139,7 +141,7 @@ class ParallelFs():
     def processChildren(self, children, visitor):
         for c in children:
             state = c.visit(visitor)
-            if state!=State.Running:
+            if state!=State.Running and state!=State.Idle:
                 self.stopAll(children, visitor)
                 return state
         return State.Running

@@ -54,7 +54,7 @@ class IndividualsDataset(Ontology):
         @brief Initialize the graph
         """
         self.ontology().remove_context(self.context)
-        self._elements_cache = dict()
+        self._elements_cache.clear()
 
     def has_individual(self, name):
         """
@@ -513,7 +513,7 @@ class WorldModel(IndividualsDataset):
         if filename:
             self._filename = filename
         if not path.isfile(self.filedir):
-            log.error("[load_scene]", "Can't load scene {}. File not found. ".format(self.filename))
+            log.error("[load_context]", "Can't load scene {}. File not found. ".format(self.filename))
             return
         self._stop_reasoners()
         self.reset(add_root=False)

@@ -516,7 +516,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         if feedback.event_type == InteractiveMarkerFeedback.POSE_UPDATE:
             elem = self._wmi.get_element(feedback.marker_name)
             elem.setData(":PoseStampedMsg", feedback)
-            self._wmi.update_element(elem)
+            self._wmi.update_element_properties(elem)
 
     @Slot()
     def on_wm_tree_widget_item_selection_changed(self, item):
@@ -563,7 +563,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         else:
             log.error(self.__class__.__name__, 'Changing <{}> property {} to {} failed'.format(item.text(1), key, val))
 
-        self._wmi.update_element(elem)
+        self._wmi.update_element_properties(elem)
         name = utils.ontology_type2name(elem.id) if not elem.label else utils.ontology_type2name(elem.label)
         item.setText(0, name)
 

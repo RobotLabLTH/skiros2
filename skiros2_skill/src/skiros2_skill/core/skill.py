@@ -587,7 +587,8 @@ class Root(SkillInterface):
         return
 
     def execute(self):
-        self._setProgress("End", 1)
+        if self._state==State.Success:
+            self._setProgress("End", 1)
         return self._state
 
 class Skill(SkillInterface):
