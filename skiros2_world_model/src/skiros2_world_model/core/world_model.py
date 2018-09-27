@@ -219,6 +219,10 @@ class IndividualsDataset(Ontology):
             prop_to_update = reasoner.getAssociatedData()
         else:
             prop_to_update = e.available_properties()
+            #Horrible hack to update also the label. Label should be moved with other properties to make this clean
+            old_e.label = e.label
+            self._set((subject, RDFS.label, rdflib.term.Literal(e.label)), author)
+        #Set properties
         for k in prop_to_update:
             predicate = self.lightstring2uri(k)
             p = e.getProperty(k)
