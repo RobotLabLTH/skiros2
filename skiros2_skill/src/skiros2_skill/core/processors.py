@@ -24,6 +24,9 @@ class Sequential():
     """
     @brief Process children sequentially. Succeded ones are skipped
     """
+    def __init__(self):
+        self.index = 0
+
     def printType(self):
         return '->*'
 
@@ -31,11 +34,13 @@ class Sequential():
         """
         Serial processor - return on first fail, or return success
         """
-        for c in children:
-            if c.state!=State.Success:
-                state = c.visit(visitor)
-                if state!=State.Success:
-                    return state
+        for i in range(self.index, len(children)):
+            c = children[i]
+            state = c.visit(visitor)
+            if state!=State.Success:
+                return state
+            self.index+=1
+        self.index = 0
         return State.Success
 
 class Enforce():
