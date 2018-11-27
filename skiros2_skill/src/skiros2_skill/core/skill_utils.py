@@ -1,4 +1,4 @@
-import skiros2_world_model.core.local_world_model as wm
+from skiros2_common.core.world_element import Element
 import skiros2_common.core.params as params
 from skiros2_skill.core.processors import Serial, ParallelFf, State
 import skiros2_common.tools.logger as log
@@ -30,7 +30,7 @@ class NodePrinter():
     def printParams(self,  params):
         to_ret = "\n"
         for _, p in params.getParamMap().iteritems():
-            if p.dataType() == type(wm.Element()):
+            if p.dataType() == type(Element()):
                 to_ret += p._key + ": "
                 for e in p.getValues():
                     to_ret += e.printState() + "\n"
@@ -50,7 +50,7 @@ class NodeExecutor():
     def syncParams(self):
         for k, p in self._params.iteritems():
             vs = p.values
-            if p.dataTypeIs(wm.Element):
+            if p.dataTypeIs(Element):
                 for i, e in enumerate(vs):
                     if e.id!="":
                         vs[i] = self._wm.get_element(e.id)
@@ -67,7 +67,7 @@ class NodeExecutor():
         for key, prop, relation, print_all in self._tracked_params:
             if params.hasParam(key):
                 e = params.getParamValue(key)
-                if isinstance(e, wm.Element):
+                if isinstance(e, Element):
                     to_print += "{} {} ".format(key, e.printState(print_all))
                     if e.hasProperty(prop):
                         to_print += '. {}: {}. '.format(prop, e.getProperty(prop).value)
@@ -100,7 +100,7 @@ class NodeExecutor():
             for k in unvalid_params:
                 skill._params.setDefault(k)
                 p = skill._params.getParam(k)
-                if p.dataTypeIs(wm.Element()) and p.getValue().getIdNumber()>=0:
+                if p.dataTypeIs(Element()) and p.getValue().getIdNumber()>=0:
                     skill._params.specify(k, self._wm.get_element(p.getValue()._id))
             return self._autoParametrizeBB(skill)
         return True
@@ -133,7 +133,7 @@ class NodeExecutor():
         """
         @brief ground undefined parameters with parameters in the Black Board
         """
-        to_resolve = [key for key, param in skill._params.getParamMap().iteritems() if param.paramType!=params.ParamTypes.Optional and param.dataTypeIs(wm.Element) and param.getValue().getIdNumber() < 0]
+        to_resolve = [key for key, param in skill._params.getParamMap().iteritems() if param.paramType!=params.ParamTypes.Optional and param.dataTypeIs(Element) and param.getValue().getIdNumber() < 0]
         if not to_resolve:
             return True
         log.assertInfo(self._verbose, "[Autoparametrize]", "Resolving {}:{}".format(skill.type, to_resolve))
@@ -146,7 +146,7 @@ class NodeExecutor():
         for key in to_resolve:
             remap[key] = []
             for k, p in self._params._params.iteritems():
-                if p.dataTypeIs(wm.Element()):
+                if p.dataTypeIs(Element()):
                     if p.getValue().isInstance(cp.getParamValue(key), self._wm):
                         remap[key].append(k)
                     else:

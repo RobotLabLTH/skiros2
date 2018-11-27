@@ -33,13 +33,13 @@ import skiros2_msgs.msg as msgs
 import skiros2_msgs.srv as srvs
 import skiros2_common.ros.utils as utils
 from skiros2_skill.ros.utils import *
-import skiros2_world_model.core.local_world_model as wm
 import skiros2_world_model.ros.world_model_interface as wmi
 import skiros2_skill.core.skill as skill
 from skiros2_common.core.abstract_skill import State
 from skiros2_skill.core.skill_instanciator import SkillInstanciator
 from discovery_interface import DiscoverableNode
 import skiros2_common.tools.logger as log
+from skiros2_common.core.world_element import Element
 from skiros2_common.tools.id_generator import IdGen
 from skiros2_common.tools.plugin_loader import *
 from multiprocessing.dummy import Process
@@ -174,7 +174,7 @@ class SkillManager:
         self._ticker.observe_progress(func)
 
     def _registerAgent(self, agent_name):
-        res = self._wmi.resolve_element(wm.Element("cora:Robot", agent_name))
+        res = self._wmi.resolve_element(Element("cora:Robot", agent_name))
         if res:
             log.info("[{}]".format(self.__class__.__name__), "Found robot {}, skipping registration.".format(res))
             self._robot = res
