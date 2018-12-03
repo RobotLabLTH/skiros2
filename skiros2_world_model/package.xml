@@ -1,11 +1,12 @@
 <?xml version="1.0"?>
 <package>
   <name>skiros2_world_model</name>
-  <version>0.0.2</version>
-  <description>SkiROS for python</description>
+  <version>1.0.0</version>
+  <description>SkiROS semantic database</description>
 
   <maintainer email="francesco@m-tech.aau.dk">Francesco Rovida</maintainer>
-  <license>BSD</license>
+  <maintainer email="bjarne@m-tech.aau.dk">Bjarne Grossmann</maintainer>
+  <license>L-GPL</license>
   <author email="francesco@m-tech.aau.dk">Francesco Rovida</author>
   <author>Francesco Rovida</author>
 
