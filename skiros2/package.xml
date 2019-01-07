@@ -2,12 +2,13 @@
   <name>skiros2</name>
   <version>1.0.0</version>
   <description>
-      Skill Architecture for ROS
+      Skill-based platform for ROS
   </description>
 
   <maintainer email="francesco@m-tech.aau.dk">Francesco Rovida</maintainer>
-  <license>BSD</license>
-  <!-- <url type="website"></url> -->
+  <maintainer email="bjarne@m-tech.aau.dk">Bjarne Grossmann</maintainer>
+  <license>L-GPL</license>
+
   <author email="francesco@m-tech.aau.dk">Francesco Rovida</author>
   <author>Francesco Rovida</author>
 

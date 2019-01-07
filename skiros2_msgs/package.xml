@@ -2,11 +2,12 @@
   <name>skiros2_msgs</name>
   <version>1.0.0</version>
   <description>
-	The skiros message package containes specific messages 
+	The skiros message package containes specific messages
         definitions. This package is part of the skiros2 system.
   </description>
   <maintainer email="francesco@m-tech.aau.dk">Francesco Rovida</maintainer>
-  <license>BSD</license>
+  <maintainer email="bjarne@m-tech.aau.dk">Bjarne Grossmann</maintainer>
+  <license>L-GPL</license>
   <author email="francesco@m-tech.aau.dk">Francesco Rovida</author>
   <author>Francesco Rovida</author>
 
@@ -22,7 +23,7 @@
 
   <run_depend>actionlib</run_depend>
   <run_depend>genmsg</run_depend>
-  <run_depend>message_runtime</run_depend> 
+  <run_depend>message_runtime</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>actionlib_msgs</run_depend>
   <run_depend>trajectory_msgs</run_depend>

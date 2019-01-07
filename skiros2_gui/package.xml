@@ -5,7 +5,8 @@
   <description>SkiROS GUI</description>
 
   <maintainer email="francesco@m-tech.aau.dk">Francesco Rovida</maintainer>
-  <license>BSD</license>
+  <maintainer email="bjarne@m-tech.aau.dk">Bjarne Grossmann</maintainer>
+  <license>L-GPL</license>
   <author email="francesco@m-tech.aau.dk">Francesco Rovida</author>
   <author>Francesco Rovida</author>
 
