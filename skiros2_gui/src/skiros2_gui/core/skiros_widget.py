@@ -377,6 +377,8 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
             progress.setToolTip(str(msg.progress_message))
             self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 5, progress)
             self.tableWidget_output.scrollToBottom()
+        if msg.progress_message=="End" and msg.label.find("task")>=0:
+            self.remove_active_task(State(msg.state).name)
         self.save_log(msg, "skill")
 
 
@@ -730,28 +732,6 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         self.wm_relations_widget.insertRow(0)
         self.wm_relations_widget.setItem(0, 0, item)
 
-#==============================================================================
-# Task tab
-#==============================================================================
-
-#==============================================================================
-#     @Slot(str)
-#     def on_service_combo_box_currentIndexChanged(self, service_name):
-#         pass
-#
-#         # add top level item to tree widget
-#         self.wm_tree_widget.addTopLevelItem(top_level_item)
-#
-#         # resize columns
-#         self.wm_tree_widget.expandAll()
-#         for i in range(self.request_tree_widget.columnCount()):
-#             self.wm_tree_widget.resizeColumnToContents(i)
-#==============================================================================
-
-#==============================================================================
-# Goal
-#==============================================================================
-
 
 #==============================================================================
 # Skill
@@ -829,13 +809,39 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
             self.logs_file_lineEdit.setText("{}/{}_{}".format(prefix, datetime.now().strftime("%Y-%m-%d:%H:%M:%S"), skill.name))
             self.on_save_logs_checkBox_clicked()
         #Send command
-        if self._get_parameters(self.skill_params_layout, skill.ph):
-            self._sli.execute(skill.manager, [skill])
+        if not self._get_parameters(self.skill_params_layout, skill.ph):
+            return
+        tdi = self._sli.execute(skill.manager, [skill])
+        if tdi>=0:
+            self.tasks_table_widget.blockSignals(True)
+            self.tasks_table_widget.insertRow(self.tasks_table_widget.rowCount())
+            qtid = QTableWidgetItem(str(tdi))
+            qname = QTableWidgetItem(skill.name)
+            qstate = QTableWidgetItem("Running")
+            qtid.setFlags(qtid.flags() & ~Qt.ItemIsEditable)
+            qname.setFlags(qname.flags() & ~Qt.ItemIsEditable)
+            qstate.setFlags(qname.flags() & ~Qt.ItemIsEditable)
+            self.tasks_table_widget.setItem(self.tasks_table_widget.rowCount()-1, 0, qname)
+            self.tasks_table_widget.setItem(self.tasks_table_widget.rowCount()-1, 1, qstate)
+            self.tasks_table_widget.setItem(self.tasks_table_widget.rowCount()-1, 2, qtid)
+            self.tasks_table_widget.resizeRowsToContents()
+            self.tasks_table_widget.scrollToBottom()
+            self.tasks_table_widget.blockSignals(False)
 
     @Slot()
     def on_skill_stop_button_clicked(self):
-        if self._sli.has_active_tasks:
-            self._sli.preempt_one()
+        if not self._sli.has_active_tasks:
+            return
+        self._sli.preempt_one()
+        self.remove_active_task("Preempted")
+
+    def remove_active_task(self, state):
+        self.tasks_table_widget.blockSignals(True)
+        qstate =  QTableWidgetItem(state)
+        qstate.setFlags(qstate.flags() & ~Qt.ItemIsEditable)
+        self.tasks_table_widget.setItem(self.tasks_table_widget.rowCount()-1, 1, qstate)
+        #self.tasks_table_widget.removeRow(self.tasks_table_widget.rowCount()-1)
+        self.tasks_table_widget.blockSignals(False)
 
 #==============================================================================
 # Logs
