@@ -10,6 +10,9 @@ class Serial():
     def printType(self):
         return '->'
 
+    def reset(self):
+        pass
+
     def processChildren(self, children, visitor):
         """
         Serial processor - return on first fail, or return success
@@ -25,10 +28,13 @@ class Sequential():
     @brief Process children sequentially. Succeded ones are skipped
     """
     def __init__(self):
-        self.index = 0
+        self.reset()
 
     def printType(self):
         return '->*'
+
+    def reset(self):
+        self.index = 0
 
     def processChildren(self, children, visitor):
         """
@@ -50,6 +56,9 @@ class Enforce():
     def printType(self):
         return '->*!'
 
+    def reset(self):
+        pass
+
     def processChildren(self, children, visitor):
         """
         Serial processor - return on first fail, or return success
@@ -67,6 +76,9 @@ class Selector():
     """
     def printType(self):
         return '?'
+
+    def reset(self):
+        pass
 
     def processChildren(self, children, visitor):
         """
@@ -91,6 +103,9 @@ class SelectorStar():
     """
     def printType(self):
         return '?*'
+
+    def reset(self):
+        pass
 
     def processChildren(self, children, visitor):
         """
@@ -118,6 +133,9 @@ class ParallelFf():
     def printType(self):
         return '|ff|'
 
+    def reset(self):
+        pass
+
     def processChildren(self, children, visitor):
         state = State.Success
         for c in children:
@@ -143,6 +161,9 @@ class ParallelFs():
     def printType(self):
         return '|fs|'
 
+    def reset(self):
+        pass
+
     def processChildren(self, children, visitor):
         for c in children:
             state = c.visit(visitor)
@@ -159,6 +180,9 @@ class ParallelFs():
 class Loop():
     def __init__(self, processor):
         self._processor = processor
+
+    def reset(self):
+        pass
 
     def printType(self):
         return 'Loop({})'.format(self._processor.printType())
@@ -178,6 +202,9 @@ class NoFail():
     """
     def __init__(self, processor):
         self._processor = processor
+
+    def reset(self):
+        pass
 
     def printType(self):
         return 'NoFail({})'.format(self._processor.printType())

@@ -225,7 +225,9 @@ class Element(object):
         if isinstance(obj, Element):
             self._local_relations.append({'src': "-1", 'type': predicate, 'dst': obj})
         elif isinstance(subj, basestring) and isinstance(obj, basestring):
-            self._relations.append({'src': subj, 'type': predicate, 'dst': obj, 'state': value, 'abstract': abstract})
+            r = {'src': subj, 'type': predicate, 'dst': obj, 'state': value, 'abstract': abstract}
+            if not r in self._relations:
+                self._relations.append(r)
         else:
             raise ValueError('Subject/Object must be of type string: subject type is {}. object type is {}'.format(type(subj), type(obj)))
 

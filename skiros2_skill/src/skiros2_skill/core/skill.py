@@ -291,6 +291,10 @@ class SkillInterface(SkillCore):
         self._params.reset(deepcopy(self._params_cache.pop()))
         return deepcopy(self._input_cache.pop())
 
+    def start(self, params=None):
+        self._children_processor.reset()
+        return SkillCore.start(self, params)
+
     def tick(self):
 #        if not self.hasState(State.Running):
 #            raise Exception("Node must be started before ticking. Curr state: {}".format(self._state))
