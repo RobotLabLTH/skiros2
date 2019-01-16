@@ -191,6 +191,15 @@ class Element(object):
         """
         self._relations.remove(relation)
 
+    def removeRelation2(self, subj, predicate, obj, value=True, abstract=False):
+        """
+        @brief Remove a relation from the element
+        """
+        try:
+            self._relations.remove({'src': subj, 'type': predicate, 'dst': obj, 'state': value, 'abstract': abstract})
+        except:
+            log.error("[removeRelation2]", "Can t remove {} from {}".format({'src': subj, 'type': predicate, 'dst': obj, 'state': value, 'abstract': abstract}, self._relations))
+
     def getRelations(self, subj="", pred=[], obj=""):
         """
         @brief Return a list of all relations matching with input filters

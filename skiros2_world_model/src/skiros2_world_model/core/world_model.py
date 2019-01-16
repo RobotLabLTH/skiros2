@@ -283,11 +283,10 @@ class IndividualsDataset(Ontology):
         for name, r in self._reasoners.iteritems():
             if not r.parse(e, "remove"):
                 raise Exception("Reasoner {} rejected the element {} removal".format(name, e))
+        del self._elements_cache[e.id]
         statements = self._element2statements(e)
         for s, is_relation in statements:
             self._remove(s, author, is_relation)
-        if self._elements_cache.has_key(e.id):
-            del self._elements_cache[e.id]
         return True
 
     @synchronized
@@ -410,9 +409,9 @@ class IndividualsDataset(Ontology):
             s1 = self.uri2lightstring(statement[1])
             s2 = self.uri2lightstring(statement[2])
             if self._elements_cache.has_key(s0):
-                self._elements_cache[s0].addRelation("-1", s1, s2)
+                self._elements_cache[s0].removeRelation2("-1", s1, s2)
             if self._elements_cache.has_key(s2):
-                self._elements_cache[s2].addRelation(s0, s1, "-1")
+                self._elements_cache[s2].removeRelation2(s0, s1, "-1")
         if self._verbose:
             log.info("{}->{}".format(author, self.context.identifier.n3()), log.logColor.RED + log.logColor.BOLD  + "[-] ({}) - ({}) - ({}) .".format(self.uri2lightstring(statement[0]), self.uri2lightstring(statement[1]), self.uri2lightstring(statement[2])))
 

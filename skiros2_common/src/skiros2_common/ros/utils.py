@@ -315,7 +315,7 @@ def msg2element(msg):
     e._type = msg.type
     e._properties = deserializePropertyMap(msg.properties)
     for r in msg.relations:
-        e._relations.append(msg2relation(r))
+        e.addRelation(r.subjectId, r.predicate, r.objectId)
     return e
 
 def element2msg(element):
