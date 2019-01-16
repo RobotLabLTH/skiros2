@@ -7,6 +7,7 @@ import rdflib
 from rdflib.namespace import RDF, RDFS, OWL, XSD
 from wrapt.decorators import synchronized
 from skiros2_common.tools.id_generator import IdGen
+from skiros2_common.tools.time_keeper import TimeKeepers
 
 class IndividualsDataset(Ontology):
     """
@@ -20,6 +21,7 @@ class IndividualsDataset(Ontology):
         self._workspace = "~"
         self._filename = "{}.turtle".format(context_id)
         self._elements_cache = dict()
+        self._times = TimeKeepers()
         if init:
             self.reset()
 
@@ -393,38 +395,42 @@ class IndividualsDataset(Ontology):
 
         Convenience method to update the value of object
         """
-        if self._verbose:
-            log.info("{}->{}".format(author, self.context.identifier.n3()), log.logColor.RED + log.logColor.BOLD  + "[-] ({}) - ({}) - (*))".format(self.uri2lightstring(statement[0]), self.uri2lightstring(statement[1])))
-            log.info("{}->{}".format(author, self.context.identifier.n3()), log.logColor.GREEN + log.logColor.BOLD  + "[+] ({}) - ({}) - ({})".format(self.uri2lightstring(statement[0]), self.uri2lightstring(statement[1]), self.uri2lightstring(statement[2])))
         self.context.set(statement)
-        if self._elements_cache.has_key(self.uri2lightstring(statement[0])):
-            del self._elements_cache[self.uri2lightstring(statement[0])]
+        if self._verbose:
+            log.info("{}->{}".format(author, self.context.identifier.n3()), log.logColor.RED + log.logColor.BOLD  + "[-] ({}) - ({}) - (*)) . ".format(self.uri2lightstring(statement[0]), self.uri2lightstring(statement[1])))
+            log.info("{}->{}".format(author, self.context.identifier.n3()), log.logColor.GREEN + log.logColor.BOLD  + "[+] ({}) - ({}) - ({}) .".format(self.uri2lightstring(statement[0]), self.uri2lightstring(statement[1]), self.uri2lightstring(statement[2])))
 
     def _remove(self, statement, author, is_relation=False):
         """
         @brief Remove a statement from the scene
         """
-        if self._verbose:
-            log.info("{}->{}".format(author, self.context.identifier.n3()), log.logColor.RED + log.logColor.BOLD  + "[-] ({}) - ({}) - ({})".format(self.uri2lightstring(statement[0]), self.uri2lightstring(statement[1]), self.uri2lightstring(statement[2])))
         self.context.remove(statement)
         if is_relation:
-            if self._elements_cache.has_key(self.uri2lightstring(statement[0])):
-                del self._elements_cache[self.uri2lightstring(statement[0])]
-            if self._elements_cache.has_key(self.uri2lightstring(statement[2])):
-                del self._elements_cache[self.uri2lightstring(statement[2])]
+            s0 = self.uri2lightstring(statement[0])
+            s1 = self.uri2lightstring(statement[1])
+            s2 = self.uri2lightstring(statement[2])
+            if self._elements_cache.has_key(s0):
+                self._elements_cache[s0].addRelation("-1", s1, s2)
+            if self._elements_cache.has_key(s2):
+                self._elements_cache[s2].addRelation(s0, s1, "-1")
+        if self._verbose:
+            log.info("{}->{}".format(author, self.context.identifier.n3()), log.logColor.RED + log.logColor.BOLD  + "[-] ({}) - ({}) - ({}) .".format(self.uri2lightstring(statement[0]), self.uri2lightstring(statement[1]), self.uri2lightstring(statement[2])))
 
     def _add(self, statement, author, is_relation=False):
         """
         @brief Add a statement to the scene
         """
-        if self._verbose:
-            log.info("{}->{}".format(author, self.context.identifier.n3()), log.logColor.GREEN + log.logColor.BOLD  + "[+] ({}) - ({}) - ({})".format(self.uri2lightstring(statement[0]), self.uri2lightstring(statement[1]), self.uri2lightstring(statement[2])))
         self.context.add(statement)
         if is_relation:
-            if self._elements_cache.has_key(self.uri2lightstring(statement[0])):
-                del self._elements_cache[self.uri2lightstring(statement[0])]
-            if self._elements_cache.has_key(self.uri2lightstring(statement[2])):
-                del self._elements_cache[self.uri2lightstring(statement[2])]
+            s0 = self.uri2lightstring(statement[0])
+            s1 = self.uri2lightstring(statement[1])
+            s2 = self.uri2lightstring(statement[2])
+            if self._elements_cache.has_key(s0):
+                self._elements_cache[s0].addRelation("-1", s1, s2)
+            if self._elements_cache.has_key(s2):
+                self._elements_cache[s2].addRelation(s0, s1, "-1")
+        if self._verbose:
+            log.info("{}->{}".format(author, self.context.identifier.n3()), log.logColor.GREEN + log.logColor.BOLD  + "[+] ({}) - ({}) - ({}) . ".format(self.uri2lightstring(statement[0]), self.uri2lightstring(statement[1]), self.uri2lightstring(statement[2])))
 
     def _element2statements(self, e):
         to_ret = []

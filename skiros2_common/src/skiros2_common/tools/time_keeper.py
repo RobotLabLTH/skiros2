@@ -43,8 +43,7 @@ Usage
 	avg_time_to_do_something = Timekeeper.getAvgTime()
 """
 class TimeKeeper():
-    def __init__(self, name=""):
-        self._name = name
+    def __init__(self):
         self._list = []
         self.reset()
 
@@ -68,6 +67,8 @@ class TimeKeeper():
         return self
 
     def __exit__(self, type, value, traceback):
+        if len(self._list)>10:
+            self._list.pop(0)
         self._list.append(time.time()-self._start_time)
 
     def getAvgTime(self):
@@ -89,7 +90,7 @@ class TimeKeepers():
 
     def __getitem__(self, key):
         if not self._map.has_key(key):
-            self._map[key] = TimeKeeper(key)
+            self._map[key] = TimeKeeper()
         return self._map[key]
 
     def printAvgTimings(self):
