@@ -31,10 +31,12 @@
 import rospy
 import skiros2_msgs.msg as msgs
 import skiros2_msgs.srv as srvs
+from std_msgs.msg import Empty
 import skiros2_common.ros.utils as utils
 from skiros2_skill.ros.utils import SkillHolder
 import skiros2_common.tools.logger as log
 from multiprocessing import Lock, Event
+import rostopic
 
 
 class SkillManagerInterface:
@@ -49,6 +51,8 @@ class SkillManagerInterface:
         self._skill_exe_client = rospy.ServiceProxy(self._skill_mgr_name + '/command', srvs.SkillCommand)
         self._get_skills = rospy.ServiceProxy(self._skill_mgr_name + '/get_skills', srvs.ResourceGetDescriptions)
         self._monitor_sub = rospy.Subscriber(self._skill_mgr_name + '/monitor', msgs.SkillProgress, self._progress_cb)
+        self._tick_rate = rostopic.ROSTopicHz(50)
+        self._tick_rate_sub = rospy.Subscriber(self._skill_mgr_name + '/tick_rate', Empty, self._tick_rate.callback_hz)
         self._monitor_cb = None
         self.get_skill_list(True)
 
@@ -142,6 +146,21 @@ class SkillManagerInterface:
         @brief Set an external callback on skill execution feedback
         """
         self._monitor_cb = cb
+
+    def get_tick_rate(self):
+        """
+        @brief Get the skill manager tick rate
+        """
+        rate_info = self._tick_rate.get_hz()
+        if rate_info is None:
+            return 0
+        return rate_info[0]
+
+    def reset_tick_rate(self):
+        """
+        @brief Reset the tick rate information
+        """
+        pass#self._tick_rate.set_msg_t0(rospy.get_rostime().to_sec())
 
     def _progress_cb(self, msg):
         if msg.label.find("task")>=0 and msg.progress_message=="End" and msg.state!=msg.IDLE:

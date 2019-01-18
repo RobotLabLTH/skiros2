@@ -5,9 +5,10 @@ import rospkg
 from functools import partial
 
 from python_qt_binding import loadUi
-from python_qt_binding.QtCore import Qt, QTimer, Slot, QMetaObject, pyqtSignal
-from python_qt_binding.QtGui import QIcon
-from python_qt_binding.QtWidgets import QLabel, QTableWidgetItem, QTreeWidgetItem, QWidget, QCheckBox, QComboBox, QLineEdit, QDialog, QSizePolicy
+from python_qt_binding.QtCore import Qt, QTimer, Slot, pyqtSignal
+import python_qt_binding.QtCore as QtCore
+import python_qt_binding.QtGui as QtGui
+from python_qt_binding.QtWidgets import QLabel, QTableWidgetItem, QTreeWidgetItem, QWidget, QCheckBox, QComboBox, QLineEdit, QDialog, QSizePolicy, QShortcut
 
 import skiros2_common.tools.logger as log
 import skiros2_common.core.utils as utils
@@ -281,7 +282,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
     widget_id = 'skiros_gui'
 
     wm_update_signal = pyqtSignal(msgs.WmMonitor)
-    sl_progress_signal = pyqtSignal(msgs.SkillProgress)
+    task_progress_signal = pyqtSignal(msgs.SkillProgress)
 
     def __init__(self):
         super(SkirosWidget, self).__init__()
@@ -289,11 +290,13 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         ui_file = os.path.join(rospkg.RosPack().get_path('skiros2_gui'), 'src/skiros2_gui/core', 'skiros_gui.ui')
         loadUi(ui_file, self)
 
+        self.skill_tree_widget.itemSelectionChanged.connect( lambda : self.on_skill_tree_widget_item_selection_changed( self.skill_tree_widget.currentItem()) )
+
         self.wm_tree_widget.itemSelectionChanged.connect( lambda : self.on_wm_tree_widget_item_selection_changed( self.wm_tree_widget.currentItem()) )
         self.wm_properties_widget.itemChanged.connect( lambda p: self.on_properties_table_item_changed( self.wm_tree_widget.currentItem(), p.row() ) )
         self.wm_relations_widget.resizeEvent = self.on_wm_relations_widget_resized
         self.wm_update_signal.connect(lambda d: self.on_wm_update(d))
-        self.sl_progress_signal.connect(lambda d: self.on_progress_update(d))
+        self.task_progress_signal.connect(lambda d: self.on_progress_update(d))
 
         self.tableWidget_output.setColumnWidth(0, 60)
         self.tableWidget_output.setColumnWidth(1, 120)
@@ -314,17 +317,22 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         #Setup a timer to keep interface updated
         self.refresh_timer = QTimer()
         self.refresh_timer.timeout.connect(self.refresh_timer_cb)
-        self.refresh_timer.start(1000)
+        self.refresh_timer.start(500)
 
         #World model tab
         self._wmi.set_monitor_cb(lambda d: self.wm_update_signal.emit(d))
-        self._sli.set_monitor_cb(lambda d: self.sl_progress_signal.emit(d))
+        self._sli.set_monitor_cb(lambda d: self.task_progress_signal.emit(d))
         self._snapshot_id = ""
         self._snapshot_stamp = rospy.Time.now()
         self._wm_mutex = Lock()
+        self._task_mutex = Lock()
 
         #Skill tab
-
+        self.last_executed_skill = ""
+        self.skill_stop_button.setEnabled(False)
+        self.space_shortcut=QShortcut(QtGui.QKeySequence(Qt.Key_Space), self)
+        self.space_shortcut.activated.connect(self.skill_start_stop)
+        #self.space_shortcut.setContext(QtCore.Qt.WidgetWithChildrenShortcut)
         #Log tab
         self.log_file = None
 
@@ -338,6 +346,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         instance_settings.set_value("scene_name", self.scene_file_lineEdit.text())
         instance_settings.set_value("save_logs", self.save_logs_checkBox.isChecked())
         instance_settings.set_value("logs_file_name", self.logs_file_lineEdit.text())
+        instance_settings.set_value("last_executed_skill", self.last_executed_skill)
 
 
     def restore_settings(self, plugin_settings, instance_settings):
@@ -351,6 +360,9 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         if instance_settings.value("save_logs") is not None:
             self.save_logs_checkBox.setChecked(instance_settings.value("save_logs")=='true')
             self.on_save_logs_checkBox_clicked()
+        if instance_settings.value("last_executed_skill") is not None:
+            self.last_executed_skill = instance_settings.value("last_executed_skill")
+            print(self.last_executed_skill)
 
 #    def trigger_configuration(self):
 #        # Comment in to signal that the plugin has a way to configure
@@ -364,34 +376,34 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
 #  General
 #==============================================================================
 
-    def on_progress_update(self, msg):
-        last_msg = self.tableWidget_output.item(self.tableWidget_output.rowCount()-1, 5).text() if self.tableWidget_output.rowCount()>0 else ""
-        if msg.progress_message!="Start" and (msg.label.find("task")>=0 or (msg.progress_message!="End" and msg.progress_message!=last_msg)):
-            self.tableWidget_output.insertRow(self.tableWidget_output.rowCount())
-            self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 0, QTableWidgetItem("{:0.3f}".format(msg.progress_time)))
-            self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 1, QTableWidgetItem(msg.parent_id))
-            self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 2, QTableWidgetItem(msg.label))
-            self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 3, QTableWidgetItem(State(msg.state).name))
-            self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 4, QTableWidgetItem(str(msg.progress_code)))
-            progress = QTableWidgetItem(str(msg.progress_message))
-            progress.setToolTip(str(msg.progress_message))
-            self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 5, progress)
-            self.tableWidget_output.scrollToBottom()
-        if msg.progress_message=="End" and msg.label.find("task")>=0:
-            self.remove_active_task(State(msg.state).name)
-        self.save_log(msg, "skill")
-
-
     def refresh_timer_cb(self):
         """
-        Keeps interface updated
+        Keeps ui updated
         """
+        #Update robot BT rate
+        if self._sli.agents:
+            robot_txt = ""
+            for name, manager in self._sli.agents.iteritems():
+                robot_txt += "{}: {:0.1f}hz ".format(name.replace("/", ""), manager.get_tick_rate())
+            self.robot_rate_info.setText(robot_txt)
+        #Update skill list
         if self._sli.has_changes:
-            self.skill_combo_box.clear()
+            self.skill_tree_widget.clear()
+            self.skill_tree_widget.setColumnCount(3)
+            self.skill_tree_widget.hideColumn(2)
+            self.skill_tree_widget.hideColumn(1)
+            fu = QTreeWidgetItem(self.skill_tree_widget, ["Frequently used", "fu"])
+            fu.setExpanded(True)
+            QTreeWidgetItem(self.skill_tree_widget, ["All", "All"])
             for ak, e in self._sli._agents.iteritems():
-                for sk, s in e._skill_list.iteritems():
+                for s in e._skill_list.values():
                     s.manager = ak
-                    self.skill_combo_box.addItem(sk, s)
+                    self._add_available_skill(s)
+            # select last skill
+            s = self.skill_tree_widget.findItems(self.last_executed_skill, Qt.MatchRecursive | Qt.MatchFixedString, 1)
+            if s:
+                self.skill_tree_widget.setCurrentItem(s[0])
+
 
 #==============================================================================
 #  World model tab
@@ -508,7 +520,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
                 items = self.wm_tree_widget.findItems(cur_item_id, Qt.MatchRecursive | Qt.MatchFixedString, 1)
                 if items:
                     self.wm_tree_widget.setCurrentItem(items[0])
-                #self.save_log(data, "wm_edit")
+                #self._save_log(data, "wm_edit")
             elif data.stamp>self._snapshot_stamp or self._snapshot_id=="":#Ignores obsolete msgs
                 log.info("[wm_update]", "Wm not in sync, querying wm scene")
                 self.create_wm_tree()
@@ -736,11 +748,55 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
 #==============================================================================
 # Skill
 #==============================================================================
-    def _get_parameters(self, layout, params):
-        i = -1
-        for i in range(0, layout.count()/2):
-            key = layout.itemAtPosition(i, 0).widget().text()
-            widget = layout.itemAtPosition(i, 1).widget()
+    def _update_progress_table(self, msg):
+        last_msg = self.tableWidget_output.item(self.tableWidget_output.rowCount()-1, 5).text() if self.tableWidget_output.rowCount()>0 else ""
+        if msg.progress_message!="Start" and (msg.label.find("task")>=0 or (msg.progress_message!="End" and msg.progress_message!=last_msg)):
+            self.tableWidget_output.insertRow(self.tableWidget_output.rowCount())
+            self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 0, QTableWidgetItem("{:0.3f}".format(msg.progress_time)))
+            self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 1, QTableWidgetItem(msg.parent_label))
+            self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 2, QTableWidgetItem(msg.label))
+            self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 3, QTableWidgetItem(State(msg.state).name))
+            self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 4, QTableWidgetItem(str(msg.progress_code)))
+            progress = QTableWidgetItem(str(msg.progress_message))
+            progress.setToolTip(str(msg.progress_message))
+            self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 5, progress)
+            self.tableWidget_output.scrollToBottom()
+
+    @Slot()
+    def on_progress_update(self, msg):
+        self._update_progress_table(msg)
+        self._save_log(msg, "skill")
+        #Update buttons
+        if State(msg.state)==State.Running and msg.label.find("task")>=0:
+            self.create_task_tree(msg.id)
+            self._toggle_task_active()
+            for manager in self._sli.agents.values():
+                manager.reset_tick_rate()
+        elif State(msg.state)!=State.Idle and msg.label.find("task")>=0:
+            self._toggle_task_active()
+        #Update task tree
+        with self._task_mutex:
+            items = self.task_tree_widget.findItems(str(msg.id), Qt.MatchRecursive | Qt.MatchFixedString, 1)
+            if items:
+                items[0].setData(0, 0, "{}({})".format(msg.label, State(msg.state).name))
+            else:
+                parents = self.task_tree_widget.findItems(str(msg.parent_id), Qt.MatchRecursive | Qt.MatchFixedString, 1)
+                item = QTreeWidgetItem(parents[0], ["{}({})".format(msg.label, State(msg.state).name), str(msg.id)])
+                item.setExpanded(True)
+
+    def create_task_tree(self, task_id):
+        self.task_tree_widget.clear()
+        self.task_tree_widget.setColumnCount(2)
+        self.task_tree_widget.hideColumn(1)
+        item = QTreeWidgetItem(self.task_tree_widget, ["Task {}".format(task_id), str(task_id)])
+        item.setExpanded(True)
+        return item
+
+    def _get_parameters(self, params):
+        layout = self.skill_params_table
+        for i in range(0, layout.rowCount()):
+            key = layout.item(i, 0).text()
+            widget = layout.cellWidget(i, 1)
             if params[key].dataTypeIs(bool):
                 params[key].setValue(widget.isChecked())
             elif params[key].dataTypeIs(Element):
@@ -757,18 +813,21 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
                     return False
         return True
 
-    def _add_parameter(self, layout, row, param):
-        layout.setColumnStretch(2, 10)
-        layout.setRowMinimumHeight(row, 2)
-        layout.addWidget(QLabel(param._key), row, 0)
+    def _add_parameter(self, param):
+        key = QTableWidgetItem(param.key)
+        key.setFlags(key.flags() & ~Qt.ItemIsEditable)
+        row = self.skill_params_table.rowCount()
+        self.skill_params_table.insertRow(row)
+        #row = row-1
+        self.skill_params_table.setItem(row, 0, key)
         if param.dataTypeIs(bool):
             cbox = QCheckBox()
             if param.isSpecified():
                 cbox.setChecked(param.default)
-            layout.addWidget(cbox, row, 1)
+            self.skill_params_table.setCellWidget(cbox)
         elif param.dataTypeIs(Element):
             combobox = QComboBox()
-            layout.addWidget(combobox, row, 1)
+            self.skill_params_table.setCellWidget(row, 1, combobox)
             matches = self._wmi.resolve_elements(param.default)
             if param.paramTypeIs(ParamTypes.Optional):
                 combobox.addItem("", None)
@@ -778,30 +837,71 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
             lineedit = QLineEdit()
             if param.isSpecified():
                 lineedit.setText(str(param.value))
-            layout.addWidget(lineedit, row, 1)
+            self.skill_params_table.setCellWidget(row, 1, lineedit)
 
-    @Slot(str)
-    def on_skill_combo_box_currentIndexChanged(self, skill_name):
-        skill = self.skill_combo_box.itemData(self.skill_combo_box.currentIndex())
+
+    def _add_available_skill(self, s):
+        stype = self.skill_tree_widget.findItems(s.type, Qt.MatchRecursive | Qt.MatchFixedString, 1)
+        if not stype:
+            stype = self.skill_tree_widget.findItems("All", Qt.MatchRecursive | Qt.MatchFixedString, 1)
+            stype = QTreeWidgetItem(stype[0], [s.type.replace("skiros:", ""), s.type])
+            stype.setExpanded(True)
+        else:
+            stype = stype[0]
+        skill = QTreeWidgetItem(stype, [s.name, s.name])
+        skill.setData(2, 0, s)
+
+    def _add_frequently_used_skill(self, s):
+        self.last_executed_skill=s.name
+        fu = self.skill_tree_widget.findItems("fu", Qt.MatchRecursive | Qt.MatchFixedString, 1)[0]
+        for i in range(0, fu.childCount()):#avoid adding same node multiple times
+            if s.name==fu.child(i).data(1, 0):
+                return
+        skill = QTreeWidgetItem(fu, [s.name, s.name])
+        skill.setData(2, 0, s)
+
+    def _toggle_task_active(self):
+        if self.skill_stop_button.isEnabled():
+            self.skill_stop_button.setEnabled(False)
+            self.skill_exe_button.setEnabled(True)
+        else:
+            self.skill_stop_button.setEnabled(True)
+            self.skill_exe_button.setEnabled(False)
+
+    @Slot()
+    def skill_start_stop(self):
+        if self.skill_stop_button.isEnabled():
+            self.on_skill_stop_button_clicked()
+        else:
+            self.on_skill_exe_button_clicked()
+
+    @Slot()
+    def on_skill_tree_widget_item_selection_changed(self, item):
+        if item is None:
+            return
+        skill = item.data(2, 0)
         if skill:
             #Clean
-            while self.skill_params_layout.count():
-                item = self.skill_params_layout.takeAt(0)
-                item.widget().deleteLater()
+            self.skill_params_table.setRowCount(0)
             #Add params
-            i = 0
+            self.skill_name_label.setText(skill.name)
             for p in skill.ph.values():
                 if self.modality_checkBox.isChecked() or not p.paramTypeIs(ParamTypes.Optional):
-                    self._add_parameter(self.skill_params_layout, i, p)
-                    i += 1
+                    self._add_parameter(p)
+            self.skill_params_table.resizeRowsToContents()
 
     @Slot()
     def on_modality_checkBox_clicked(self):
-        self.on_skill_combo_box_currentIndexChanged("")
+        self.on_skill_tree_widget_item_selection_changed(self.skill_tree_widget.currentItem())
 
     @Slot()
     def on_skill_exe_button_clicked(self):
-        skill = deepcopy(self.skill_combo_box.itemData(self.skill_combo_box.currentIndex()))
+        if self.skill_tree_widget.currentItem() is None:
+            return
+        skill = deepcopy(self.skill_tree_widget.currentItem().data(2, 0))
+        if skill is None:
+            return
+        self._add_frequently_used_skill(self.skill_tree_widget.currentItem().data(2, 0))
         #Start logger
         if not self._sli.has_active_tasks:
             prefix = self.logs_file_lineEdit.text()
@@ -809,39 +909,15 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
             self.logs_file_lineEdit.setText("{}/{}_{}".format(prefix, datetime.now().strftime("%Y-%m-%d:%H:%M:%S"), skill.name))
             self.on_save_logs_checkBox_clicked()
         #Send command
-        if not self._get_parameters(self.skill_params_layout, skill.ph):
+        if not self._get_parameters(skill.ph):
             return
-        tdi = self._sli.execute(skill.manager, [skill])
-        if tdi>=0:
-            self.tasks_table_widget.blockSignals(True)
-            self.tasks_table_widget.insertRow(self.tasks_table_widget.rowCount())
-            qtid = QTableWidgetItem(str(tdi))
-            qname = QTableWidgetItem(skill.name)
-            qstate = QTableWidgetItem("Running")
-            qtid.setFlags(qtid.flags() & ~Qt.ItemIsEditable)
-            qname.setFlags(qname.flags() & ~Qt.ItemIsEditable)
-            qstate.setFlags(qname.flags() & ~Qt.ItemIsEditable)
-            self.tasks_table_widget.setItem(self.tasks_table_widget.rowCount()-1, 0, qname)
-            self.tasks_table_widget.setItem(self.tasks_table_widget.rowCount()-1, 1, qstate)
-            self.tasks_table_widget.setItem(self.tasks_table_widget.rowCount()-1, 2, qtid)
-            self.tasks_table_widget.resizeRowsToContents()
-            self.tasks_table_widget.scrollToBottom()
-            self.tasks_table_widget.blockSignals(False)
+        self._sli.execute(skill.manager, [skill])
 
     @Slot()
     def on_skill_stop_button_clicked(self):
         if not self._sli.has_active_tasks:
             return
         self._sli.preempt_one()
-        self.remove_active_task("Preempted")
-
-    def remove_active_task(self, state):
-        self.tasks_table_widget.blockSignals(True)
-        qstate =  QTableWidgetItem(state)
-        qstate.setFlags(qstate.flags() & ~Qt.ItemIsEditable)
-        self.tasks_table_widget.setItem(self.tasks_table_widget.rowCount()-1, 1, qstate)
-        #self.tasks_table_widget.removeRow(self.tasks_table_widget.rowCount()-1)
-        self.tasks_table_widget.blockSignals(False)
 
 #==============================================================================
 # Logs
@@ -865,9 +941,9 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
                     self.logs_textEdit.setText(f.read())
             self.log_file = open(file_name, "a")
 
-    def save_log(self, msg, log_type):
+    def _save_log(self, msg, log_type):
         if log_type=="skill":
-            string = "{};{:0.4f};{};{};{};{};{}".format(datetime.now().strftime("%H:%M:%S"), msg.progress_time, msg.parent_id, msg.label, State(msg.state).name, msg.progress_code, msg.progress_message)
+            string = "{};{:0.4f};{};{};{};{};{};{};{}".format(datetime.now().strftime("%H:%M:%S"), msg.progress_time, msg.parent_label, msg.parent_id, msg.label, msg.id, State(msg.state).name, msg.progress_code, msg.progress_message)
         elif log_type=="wm_edit":
             if not msg.relation:
                 string = "{} {} {} {}".format(datetime.now(), "WM", msg.action, [e.id for e in msg.elements])
