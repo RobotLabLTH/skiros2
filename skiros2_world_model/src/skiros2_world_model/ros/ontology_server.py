@@ -65,7 +65,7 @@ class OntologyServer(object):
                 return SetBoolResponse(False, "Mutex already unlocked.")
         return SetBoolResponse(True, "Ok")
 
-    def _wo_query_cb(self, msg, trial=0):
+    def _wo_query_cb(self, msg):
         to_ret = srvs.WoQueryResponse()
         try:
             log.assertInfo(self._verbose, "[WoQuery]", "Query: {}. Context: {}".format(msg.query_string, msg.context))
@@ -84,12 +84,9 @@ class OntologyServer(object):
                     to_ret.answer.append(temp)
             log.assertInfo(self._verbose, "[WoQuery]", "Answer: {}. Time: {:0.3f} sec".format(to_ret.answer, self._times.getLast()))
         except (AttributeError, ParseException) as e:
-            #TODO: Understand what is going wrong here. For now just retry the query a couple of times seems to cover the bug
-            log.error("[WoQuery]", "Parse error with following query: {}. Error: {}".format(msg.query_string, e))
-            if trial<2:
-                trial += 1
-                log.info("[WoQuery]", "Retring query {}.".format(trial))
-                return self._wo_query_cb(msg, trial)
+            #TODO: test if the bug is fixed, and remove the exception handling
+            log.error("[WoQuery]", "Parse error with following query: {}.".format(msg.query_string))
+            raise e
         return to_ret
 
     def _wo_modify_cb(self, msg):

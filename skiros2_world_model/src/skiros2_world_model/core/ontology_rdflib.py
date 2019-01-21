@@ -2,6 +2,7 @@ import rdflib
 import skiros2_common.tools.logger as log
 from rdflib.namespace import RDF, RDFS, OWL
 import os.path
+from wrapt.decorators import synchronized
 
 class Ontology:
     def __init__(self, graph=None):
@@ -118,6 +119,7 @@ class Ontology:
         """
         self.ontology(context_id).serialize(destination=file, format='turtle')
 
+    @synchronized
     def query(self, query, context_id=""):
         return self.ontology(context_id).query(query)
 
