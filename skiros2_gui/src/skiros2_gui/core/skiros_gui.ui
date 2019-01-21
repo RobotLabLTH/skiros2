@@ -174,8 +174,8 @@
          <property name="frameShadow">
           <enum>QFrame::Raised</enum>
          </property>
-         <layout class="QGridLayout" name="gridLayout">
-          <item row="0" column="0" rowspan="3">
+         <layout class="QHBoxLayout" name="horizontalLayout_7">
+          <item>
            <widget class="QTreeWidget" name="task_tree_widget">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -199,26 +199,7 @@
             </column>
            </widget>
           </item>
-          <item row="0" column="2">
-           <widget class="QLabel" name="skill_name_label">
-            <property name="font">
-             <font>
-              <pointsize>12</pointsize>
-             </font>
-            </property>
-            <property name="text">
-             <string>Skill</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="2">
-           <widget class="QCheckBox" name="modality_checkBox">
-            <property name="text">
-             <string>Advanced options</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1" rowspan="3">
+          <item>
            <widget class="QTreeWidget" name="skill_tree_widget">
             <property name="sizePolicy">
              <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
@@ -236,11 +217,11 @@
             </column>
            </widget>
           </item>
-          <item row="2" column="2">
+          <item>
            <widget class="QFrame" name="skill_parameters_group_box">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-              <horstretch>3</horstretch>
+              <horstretch>4</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
@@ -251,6 +232,25 @@
              <property name="rightMargin">
               <number>2</number>
              </property>
+             <item>
+              <widget class="QLabel" name="skill_name_label">
+               <property name="font">
+                <font>
+                 <pointsize>12</pointsize>
+                </font>
+               </property>
+               <property name="text">
+                <string>Skill</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="modality_checkBox">
+               <property name="text">
+                <string>Advanced options</string>
+               </property>
+              </widget>
+             </item>
              <item>
               <widget class="QTableWidget" name="skill_params_table">
                <property name="sizePolicy">
