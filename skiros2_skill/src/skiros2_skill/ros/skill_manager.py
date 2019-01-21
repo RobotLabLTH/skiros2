@@ -81,33 +81,43 @@ class BtTicker:
         @brief Tick tasks at 25hz
         """
         BtTicker._finished_skill_ids = dict()
-        visitor = BtTicker._visitor
-        result = State.Running
         rate = rospy.Rate(25)
         log.info("[BtTicker]", "Execution starts.")
+        for uid in list(BtTicker._tasks.keys()):
+            t = BtTicker._tasks[uid]
+            printer = visitors.VisitorPrint(BtTicker._visitor._wm, BtTicker._visitor._instanciator)
+            printer.traverse(t)
+            self.publish_progress(uid, printer)
         while BtTicker._tasks:
-            for uid in list(BtTicker._tasks.keys()):
-                if uid in BtTicker._tasks_to_preempt:
-                    BtTicker._tasks_to_preempt.remove(uid)
-                    visitor.preempt()
-                t = BtTicker._tasks[uid]
-                result = visitor.traverse(t)
-                self.publish_progress(uid, visitor, result)
-                if result != State.Running and result != State.Idle:
-                    print "===Final state==="
-                    printer = visitors.VisitorPrint(BtTicker._visitor._wm, BtTicker._visitor._instanciator)
-                    printer.traverse(t)
-                    self.remove_task(uid)
+            self._tick()
             rate.sleep()
             self._tick_cb()
         log.info("[BtTicker]", "Execution stops.")
+
+    def _tick(self):
+        visitor = BtTicker._visitor
+        for uid in list(BtTicker._tasks.keys()):
+            if uid in BtTicker._tasks_to_preempt:
+                BtTicker._tasks_to_preempt.remove(uid)
+                visitor.preempt()
+            t = BtTicker._tasks[uid]
+            result = visitor.traverse(t)
+            self.publish_progress(uid, visitor)
+            if result != State.Running and result != State.Idle:
+                self.remove_task(uid)
+
+    def kill(self):
+        if not BtTicker._process is None:
+            del BtTicker._process
+            BtTicker._process = None
+            self._tick()
 
     def is_running(self):
         if BtTicker._process is None:
             return False
         return BtTicker._process.is_alive()
 
-    def publish_progress(self, uid, visitor, result):
+    def publish_progress(self, uid, visitor):
         finished_skill_ids = BtTicker._finished_skill_ids
         for (id,desc) in visitor.snapshot():
             if finished_skill_ids.has_key(id):
@@ -152,6 +162,13 @@ class BtTicker:
 
     def preempt(self, uid):
         BtTicker._tasks_to_preempt.append(uid)
+        starttime = rospy.Time.now()
+        timeout = rospy.Duration(5.0)
+        while(self.is_running() and rospy.Time.now()-starttime<timeout):
+            rospy.sleep(0.1)
+        if self.is_running():
+            log.info("preempt", "Task {} is not answering. Killing process.".format(uid))
+            self.kill()
         log.info("preempt", "Task {} preempted.".format(uid))
 
 
@@ -234,7 +251,7 @@ class SkillManager:
     def add_task(self, task):
         root = skill.Root("root", self._local_wm)
         for i in task:
-            print i.manager+":"+i.type+":"+i.name+i.ph.printState()
+            log.info("[SkillManager]", "Add task {}:{} \n {}".format(i.type,i.name,i.ph.printState()))
             root.addChild(skill.SkillWrapper(i.type, i.name, self._instanciator))
             root.last().specifyParamsDefault(i.ph)
         return self._ticker.add_task(root, root.id)

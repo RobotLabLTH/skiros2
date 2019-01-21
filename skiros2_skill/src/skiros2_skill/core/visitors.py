@@ -80,15 +80,17 @@ class VisitorInterface:
         """ Optional - Not implemented in abstract class. """
         return True
 
-class VisitorPrint(VisitorInterface, NodePrinter, NodeExecutor):
+class VisitorPrint(VisitorInterface, NodePrinter, NodeExecutor, NodeMemorizer):
     """
-    Expands and print the whole procedure tree
+    Expands and memorize the whole procedure tree. printout if verbose
     """
-    def __init__(self, wmi, instanciator):
+    def __init__(self, wmi, instanciator, verbose=False):
         #Execution
         VisitorInterface.__init__(self)
         NodePrinter.__init__(self)
         NodeExecutor.__init__(self, wmi, instanciator)
+        NodeMemorizer.__init__(self, 'trace')
+        self._verbose = verbose
         self._processor = Serial()
 
     def setVerbose(self, verbose):
@@ -96,8 +98,10 @@ class VisitorPrint(VisitorInterface, NodePrinter, NodeExecutor):
 
     def processNode(self, procedure):
         self.init(procedure)
-        self.printTree(procedure, self._verbose)
+        if self._verbose:
+            self.printTree(procedure, self._verbose)
         self.indend()
+        self.memorizeProcedure(procedure)
         return State.Running
 
     def processChildren(self, procedure):
@@ -107,6 +111,16 @@ class VisitorPrint(VisitorInterface, NodePrinter, NodeExecutor):
     def postProcessNode(self, procedure):
         self.unindend()
         return State.Success
+
+    def memorizeProcedure(self, procedure):
+        self.memorize(procedure.id, {"type":procedure.type,
+                                    "label":procedure.label,
+                                    "parent_id":procedure.parent.id if procedure.parent is not None else -1,
+                                    "parent_label":procedure.parent.label if procedure.parent is not None else "",
+                                    "state":procedure.state,
+                                    "msg":procedure.progress_msg,
+                                    "code":procedure.progress_code,
+                                    "time": procedure.progress_time})
 
 class VisitorExecutor(VisitorInterface, NodeExecutor, NodeMemorizer):
     """
@@ -118,6 +132,7 @@ class VisitorExecutor(VisitorInterface, NodeExecutor, NodeMemorizer):
         #Execution
         VisitorInterface.__init__(self)
         NodeExecutor.__init__(self, wmi, instanciator)
+        NodeMemorizer.__init__(self, 'trace')
 
     def setVerbose(self, verbose):
         self._verbose=verbose
@@ -212,38 +227,3 @@ class VisitorReversibleSimulator(VisitorInterface, NodePrinter, NodeReversibleSi
             return False
         self.back.printMemory()
         return True
-
-
-class VisitorProgress(VisitorInterface, NodeMemorizer):
-    """
-    Expands and flattens the whole procedure tree
-    """
-    def __init__(self):
-        #Execution
-        VisitorInterface.__init__(self)
-        NodeMemorizer.__init__(self, 'VisitorProgress')
-        self._verbose = False
-        self._processor = Serial()
-
-    def processNode(self, procedure):
-        if procedure.progress_msg:
-            self.memorize(procedure.id, {"type":procedure.type,
-                                        "label":procedure.label,
-                                        "state":procedure.state,
-                                        "msg":procedure.progress_msg,
-                                        "code":procedure.progress_code,
-                                        "time": procedure.progress_time})
-        return State.Running
-
-    def postProcessNode(self, procedure):
-        return State.Success
-
-    def processChildren(self, procedure):
-        """ Use serial processor always """
-        return self._processor.processChildren(procedure._children, self)
-
-    def processingDone(self, procedure):
-        return True
-
-    def getProgress(self):
-        return self._tree

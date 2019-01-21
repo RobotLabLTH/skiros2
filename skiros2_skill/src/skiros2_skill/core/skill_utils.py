@@ -311,7 +311,7 @@ class NodeMemorizer:
         return len(self._tree)>0
 
     def memorize(self, skill, tag):
-        #self._debug("Memorize " + skill.printInfo(False))
+        #self._debug("Memorize " + str(tag))
         self._tree.append((skill, tag))
 
     def hasIndex(self, index):

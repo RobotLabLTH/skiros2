@@ -290,9 +290,8 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         ui_file = os.path.join(rospkg.RosPack().get_path('skiros2_gui'), 'src/skiros2_gui/core', 'skiros_gui.ui')
         loadUi(ui_file, self)
 
-        self.skill_tree_widget.itemSelectionChanged.connect( lambda : self.on_skill_tree_widget_item_selection_changed( self.skill_tree_widget.currentItem()) )
-
-        self.wm_tree_widget.itemSelectionChanged.connect( lambda : self.on_wm_tree_widget_item_selection_changed( self.wm_tree_widget.currentItem()) )
+        self.skill_tree_widget.currentItemChanged.connect( lambda : self.on_skill_tree_widget_item_selection_changed( self.skill_tree_widget.currentItem() ) )
+        self.wm_tree_widget.itemSelectionChanged.connect( lambda : self.on_wm_tree_widget_item_selection_changed( self.wm_tree_widget.currentItem() ) )
         self.wm_properties_widget.itemChanged.connect( lambda p: self.on_properties_table_item_changed( self.wm_tree_widget.currentItem(), p.row() ) )
         self.wm_relations_widget.resizeEvent = self.on_wm_relations_widget_resized
         self.wm_update_signal.connect(lambda d: self.on_wm_update(d))
@@ -767,13 +766,15 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         self._update_progress_table(msg)
         self._save_log(msg, "skill")
         #Update buttons
-        if State(msg.state)==State.Running and msg.label.find("task")>=0:
-            self.create_task_tree(msg.id)
-            self._toggle_task_active()
-            for manager in self._sli.agents.values():
-                manager.reset_tick_rate()
-        elif State(msg.state)!=State.Idle and msg.label.find("task")>=0:
-            self._toggle_task_active()
+        if msg.label.find("task")>=0:
+            if State(msg.state)==State.Running or State(msg.state)==State.Idle:
+                if not self.skill_stop_button.isEnabled():
+                    self.create_task_tree(msg.id)
+                    self._toggle_task_active()
+                    for manager in self._sli.agents.values():
+                        manager.reset_tick_rate()
+            else:
+                self._toggle_task_active()
         #Update task tree
         with self._task_mutex:
             items = self.task_tree_widget.findItems(str(msg.id), Qt.MatchRecursive | Qt.MatchFixedString, 1)
@@ -915,8 +916,6 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
 
     @Slot()
     def on_skill_stop_button_clicked(self):
-        if not self._sli.has_active_tasks:
-            return
         self._sli.preempt_one()
 
 #==============================================================================
