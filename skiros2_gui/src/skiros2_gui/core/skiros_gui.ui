@@ -158,6 +158,9 @@
           </item>
           <item>
            <widget class="QLabel" name="robot_rate_info">
+            <property name="toolTip">
+             <string>Robot name and tick rate</string>
+            </property>
             <property name="text">
              <string>No robot connected</string>
             </property>
@@ -182,6 +185,9 @@
               <horstretch>6</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
+            </property>
+            <property name="toolTip">
+             <string>The current (or last executed) task</string>
             </property>
             <property name="editTriggers">
              <set>QAbstractItemView::AnyKeyPressed|QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed</set>
@@ -246,6 +252,9 @@
              </item>
              <item>
               <widget class="QCheckBox" name="modality_checkBox">
+               <property name="toolTip">
+                <string>Visualize/Hide optional parameters</string>
+               </property>
                <property name="text">
                 <string>Advanced options</string>
                </property>
@@ -264,6 +273,9 @@
                  <width>0</width>
                  <height>30</height>
                 </size>
+               </property>
+               <property name="toolTip">
+                <string>Parameters selection</string>
                </property>
                <property name="autoFillBackground">
                 <bool>true</bool>
@@ -349,6 +361,9 @@
          <layout class="QVBoxLayout" name="verticalLayout_6">
           <item>
            <widget class="QTreeWidget" name="wm_tree_widget">
+            <property name="toolTip">
+             <string>The world scene</string>
+            </property>
             <property name="editTriggers">
              <set>QAbstractItemView::AllEditTriggers</set>
             </property>
@@ -464,6 +479,9 @@
               <verstretch>2</verstretch>
              </sizepolicy>
             </property>
+            <property name="toolTip">
+             <string>Object's properties</string>
+            </property>
             <property name="editTriggers">
              <set>QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed|QAbstractItemView::SelectedClicked</set>
             </property>
@@ -489,7 +507,7 @@
              <bool>false</bool>
             </attribute>
             <attribute name="verticalHeaderDefaultSectionSize">
-             <number>17</number>
+             <number>21</number>
             </attribute>
             <column>
              <property name="text">
@@ -511,6 +529,9 @@
               <verstretch>1</verstretch>
              </sizepolicy>
             </property>
+            <property name="toolTip">
+             <string>Object's relations</string>
+            </property>
             <attribute name="horizontalHeaderDefaultSectionSize">
              <number>200</number>
             </attribute>
@@ -521,7 +542,7 @@
              <bool>false</bool>
             </attribute>
             <attribute name="verticalHeaderDefaultSectionSize">
-             <number>17</number>
+             <number>21</number>
             </attribute>
             <column>
              <property name="text">
@@ -550,6 +571,9 @@
             </property>
             <item>
              <widget class="QPushButton" name="add_object_button">
+              <property name="toolTip">
+               <string>Add a new child object  to the current selected object in the scene</string>
+              </property>
               <property name="text">
                <string>Add object</string>
               </property>
