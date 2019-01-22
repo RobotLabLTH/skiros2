@@ -143,7 +143,7 @@ class VisitorExecutor(VisitorInterface, NodeExecutor, NodeMemorizer):
                 state = self.execute(procedure)
             except Exception, e:
                 log.error(self.__class__.__name__, traceback.format_exc())
-                procedure._setProgress("Error on start: {}".format(traceback.format_exc()), -404)
+                procedure._setProgress("Error on start: {}. Blackboard data: {}".format(traceback.format_exc(), self._params.printState()), -404)
                 procedure._setState(State.Failure)
                 state = State.Failure
             self.memorizeProgress(procedure)

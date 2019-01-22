@@ -180,4 +180,6 @@ class Property(object):
         """
         @brief Return a string with key and values
         """
-        return "{}:{}".format(self._key, self._values)
+        v = str(self._values)
+        max_lenght = 500
+        return "{}:{}".format(self._key, v) if len(v)<max_lenght else "{}:{} ...]".format(self._key, v[0:max_lenght])
