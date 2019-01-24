@@ -141,7 +141,7 @@ class VisitorExecutor(VisitorInterface, NodeExecutor, NodeMemorizer):
         if not procedure.hasState(State.Running):
             try:
                 state = self.execute(procedure)
-            except Exception, e:
+            except Exception:
                 log.error(self.__class__.__name__, traceback.format_exc())
                 procedure._setProgress("Error on start: {}. Blackboard data: {}".format(traceback.format_exc(), self._params.printState()), -404)
                 procedure._setState(State.Failure)
@@ -154,9 +154,9 @@ class VisitorExecutor(VisitorInterface, NodeExecutor, NodeMemorizer):
     def postProcessNode(self, procedure):
         try:
             state = self.postExecute(procedure)
-        except Exception, e:
+        except Exception:
             log.error(self.__class__.__name__, traceback.format_exc())
-            procedure._setProgress("Error on execution: {}".format(traceback.format_exc()), -405)
+            procedure._setProgress("Error on execution: {}. Blackboard data: {}".format(traceback.format_exc(), self._params.printState()), -405)
             procedure._setState(State.Failure)
             state = State.Failure
         self.memorizeProgress(procedure)
@@ -169,11 +169,10 @@ class VisitorExecutor(VisitorInterface, NodeExecutor, NodeMemorizer):
         #Preempt node
         try:
             self.preemptSkill(procedure)
-        except Exception, e:
+        except Exception:
             log.error(self.__class__.__name__, traceback.format_exc())
-            procedure._setProgress("Error on start: {}".format(traceback.format_exc()), -404)
+            procedure._setProgress("Error on preemption: {}. Blackboard data: {}".format(traceback.format_exc(), self._params.printState()), -406)
             procedure._setState(State.Failure)
-            state = State.Failure
         self.memorizeProgress(procedure)
 
     def processingStart(self, procedure):

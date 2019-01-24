@@ -254,15 +254,18 @@ class Element(object):
             obj = self.id
         return {'src': subj, 'type': predicate, 'dst': obj, 'state': value, 'abstract': abstract} in self._relations
 
-    def hasProperty(self, key, value=None):
+    def hasProperty(self, key, value=None, not_none=False):
         """
         @brief Return true if element has the property.
         @key the property to check
         @value if specified, return true if the property has that value
+        @not_none when set to true, checks that the property doesn't have none as value
         """
-        if value!=None and self._properties.has_key(key):
+        if not self._properties.has_key(key):
+            return False
+        if value is not None:
             return self.getProperty(key).find(value)!=-1
-        return self._properties.has_key(key)
+        return self.getProperty(key).values or not not_none
 
     def setProperty(self, key, value, datatype=None, is_list=False, force_convertion=False):
         """
