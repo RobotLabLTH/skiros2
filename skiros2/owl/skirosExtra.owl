@@ -98,7 +98,7 @@
     </owl:NamedIndividual>
 
     <owl:NamedIndividual rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#test_camera">
-        <rdf:type rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Camera"/>
+        <rdf:type rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#DepthCamera"/>
         <skiros:StateProperty>Idle</skiros:StateProperty>
     </owl:NamedIndividual>
 </rdf:RDF>
