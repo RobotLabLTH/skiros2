@@ -11,6 +11,7 @@ Optional: optional parameters
 """
 ParamTypes = Enum('ParamTypes', 'Required Optional')
 
+
 class Param(Property):
     """
     @brief A param is a property with addionally:
@@ -29,23 +30,24 @@ class Param(Property):
 
     """
     __slots__ = ['_key', '_description', '_param_type', '_data_type', '_is_list', '_values', '_default', '_last_update']
+
     def __init__(self, key, description, value, param_type, is_list=False):
         self._is_list = is_list
-        self._key=key
-        self._description=description
+        self._key = key
+        self._description = description
         self._setLastUpdate()
         if isinstance(param_type, int):
-            self._param_type=ParamTypes(param_type+1)
+            self._param_type = ParamTypes(param_type+1)
         else:
-            self._param_type=param_type
+            self._param_type = param_type
         if isinstance(value, list):
             self._values = value
             self._data_type = type(value[0])
         elif isinstance(value, type):
-            self._data_type=value
+            self._data_type = value
             self._values = list()
         else:
-            self._data_type=type(value)
+            self._data_type = type(value)
             self._values = [value]
         self._default = deepcopy(self._values)
 
@@ -84,7 +86,7 @@ class Param(Property):
         @time a datetime
         @tolerance the tolerance in microseconds
         """
-        if (self._last_update-time)>timedelta(microseconds=tolerance):
+        if (self._last_update-time) > timedelta(microseconds=tolerance):
             return True
         return False
 
@@ -120,7 +122,7 @@ class Param(Property):
         """
         @brief Check if the current parameter has default values specified
         """
-        return len(self._default)>0
+        return len(self._default) > 0
 
     def getDefaultValue(self, index=0):
         return self._default[index]
@@ -133,7 +135,8 @@ class Param(Property):
         @brief Check if the current parameter value is the default
         """
         for v1, v2 in zip(self._default, self._values):
-            if v1!=v2: return False
+            if v1 != v2:
+                return False
         return True
 
     def makeDefault(self, values):
@@ -174,9 +177,10 @@ class Param(Property):
             to_ret.setProperty("skiros:DataType", self._default[0]._type)
             if self.isSpecified():
                 for v in self._values:
-                    if v._id!="":
+                    if v._id != "":
                         to_ret.addRelation("-1", "skiros:hasValue", v._id)
         return to_ret
+
 
 class ParamHandler(object):
     """
@@ -193,10 +197,11 @@ class ParamHandler(object):
 
     """
     __slots__ = ['_params']
+
     def __init__(self, params=None):
-        self._params={}
+        self._params = {}
         if params:
-            self._params=params
+            self._params = params
 
     def __getitem__(self, key):
         if self.hasParam(key):
@@ -214,7 +219,7 @@ class ParamHandler(object):
         return self._params.iteritems()
 
     def reset(self, copy):
-        self._params=copy
+        self._params = copy
 
     def getCopy(self):
         return deepcopy(self._params)
@@ -229,12 +234,12 @@ class ParamHandler(object):
         to_ret = self.getCopy()
         for key, param in other._params.iteritems():
             if self.hasParam(key):
-                if not param.isSpecified():#If not specified (None) parameter is removed
+                if not param.isSpecified():  # If not specified (None) parameter is removed
                     del to_ret[key]
                 else:
                     to_ret[key].setValues(param.getValues())
             else:
-                if param.isSpecified():#Only if specified (not None) parameter is added
+                if param.isSpecified():  # Only if specified (not None) parameter is added
                     to_ret[key] = param
         return to_ret
 
@@ -243,12 +248,12 @@ class ParamHandler(object):
         @brief Remap a parameter to a new key
         """
         if self.hasParam(initial_key):
-            #print self.printState()
+            # print self.printState()
             temp = self._params[initial_key]
             temp._key = target_key
             self._params[target_key] = temp
             del self._params[initial_key]
-            #print 'after ' + self.printState()
+            # print 'after ' + self.printState()
 
     def specifyParams(self, other, keep_default=False):
         """
@@ -259,7 +264,7 @@ class ParamHandler(object):
                 t = self._params[key]
                 if keep_default and t.hasSpecifiedDefault():
                     if t.dataTypeIs(Element):
-                        if t.getDefaultValue().getIdNumber()<0 or t.getDefaultValue().getIdNumber()==param.value.getIdNumber():
+                        if t.getDefaultValue().getIdNumber() < 0 or t.getDefaultValue().getIdNumber() == param.value.getIdNumber():
                             t.values = param.values
                 else:
                     t.values = param.values
