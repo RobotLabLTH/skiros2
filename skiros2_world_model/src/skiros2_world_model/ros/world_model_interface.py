@@ -325,41 +325,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         self._build_tuples_of_concording_parameters(all_keys, relations_done, ph, first, couples, coupled_keys, overlap_keys, verbose)
         # Merge the tuples with an overlapping key
         if overlap_keys:
-            loop = True
-            iters = 5
-            while loop:  # Iterate until no shared keys are found
-                iters -= 1
-                if iters == 0:
-                    raise
-                loop = False
-                coupled_keys2 = []
-                merged = {}
-                # print 'qui:'
-                for k1, s1 in couples.iteritems():
-                    for k2, s2 in couples.iteritems():
-                        shared_k = [k for k in k1 if k in k2]
-                        if k1 == k2 or not shared_k:
-                            continue
-                        loop = True
-                        skip = True
-                        for i in k1:
-                            if i not in coupled_keys2:
-                                coupled_keys2.append(i)
-                                skip = False
-                        for i in k2:
-                            if i not in coupled_keys2:
-                                coupled_keys2.append(i)
-                                skip = False
-                        if skip:
-                            continue  # If it was already considered, skip
-                        rk, rs = self._intersect(k1, k2, s1, s2, shared_k)
-                        merged[rk] = rs  # Temporary store merged tuple
-                for key in keys:  # Add not merged tuples
-                    if key not in coupled_keys2:
-                        for k1, s1 in couples.iteritems():
-                            if key in k1:
-                                merged[k1] = s1
-                couples = merged
+            self._merge_tuples_with_overlaping_keys(couples, keys)
         # Add back keys that are not coupled to others
         for key in keys:
             if key not in coupled_keys:
@@ -453,6 +419,43 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
                     if not temp:
                         log.warn("resolve_elements", "No input for params {} {}. Resolving: {} {}"
                                  .format(key, key2, ph.getParamValue(key).printState(verbose), ph.getParamValue(key2).printState(verbose)))
+
+    def _merge_tuples_with_overlaping_keys(self, couples, keys):
+        loop = True
+        iters = 5
+        while loop:  # Iterate until no shared keys are found
+            iters -= 1
+            if iters == 0:
+                raise
+            loop = False
+            coupled_keys2 = []
+            merged = {}
+            # print 'qui:'
+            for k1, s1 in couples.iteritems():
+                for k2, s2 in couples.iteritems():
+                    shared_k = [k for k in k1 if k in k2]
+                    if k1 == k2 or not shared_k:
+                        continue
+                    loop = True
+                    skip = True
+                    for i in k1:
+                        if i not in coupled_keys2:
+                            coupled_keys2.append(i)
+                            skip = False
+                    for i in k2:
+                        if i not in coupled_keys2:
+                            coupled_keys2.append(i)
+                            skip = False
+                    if skip:
+                        continue  # If it was already considered, skip
+                    rk, rs = self._intersect(k1, k2, s1, s2, shared_k)
+                    merged[rk] = rs  # Temporary store merged tuple
+            for key in keys:  # Add not merged tuples
+                if key not in coupled_keys2:
+                    for k1, s1 in couples.iteritems():
+                        if key in k1:
+                            merged[k1] = s1
+            couples = merged
 
     def _concatenate(self, a, b):
         if not isinstance(a, np.ndarray):
