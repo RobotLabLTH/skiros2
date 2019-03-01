@@ -32,6 +32,11 @@ class Element(object):
     _property_reasoner_map = None
 
     def printState(self, verbose=False, filter=""):
+        """
+        >>> e = Element("test_type", "test_label", "0-1")
+        >>> e.printState()
+        '0-1-test_label'
+        """
         if self._id == "":
             to_ret = self._type
         else:
@@ -56,6 +61,11 @@ class Element(object):
         self._setLastUpdate()
 
     def __repr__(self):
+        """
+        >>> e = Element("test_type", "test_label", "0-1")
+        >>> e.printState()
+        '0-1-test_label'
+        """
         return self.printState()
 
     @property
@@ -79,6 +89,13 @@ class Element(object):
         self._label = l
 
     def available_properties(self):
+        """
+        >>> e = Element()
+        >>> e.setProperty("Hello", float)
+        >>> e.setProperty("Hello", 0.0)
+        >>> e.available_properties()
+        ['Hello']
+        """
         return self._properties.keys()
 
     @property
@@ -88,6 +105,14 @@ class Element(object):
     def isAbstract(self):
         """
         @brief Return True if the element is abstract, or False if it is instanciated in the world model
+        >>> e = Element()
+        >>> e.setProperty("Hello", float)
+        >>> e.setProperty("Hello", 0.0)
+        >>> e.isAbstract()
+        True
+        >>> f = Element("test_type", "test_label", "0")
+        >>> f.isAbstract()
+        False
         """
         return self.id == ""
 
@@ -95,6 +120,14 @@ class Element(object):
         self._last_update = datetime.now()
 
     def getLastUpdate(self):
+        """
+        >>> e = Element()
+        >>> time_before = e.getLastUpdate()
+        >>> e.setProperty("Hello", float)
+        >>> time_after = e.getLastUpdate()
+        >>> time_before < time_after
+        True
+        """
         return self._last_update
 
     def _initPluginLoader(self):
@@ -124,12 +157,26 @@ class Element(object):
     def getIdNumber(self):
         """
         @brief Return the element id number as integer
+        >>> e = Element("test_type", "test_label", "0-1")
+        >>> e.getIdNumber()
+        1
+        >>> f = Element()
+        >>> f.getIdNumber()
+        -1
         """
         if self._id.find('-') < 0:
             return -1
         return int(self._id.split('-')[1])
 
     def setUri(self, eid):
+        """
+        >>> e = Element("test_type", "test_label")
+        >>> e.getIdNumber()
+        -1
+        >>> e.setUri(1)
+        >>> e.getIdNumber()
+        1
+        """
         self._setLastUpdate()
         self._id = "{}-{}".format(self._type, eid)
 
@@ -170,6 +217,8 @@ class Element(object):
     def getRelation(self, subj="", pred=[], obj=""):
         """
         @brief Return the first relation matching with input filters or none
+        >>> e = Element()
+        >>> e.getRelation()
         """
         to_ret = self.getRelations(subj, pred, obj)
         if to_ret:
@@ -187,12 +236,25 @@ class Element(object):
     def removeRelation(self, relation):
         """
         @brief Remove a relation from the element
+        >>> e = Element()
+        >>> e.setRelation("from", "pred", "to")
+        >>> e.getRelations()
+        [{'src': 'from', 'dst': 'to', 'type': 'pred', 'state': True, 'abstract': False}]
+        >>> e.removeRelation(e.getRelation())
+        >>> e.getRelations()
+        []
         """
         self._relations.remove(relation)
 
     def getRelations(self, subj="", pred=[], obj=""):
         """
         @brief Return a list of all relations matching with input filters
+        >>> e = Element()
+        >>> e.getRelations()
+        []
+        >>> e.setRelation("from", "pred", "to")
+        >>> e.getRelations()
+        [{'src': 'from', 'dst': 'to', 'type': 'pred', 'state': True, 'abstract': False}]
         """
         to_ret = []
         if isinstance(pred, str):
@@ -208,6 +270,13 @@ class Element(object):
     def setRelation(self, subj, predicate, obj):
         """
         @brief Set a relation, removing previous definitions
+        >>> e = Element()
+        >>> e.setRelation("from", "pred", "to")
+        >>> e.getRelations()
+        [{'src': 'from', 'dst': 'to', 'type': 'pred', 'state': True, 'abstract': False}]
+        >>> e.setRelation("from", "pred", "new_to")
+        >>> e.getRelations()
+        [{'src': 'from', 'dst': 'new_to', 'type': 'pred', 'state': True, 'abstract': False}]
         """
         self.removeRelations(self.getRelations(subj if subj == "-1" else "", predicate, obj if obj == "-1" else ""))
         self.addRelation(subj, predicate, obj)
@@ -219,6 +288,10 @@ class Element(object):
         @obj An element or an element id
         @value The state of the relation should be True or False
         @abstract Whether the relation is between abstract objects or instances
+        >>> e = Element()
+        >>> e.addRelation("from", "pred", "to")
+        >>> e.getRelations()
+        [{'src': 'from', 'dst': 'to', 'type': 'pred', 'state': True, 'abstract': False}]
         """
         self._setLastUpdate()
         if isinstance(obj, Element):
@@ -235,6 +308,12 @@ class Element(object):
         @obj An element or an element id
         @value The state of the relation should be True or False
         @abstract Whether the relation is between abstract objects or instances
+        >>> e = Element()
+        >>> e.hasRelation("from", "pred", "to")
+        False
+        >>> e.addRelation("from", "pred", "to")
+        >>> e.hasRelation("from", "pred", "to")
+        True
         """
         if subj == "-1":
             subj = self.id
@@ -247,6 +326,12 @@ class Element(object):
         @brief Return true if element has the property.
         @key the property to check
         @value if specified, return true if the property has that value
+        >>> e = Element()
+        >>> e.hasProperty("Hello")
+        False
+        >>> e.setProperty("Hello", float)
+        >>> e.hasProperty("Hello")
+        True
         """
         if value != None and self._properties.has_key(key):
             return self.getProperty(key).find(value) != -1
@@ -255,6 +340,23 @@ class Element(object):
     def setProperty(self, key, value, datatype=None, is_list=False, force_convertion=False):
         """
         @brief Set the property to a value. If datatype is specified tries to convert.
+        >>> e = Element()
+        >>> e.setProperty("Hello", float)
+        >>> e.setProperty("Hello", 0.0)
+        >>> e.getProperty("Hello").value
+        0.0
+        >>> e.setProperty("Integer", 2, "xsd:int")
+        >>> e.getProperty("Integer").value
+        2
+        >>> e.setProperty("Double", 3.0, "xsd:double")
+        >>> e.getProperty("Double").value
+        3.0
+        >>> e.setProperty("Bool", False, "xsd:boolean")
+        >>> e.getProperty("Bool").value
+        False
+        >>> e.setProperty("String", "test_string", "xsd:string")
+        >>> e.getProperty("String").value
+        'test_string'
         """
         self._setLastUpdate()
 
@@ -304,6 +406,13 @@ class Element(object):
     def removeProperty(self, key):
         """
         @brief Remove the property
+        >>> e = Element()
+        >>> e.setProperty("Integer", 2, "xsd:int")
+        >>> e.getProperty("Integer").value
+        2
+        >>> e.removeProperty("Integer")
+        >>> e.hasProperty("Integer")
+        False
         """
         self._setLastUpdate()
 
@@ -315,6 +424,11 @@ class Element(object):
     def appendProperty(self, key, value):
         """
         @brief Append a value to the property. If property doesn't exist it is created.
+        # TODO: This functions fails. See issue #4.
+        >>> e = Element()
+        >>> e.setProperty("Integer", 2, "xsd:int")
+        >>> e.getProperty("Integer").value
+        2
         """
         self._setLastUpdate()
         if self.hasProperty(key):
