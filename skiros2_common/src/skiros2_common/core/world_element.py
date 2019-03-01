@@ -30,6 +30,7 @@ class Element(object):
     __slots__ = ['_last_update', '_type', '_label', '_id', '_properties', '_local_relations', '_relations']
     _plug_loader = None
     _property_reasoner_map = None
+    _reasoner_key = 'skiros:DiscreteReasoner'
 
     def printState(self, verbose=False, filter=""):
         if self._id == "":
@@ -258,9 +259,9 @@ class Element(object):
         """
         self._setLastUpdate()
 
-        if key == 'skiros:DiscreteReasoner':
+        if key == self._reasoner_key:
             old_reasoners = []
-            if self.hasProperty('skiros:DiscreteReasoner'):
+            if self.hasProperty(self._reasoner_key):
                 old_reasoners = self._properties[key].values
 
         if datatype:
@@ -293,7 +294,7 @@ class Element(object):
                     value = str(value)
                 self._properties[key] = Property(key, value, is_list)
 
-        if key == 'skiros:DiscreteReasoner':
+        if key == self._reasoner_key:
             new_reasoners = self._properties[key].values
             try:
                 [self._getReasoner(r).removeProperties(self) for r in old_reasoners if r not in new_reasoners]
@@ -307,7 +308,7 @@ class Element(object):
         """
         self._setLastUpdate()
 
-        if key == 'skiros:DiscreteReasoner':
+        if key == self._reasoner_key:
             [self._getReasoner(r).removeProperties(self) for r in self._properties[key].values]
 
         del self._properties[key]
