@@ -344,7 +344,7 @@ class Element(object):
             if not self.hasProperty(k):
                 return False
             for v in p.getValues():
-                if not v in self.getProperty(k).values:
+                if v not in self.getProperty(k).values:
                     return False
         # Filter by relations
         for r in abstract._relations:
