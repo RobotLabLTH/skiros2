@@ -248,7 +248,7 @@ class Element(object):
         @key the property to check
         @value if specified, return true if the property has that value
         """
-        if value != None and self._properties.has_key(key):
+        if value is not None and key in self._properties:
             return self.getProperty(key).find(value) != -1
         return (key in self._properties)
 
@@ -266,19 +266,19 @@ class Element(object):
         if datatype:
             if datatype == "xsd:double" or datatype == "xsd:float":
                 self._properties[key] = Property(key, float, is_list)
-                if value != None:
+                if value is not None:
                     self._properties[key].setValues(value)
             elif datatype == "xsd:int" or datatype == "xsd:integer":
                 self._properties[key] = Property(key, int, is_list)
-                if value != None:
+                if value is not None:
                     self._properties[key].setValues(int(value))
             elif datatype == "xsd:boolean":
                 self._properties[key] = Property(key, bool, is_list)
-                if value != None:
+                if value is not None:
                     self._properties[key].setValues(value)
             elif datatype == "xsd:string":
                 self._properties[key] = Property(key, str, is_list)
-                if value != None:
+                if value is not None:
                     self._properties[key].setValues(str(value))
             else:
                 log.warn("[Element]", "Datatype {} not recognized. Set default".format(datatype))
