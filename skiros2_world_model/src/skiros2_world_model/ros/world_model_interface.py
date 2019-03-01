@@ -416,11 +416,11 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
                         loop = True
                         skip = True
                         for i in k1:
-                            if not i in coupled_keys2:
+                            if i not in coupled_keys2:
                                 coupled_keys2.append(i)
                                 skip = False
                         for i in k2:
-                            if not i in coupled_keys2:
+                            if i not in coupled_keys2:
                                 coupled_keys2.append(i)
                                 skip = False
                         if skip:
@@ -428,14 +428,14 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
                         rk, rs = self._intersect(k1, k2, s1, s2, shared_k)
                         merged[rk] = rs  # Temporary store merged tuple
                 for key in keys:  # Add not merged tuples
-                    if not key in coupled_keys2:
+                    if key not in coupled_keys2:
                         for k1, s1 in couples.iteritems():
                             if key in k1:
                                 merged[k1] = s1
                 couples = merged
         # Add back keys that are not coupled to others
         for key in keys:
-            if not key in coupled_keys:
+            if key not in coupled_keys:
                 couples[key] = first[key]
         if verbose:
             for k, v in couples.iteritems():
@@ -469,7 +469,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         for k in k1:
             keys.append(k)
         for k in k2:
-            if not k in shared_k:
+            if k not in shared_k:
                 keys.append(k)
         # print keys
         sets = []
