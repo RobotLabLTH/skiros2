@@ -118,7 +118,7 @@ class Element(object):
         """
         if not isinstance(Element._plug_loader, PluginLoader):
             self._initPluginLoader()
-        if not Element._property_reasoner_map.has_key(get_code):
+        if get_code not in Element._property_reasoner_map:
             raise KeyError("No reasoner associated to data {}. Debug: {}".format(get_code, Element._property_reasoner_map))
         return Element._property_reasoner_map[get_code]
 
@@ -250,7 +250,7 @@ class Element(object):
         """
         if value != None and self._properties.has_key(key):
             return self.getProperty(key).find(value) != -1
-        return self._properties.has_key(key)
+        return (key in self._properties)
 
     def setProperty(self, key, value, datatype=None, is_list=False, force_convertion=False):
         """
