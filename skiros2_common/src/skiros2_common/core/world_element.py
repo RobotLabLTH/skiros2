@@ -198,9 +198,8 @@ class Element(object):
         to_ret = []
         if isinstance(pred, str):
             pred = [pred]
-        if pred:
-            if pred[0] == "":
-                pred = []
+        if pred and pred[0] == "":
+            pred = []
         for r in self._relations:
             if (r['src'] == subj or subj == "") and (r['type'] in pred or not pred) and (r['dst'] == obj or obj == ""):
                 to_ret.append(r)
