@@ -1,7 +1,11 @@
-from ontology_interface import *
+from ontology_interface import OntologyInterface
+import rospy
+import skiros2_msgs.srv as srvs
+import skiros2_msgs.msg as msgs
 import skiros2_common.ros.utils as utils
 import skiros2_common.core.params as params
 import skiros2_common.tools.logger as log
+from skiros2_common.core.world_element import Element
 from skiros2_world_model.core.world_model_abstract_interface import WorldModelAbstractInterface
 import copy
 import numpy as np
