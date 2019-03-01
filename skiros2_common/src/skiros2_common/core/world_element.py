@@ -31,6 +31,7 @@ class Element(object):
     _plug_loader = None
     _property_reasoner_map = None
     _reasoner_key = 'skiros:DiscreteReasoner'
+    _wm_reasoner_param = 'wm/reasoners_pkgs'
 
     def printState(self, verbose=False, filter=""):
         if self._id == "":
@@ -102,7 +103,7 @@ class Element(object):
         Element._plug_loader = PluginLoader()
         Element._property_reasoner_map = {}
         # TODO: remove dependency from ROSpy
-        for package in rospy.get_param('wm/reasoners_pkgs', []):
+        for package in rospy.get_param(self._wm_reasoner_param, []):
             Element._plug_loader.load(package, DiscreteReasoner)
         for plugin in Element._plug_loader:
             r = plugin()
