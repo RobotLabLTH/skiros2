@@ -38,15 +38,15 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
                 if msg.action == 'update' or msg.action == 'update_properties' or msg.action == 'add':
                     WorldModelInterface._elements_cache[elem.id] = elem
                 elif msg.action == 'remove' or msg.action == 'remove_recursive':
-                    if WorldModelInterface._elements_cache.has_key(elem.id):
+                    if elem.id in WorldModelInterface._elements_cache:
                         del WorldModelInterface._elements_cache[elem.id]
                 else:
                     log.error("[WmMonitor]", "Command {} not recognized.".format(msg.action))
             if msg.relation:
                 rel = utils.msg2relation(msg.relation[0])
-                if WorldModelInterface._elements_cache.has_key(rel['src']):
+                if rel['src'] in WorldModelInterface._elements_cache:
                     del WorldModelInterface._elements_cache[rel['src']]
-                if WorldModelInterface._elements_cache.has_key(rel['dst']):
+                if rel['dst'] in WorldModelInterface._elements_cache:
                     del WorldModelInterface._elements_cache[rel['dst']]
         if self._external_monitor_cb:
             self._external_monitor_cb(msg)
@@ -229,7 +229,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
             return utils.msg2element(res.elements[0])
 
     def get_element(self, eid, context_id='scene'):
-        if not WorldModelInterface._elements_cache.has_key(eid):
+        if eid not in WorldModelInterface._elements_cache:
             msg = srvs.WmGetRequest()
             e = msgs.WmElement()
             e.id = eid
