@@ -1,3 +1,4 @@
+*.spyproject/
 *.user
 *.pyc
 *.creator
