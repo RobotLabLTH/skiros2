@@ -5,6 +5,7 @@ from skiros2_common.core.property import Property
 from datetime import datetime
 import rospy
 
+
 class Element(object):
     """
     @brief A touple type, label, id, properties, relation, where:
@@ -26,19 +27,19 @@ class Element(object):
     >>> e.getProperty("Hello").values
     [2.0]
     """
-    __slots__ = ['_last_update', '_type', '_label', '_id', '_properties', '_local_relations','_relations']
+    __slots__ = ['_last_update', '_type', '_label', '_id', '_properties', '_local_relations', '_relations']
     _plug_loader = None
     _property_reasoner_map = None
 
     def printState(self, verbose=False, filter=""):
-        if self._id=="":
+        if self._id == "":
             to_ret = self._type
         else:
             to_ret = self._id
-        to_ret = to_ret + "-" + self._label #+ self._properties
+        to_ret = to_ret + "-" + self._label  # self._properties
         if verbose:
             for k, p in self._properties.iteritems():
-                if k==filter or filter=="":
+                if k == filter or filter == "":
                     to_ret += "\n" + p.printState()
             for r in self._relations:
                 to_ret += "\n" + str(r)
@@ -46,17 +47,16 @@ class Element(object):
 
     def __init__(self, etype="Unknown", elabel="", eid=""):
         # Description
-        self._type=etype
-        self._label=elabel
-        self._id=eid
-        self._properties=dict()
-        self._local_relations=list() #Reference to Elements
-        self._relations=list() #Reference to IDs
+        self._type = etype
+        self._label = elabel
+        self._id = eid
+        self._properties = dict()
+        self._local_relations = list()  # Reference to Elements
+        self._relations = list()  # Reference to IDs
         self._setLastUpdate()
 
     def __repr__(self):
         return self.printState()
-
 
     @property
     def id(self):
@@ -89,7 +89,7 @@ class Element(object):
         """
         @brief Return True if the element is abstract, or False if it is instanciated in the world model
         """
-        return self.id==""
+        return self.id == ""
 
     def _setLastUpdate(self):
         self._last_update = datetime.now()
@@ -100,7 +100,7 @@ class Element(object):
     def _initPluginLoader(self):
         Element._plug_loader = PluginLoader()
         Element._property_reasoner_map = {}
-        #TODO: remove dependency from ROSpy
+        # TODO: remove dependency from ROSpy
         for package in rospy.get_param('wm/reasoners_pkgs', []):
             Element._plug_loader.load(package, DiscreteReasoner)
         for plugin in Element._plug_loader:
@@ -125,7 +125,7 @@ class Element(object):
         """
         @brief Return the element id number as integer
         """
-        if self._id.find('-')<0:
+        if self._id.find('-') < 0:
             return -1
         return int(self._id.split('-')[1])
 
@@ -158,7 +158,6 @@ class Element(object):
         @brief Extract data using a reasoner
         """
         return self._getReasoner(get_code).getData(self, get_code)
-
 
     def setData(self, set_code, data):
         """
@@ -199,10 +198,10 @@ class Element(object):
         if isinstance(pred, str):
             pred = [pred]
         if pred:
-            if pred[0]=="":
+            if pred[0] == "":
                 pred = []
         for r in self._relations:
-            if (r['src']==subj or subj=="") and (r['type'] in pred or not pred) and (r['dst']==obj or obj==""):
+            if (r['src'] == subj or subj == "") and (r['type'] in pred or not pred) and (r['dst'] == obj or obj == ""):
                 to_ret.append(r)
         return to_ret
 
@@ -210,7 +209,7 @@ class Element(object):
         """
         @brief Set a relation, removing previous definitions
         """
-        self.removeRelations(self.getRelations(subj if subj=="-1" else "", predicate, obj if obj=="-1" else ""))
+        self.removeRelations(self.getRelations(subj if subj == "-1" else "", predicate, obj if obj == "-1" else ""))
         self.addRelation(subj, predicate, obj)
 
     def addRelation(self, subj, predicate, obj, value=True, abstract=False):
@@ -237,9 +236,9 @@ class Element(object):
         @value The state of the relation should be True or False
         @abstract Whether the relation is between abstract objects or instances
         """
-        if subj=="-1":
+        if subj == "-1":
             subj = self.id
-        elif obj=="-1":
+        elif obj == "-1":
             obj = self.id
         return {'src': subj, 'type': predicate, 'dst': obj, 'state': value, 'abstract': abstract} in self._relations
 
@@ -249,8 +248,8 @@ class Element(object):
         @key the property to check
         @value if specified, return true if the property has that value
         """
-        if value!=None and self._properties.has_key(key):
-            return self.getProperty(key).find(value)!=-1
+        if value != None and self._properties.has_key(key):
+            return self.getProperty(key).find(value) != -1
         return self._properties.has_key(key)
 
     def setProperty(self, key, value, datatype=None, is_list=False, force_convertion=False):
@@ -265,21 +264,21 @@ class Element(object):
                 old_reasoners = self._properties[key].values
 
         if datatype:
-            if datatype=="xsd:double" or datatype=="xsd:float":
+            if datatype == "xsd:double" or datatype == "xsd:float":
                 self._properties[key] = Property(key, float, is_list)
-                if value!=None:
+                if value != None:
                     self._properties[key].setValues(value)
-            elif datatype=="xsd:int" or datatype=="xsd:integer":
+            elif datatype == "xsd:int" or datatype == "xsd:integer":
                 self._properties[key] = Property(key, int, is_list)
-                if value!=None:
+                if value != None:
                     self._properties[key].setValues(int(value))
-            elif datatype=="xsd:boolean":
+            elif datatype == "xsd:boolean":
                 self._properties[key] = Property(key, bool, is_list)
-                if value!=None:
+                if value != None:
                     self._properties[key].setValues(value)
-            elif datatype=="xsd:string":
+            elif datatype == "xsd:string":
                 self._properties[key] = Property(key, str, is_list)
-                if value!=None:
+                if value != None:
                     self._properties[key].setValues(str(value))
             else:
                 log.warn("[Element]", "Datatype {} not recognized. Set default".format(datatype))
@@ -290,7 +289,7 @@ class Element(object):
                     value = self._properties[key].dataType()(value)
                 self._properties[key].setValues(value)
             else:
-                if type(value)==unicode:
+                if type(value) == unicode:
                     value = str(value)
                 self._properties[key] = Property(key, value, is_list)
 
@@ -298,10 +297,9 @@ class Element(object):
             new_reasoners = self._properties[key].values
             try:
                 [self._getReasoner(r).removeProperties(self) for r in old_reasoners if r not in new_reasoners]
-                [self._getReasoner(r).addProperties(self)    for r in new_reasoners if r not in old_reasoners]
+                [self._getReasoner(r).addProperties(self) for r in new_reasoners if r not in old_reasoners]
             except KeyError, e:
                 log.error("WorldElement", e.message)
-
 
     def removeProperty(self, key):
         """
@@ -313,7 +311,6 @@ class Element(object):
             [self._getReasoner(r).removeProperties(self) for r in self._properties[key].values]
 
         del self._properties[key]
-
 
     def appendProperty(self, key, value):
         """
@@ -336,28 +333,27 @@ class Element(object):
         Compare the element to an abstract description
         Return true if this is a valid instance, false otherwise
         """
-        #Filter by type
-        if not self._type==abstract._type and not (wmi.add_prefix(self._type) in wmi.get_sub_classes(abstract._type, True)):
+        # Filter by type
+        if not self._type == abstract._type and not (wmi.add_prefix(self._type) in wmi.get_sub_classes(abstract._type, True)):
             return False
-        #Filter by label
-        if not (abstract._label=="" or abstract._label=="Unknown" or self._label==abstract._label):
+        # Filter by label
+        if not (abstract._label == "" or abstract._label == "Unknown" or self._label == abstract._label):
             return False
-        #Filter by properties
+        # Filter by properties
         for k, p in abstract._properties.iteritems():
             if not self.hasProperty(k):
                 return False
             for v in p.getValues():
                 if not v in self.getProperty(k).values:
                     return False
-        #Filter by relations
+        # Filter by relations
         for r in abstract._relations:
-            if r["src"]=="-1" or r["src"]==abstract._id:#-1 is the special autoreferencial value
-                #print wmi.getRelations(self._id, r["type"], -1)
+            if r["src"] == "-1" or r["src"] == abstract._id:  # -1 is the special autoreferencial value
+                # print wmi.getRelations(self._id, r["type"], -1)
                 if not wmi.get_relations(self._id, r["type"], "-1"):
                     return False
             else:
-                #print wmi.getRelations(-1, r["type"], self._id)
+                # print wmi.getRelations(-1, r["type"], self._id)
                 if not wmi.get_relations("-1", r["type"], self._id):
                     return False
         return True
-
