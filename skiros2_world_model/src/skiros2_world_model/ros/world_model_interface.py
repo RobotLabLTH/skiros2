@@ -10,6 +10,7 @@ from skiros2_world_model.core.world_model_abstract_interface import WorldModelAb
 import copy
 import numpy as np
 
+
 class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
     """
     Interface for scene services on a world model node
@@ -29,7 +30,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
 
     def _monitor_cb(self, msg):
         if self._make_cache:
-            if self._last_snapshot_id!=msg.prev_snapshot_id or msg.action=='reset':
+            if self._last_snapshot_id != msg.prev_snapshot_id or msg.action == 'reset':
                 WorldModelInterface._elements_cache.clear()
             self._last_snapshot_id = msg.snapshot_id
             for elem in msg.elements:
@@ -89,11 +90,11 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         for r in e._local_relations:
             sub_e = r['dst']
             sub_e.addRelation(e._id, r['type'], "-1")
-            if sub_e._id=="":
-                if self.add_element(sub_e)<0:
+            if sub_e._id == "":
+                if self.add_element(sub_e) < 0:
                     log.error("[{}]".format(self.__class__.__name__), "Failed to add local element {}".format(sub_e))
             else:
-                if self.update_element(sub_e)<0:
+                if self.update_element(sub_e) < 0:
                     log.error("[{}]".format(self.__class__.__name__), "Failed to update local element {}".format(sub_e))
         e._local_relations = list()
 
@@ -207,7 +208,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         if recursive:
             antiloop_bind.add(template.id)
             for r in relcopy:
-                if (r['type'] in relation_filter or not relation_filter) and r['src']=="-1":
+                if (r['type'] in relation_filter or not relation_filter) and r['src'] == "-1":
                     if not r['dst'] in antiloop_bind:
                         rcopy = copy.deepcopy(r)
                         rcopy['src'] = template.id
@@ -264,16 +265,16 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         try:
             reasoner = subj._getReasoner(pred)
             if pred in reasoner.computeRelations(subj, obj):
-               return [{"src": subj.id, "type": pred, "dst": obj.id}]
+                return [{"src": subj.id, "type": pred, "dst": obj.id}]
             else:
                 return list()
         except KeyError:
-            #No reasoner associated with the relation
+            # No reasoner associated with the relation
             pass
             return None
 
     def get_relations(self, subj, pred, obj):
-        if pred!="" and subj!="" and obj!="" and subj!="-1" and obj!="-1":
+        if pred != "" and subj != "" and obj != "" and subj != "-1" and obj != "-1":
             subj = self.get_element(subj)
             obj = self.get_element(obj)
             rels = self.get_reasoner_relations(subj, pred, obj)
@@ -297,7 +298,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
                 e2 = obj.getProperty("skiros:Template").value
             else:
                 e2 = obj.id
-            #print "CHECKING {} {} {} = {}".format(e1, pred, e2, (e2 in self.getTriples(e1, pred)) == state)
+            # print "CHECKING {} {} {} = {}".format(e1, pred, e2, (e2 in self.getTriples(e1, pred)) == state)
             return (e2 in self.getTriples(e1, pred)) == state
         else:
             return bool(self.get_relations(subj.id, pred, obj.id)) == state
@@ -320,48 +321,51 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         coupled_keys = []
         overlap_keys = []
         relations_done = set([])
-        #Build tuples of concording parameters
-        for i in range(len(all_keys)):#Loop over all keys
+        # Build tuples of concording parameters
+        for i in range(len(all_keys)):  # Loop over all keys
             key_base = all_keys[i]
-            if not isinstance(ph.getParamValue(key_base), Element): continue
-            for j in ph.getParamValue(key_base)._relations:#Loop over relation constraints
-                #print j
-                if j["src"]=="-1":#-1 is the special autoreferencial value
+            if not isinstance(ph.getParamValue(key_base), Element):
+                continue
+            for j in ph.getParamValue(key_base)._relations:  # Loop over relation constraints
+                # print j
+                if j["src"] == "-1":  # -1 is the special autoreferencial value
                     key2 = j["dst"]
                     key = key_base
                     rel_id = key_base+j["type"]+j["dst"]
-                    if rel_id in relations_done:#Skip relation with previous indexes, already considered
+                    if rel_id in relations_done:  # Skip relation with previous indexes, already considered
                         continue
                     else:
-                        #print rel_id
+                        # print rel_id
                         relations_done.add(rel_id)
                 else:
                     key2 = key_base
                     key = j["src"]
                     rel_id = j["src"]+j["type"]+key_base
-                    if rel_id in relations_done:#Skip relation with previous indexes, already considered
+                    if rel_id in relations_done:  # Skip relation with previous indexes, already considered
                         continue
                     else:
-                        #print rel_id
+                        # print rel_id
                         relations_done.add(rel_id)
-                if not ph.hasParam(key) or not ph.hasParam(key2): #Check necessary because at the moment ._relations contains a mix Toclean
+                if not ph.hasParam(key) or not ph.hasParam(key2):  # Check necessary because at the moment ._relations contains a mix Toclean
                     continue
                 this = ph.getParamValue(key)
                 other = ph.getParamValue(key2)
-                if this.getIdNumber()>=0 and other.getIdNumber()>=0:#If both parameters are already set, no need to resolve..
+                if this.getIdNumber() >= 0 and other.getIdNumber() >= 0:  # If both parameters are already set, no need to resolve..
                     continue
-                if this.getIdNumber()>=0: set1 = [this]
+                if this.getIdNumber() >= 0:
+                    set1 = [this]
                 else:
-                    if ph.getParam(key).paramType==params.ParamTypes.Optional:
+                    if ph.getParam(key).paramType == params.ParamTypes.Optional:
                         abstract = ph.getParam(key).value
                         other = ph.getParam(key2).value
                         abstract._id = abstract.label
                         set1 = [abstract]
                     else:
                         set1 = first[key]
-                if other.getIdNumber()>=0: set2 = [other]
+                if other.getIdNumber() >= 0:
+                    set2 = [other]
                 else:
-                    if ph.getParam(key2).paramType==params.ParamTypes.Optional:
+                    if ph.getParam(key2).paramType == params.ParamTypes.Optional:
                         abstract = ph.getParam(key2).value
                         other = ph.getParam(key).value
                         abstract._id = abstract.label
@@ -376,53 +380,60 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
                         except:
                             log.error("", "MERGING: {} and {} ".format(couples[(key, key2)], np.array(temp)))
                     else:
-                        log.warn("resolve_elements", "No input for params {} {}. Resolving: {} {}".format(key, key2, ph.getParamValue(key).printState(verbose), ph.getParamValue(key2).printState(verbose)))
+                        log.warn("resolve_elements", "No input for params {} {}. Resolving: {} {}"
+                                 .format(key, key2, ph.getParamValue(key).printState(verbose), ph.getParamValue(key2).printState(verbose)))
                 else:
-                    if key in coupled_keys: overlap_keys.append(key)
-                    else: coupled_keys.append(key)
-                    if key2 in coupled_keys: overlap_keys.append(key2)
-                    else: coupled_keys.append(key2)
+                    if key in coupled_keys:
+                        overlap_keys.append(key)
+                    else:
+                        coupled_keys.append(key)
+                    if key2 in coupled_keys:
+                        overlap_keys.append(key2)
+                    else:
+                        coupled_keys.append(key2)
                     temp = [np.array([e1, e2]) for e1 in set1 for e2 in set2 if self.check_relation(e1, j["type"], e2, j['state'], j['abstract'])]
                     couples[(key, key2)] = np.array(temp)
                     if not temp:
-                        log.warn("resolve_elements", "No input for params {} {}. Resolving: {} {}".format(key, key2, ph.getParamValue(key).printState(verbose), ph.getParamValue(key2).printState(verbose)))
-        #Merge the tuples with an overlapping key
+                        log.warn("resolve_elements", "No input for params {} {}. Resolving: {} {}"
+                                 .format(key, key2, ph.getParamValue(key).printState(verbose), ph.getParamValue(key2).printState(verbose)))
+        # Merge the tuples with an overlapping key
         if overlap_keys:
             loop = True
             iters = 5
-            while loop:#Iterate until no shared keys are found
-                iters-=1
-                if iters==0:
+            while loop:  # Iterate until no shared keys are found
+                iters -= 1
+                if iters == 0:
                     raise
                 loop = False
                 coupled_keys2 = []
                 merged = {}
-                #print 'qui:'
+                # print 'qui:'
                 for k1, s1 in couples.iteritems():
                     for k2, s2 in couples.iteritems():
                         shared_k = [k for k in k1 if k in k2]
-                        if k1==k2 or not shared_k:
+                        if k1 == k2 or not shared_k:
                             continue
                         loop = True
                         skip = True
                         for i in k1:
                             if not i in coupled_keys2:
                                 coupled_keys2.append(i)
-                                skip=False
+                                skip = False
                         for i in k2:
                             if not i in coupled_keys2:
                                 coupled_keys2.append(i)
-                                skip=False
-                        if skip: continue#If it was already considered, skip
-                        rk, rs = self._intersect(k1,k2,s1,s2, shared_k)
-                        merged[rk] = rs#Temporary store merged tuple
-                for key in keys:#Add not merged tuples
+                                skip = False
+                        if skip:
+                            continue  # If it was already considered, skip
+                        rk, rs = self._intersect(k1, k2, s1, s2, shared_k)
+                        merged[rk] = rs  # Temporary store merged tuple
+                for key in keys:  # Add not merged tuples
                     if not key in coupled_keys2:
                         for k1, s1 in couples.iteritems():
                             if key in k1:
                                 merged[k1] = s1
                 couples = merged
-        #Add back keys that are not coupled to others
+        # Add back keys that are not coupled to others
         for key in keys:
             if not key in coupled_keys:
                 couples[key] = first[key]
@@ -445,7 +456,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
             a = np.array([a])
         if not isinstance(b, np.ndarray):
             b = np.array([b])
-        return np.concatenate((a,b))
+        return np.concatenate((a, b))
 
     def _intersect(self, k1, k2, s1, s2, shared_k):
         a = [k1.index(k) for k in shared_k]
@@ -454,23 +465,23 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         d = np.arange(len(k2))
         d = np.delete(d, b)
         keys = []
-        #Remove constant sets
+        # Remove constant sets
         for k in k1:
             keys.append(k)
         for k in k2:
             if not k in shared_k:
                 keys.append(k)
-        #print keys
+        # print keys
         sets = []
-        #print c
-        #print d
+        # print c
+        # print d
         for v1 in s1:
             for v2 in s2:
-                append=True
+                append = True
                 for i in range(len(shared_k)):
-                    #print str(v1[a[i]].printState()) + 'vs' + str(v1[b[i]].printState()) + '=' + str(v1[a[i]]!=v2[b[i]])
-                    if v1[a[i]]!=v2[b[i]]:
-                        append=False
+                    # print str(v1[a[i]].printState()) + 'vs' + str(v1[b[i]].printState()) + '=' + str(v1[a[i]]!=v2[b[i]])
+                    if v1[a[i]] != v2[b[i]]:
+                        append = False
                 if append:
                     sets.append(np.array(self._concatenate(v1[c], v2[d])))
         return tuple(keys), np.array(sets)
