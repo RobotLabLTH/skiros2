@@ -332,10 +332,17 @@ class Element(object):
     def appendProperty(self, key, value):
         """
         @brief Append a value to the property. If property doesn't exist it is created.
+        >>> e = Element()
+        >>> e.setProperty("Integer", 2, "xsd:int")
+        >>> e.getProperty("Integer").value
+        2
+        >>> e.appendProperty("Integer", 3)
+        >>> e.getProperty("Integer").values
+        [2, 3]
         """
         self._setLastUpdate()
         if self.hasProperty(key):
-            self._properties[key].append(value)
+            self._properties[key].addValue(value)
         else:
             self.setProperty(key, value, is_list=True)
 

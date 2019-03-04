@@ -224,18 +224,23 @@ def serializeParamMap(param_map):
     >>> ph = param.ParamHandler()
     >>> ph.addParam("MyDict", dict, param.ParamTypes.Required)
     >>> serializeParamMap(ph._params)
-    [param: {"values": [], "specType": 2, "type": "dict", "description": "", "key": "MyDict"}]
+    [param: "{\\"values\\": [], \\"specType\\": 0, \\"type\\": \\"dict\\", \\"description\\": \\"\\", \\"key\\"\\
+      : \\"MyDict\\"}"]
     >>> ph.addParam("MyList", list, param.ParamTypes.Required)
     >>> serializeParamMap(ph._params)
-    [param: {"values": [], "specType": 2, "type": "list", "description": "", "key": "MyList"}, param: {"values": [], "specType": 2, "type": "dict", "description": "", "key": "MyDict"}]
+    [param: "{\\"values\\": [], \\"specType\\": 0, \\"type\\": \\"list\\", \\"description\\": \\"\\", \\"key\\"\\
+      : \\"MyList\\"}", param: "{\\"values\\": [], \\"specType\\": 0, \\"type\\": \\"dict\\", \\"description\\": \\"\\", \\"key\\"\\
+      : \\"MyDict\\"}"]
     >>> params = {}
     >>> params["MyDict"] = param.Param("MyDict", "", dict, param.ParamTypes.Required)
     >>> serializeParamMap(params)
-    [param: {"values": [], "type": "dict", "key": "MyDict"}]
+    [param: "{\\"values\\": [], \\"specType\\": 0, \\"type\\": \\"dict\\", \\"description\\": \\"\\", \\"key\\"\\
+      : \\"MyDict\\"}"]
     >>> params = {}
     >>> params["MyString"] = param.Param("MyString", "", "String", param.ParamTypes.Required)
     >>> serializeParamMap(params)
-    [param: {"values": ["String"], "type": "str", "key": "MyString"}]
+    [param: "{\\"values\\": [\\"String\\"], \\"specType\\": 0, \\"type\\": \\"str\\", \\"description\\": \\"\\
+      \\", \\"key\\": \\"MyString\\"}"]
     """
     s_param_map = []
     for _, p in param_map.iteritems():
@@ -296,7 +301,7 @@ def serializePropertyMap(p_map):
     >>> params["MyString"] = param.Property("MyString", "String")
     >>> serializePropertyMap(params)
     [key: "MyString"
-    dataValue: "[\"String\"]"
+    dataValue: "[\\"String\\"]"
     dataType: "str"]
     """
     s_p_map = []
