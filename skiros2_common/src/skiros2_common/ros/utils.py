@@ -239,7 +239,6 @@ def decode(values, data_type):
 
 def serializeParamMap(param_map):
     """
-    # TODO: Changed specType from 2 to 0 in all tests!
     >>> ph = param.ParamHandler()
     >>> ph.addParam("MyDict", dict, param.ParamTypes.Required)
     >>> serializeParamMap(ph._params)

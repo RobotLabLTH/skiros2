@@ -68,6 +68,7 @@ class Element(object):
         """
         return self.printState()
 
+
     @property
     def id(self):
         return self._id
@@ -245,6 +246,15 @@ class Element(object):
         []
         """
         self._relations.remove(relation)
+
+    def removeRelation2(self, subj, predicate, obj, value=True, abstract=False):
+        """
+        @brief Remove a relation from the element
+        """
+        try:
+            self._relations.remove({'src': subj, 'type': predicate, 'dst': obj, 'state': value, 'abstract': abstract})
+        except:
+            log.error("[removeRelation2]", "Can t remove {} from {}".format({'src': subj, 'type': predicate, 'dst': obj, 'state': value, 'abstract': abstract}, self._relations))
 
     def getRelations(self, subj="", pred=[], obj=""):
         """
@@ -424,11 +434,13 @@ class Element(object):
     def appendProperty(self, key, value):
         """
         @brief Append a value to the property. If property doesn't exist it is created.
-        # TODO: This functions fails. See issue #4.
         >>> e = Element()
         >>> e.setProperty("Integer", 2, "xsd:int")
         >>> e.getProperty("Integer").value
         2
+        >>> e.appendProperty("Integer", 3)
+        >>> e.getProperty("Integer").values
+        [2, 3]
         """
         self._setLastUpdate()
         if self.hasProperty(key):
