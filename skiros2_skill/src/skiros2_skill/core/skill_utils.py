@@ -207,10 +207,6 @@ class NodeExecutor():
 
 
     def _ground(self, skill):
-        #TODO: removed but should be taken back...
-        if skill._instance.hasState(State.Running): #TODO: fix fix fix!
-            log.info("[ground]", "Skill {} is already running".format(skill.printInfo()))
-            return False
         skill.reset()
         skill.specifyParams(self._params)
         self._printTracked(skill._params, "[{}Params] ".format(skill.label))
@@ -231,17 +227,14 @@ class NodeExecutor():
         """
         @brief If the skill label is not specified, try other instances
         """
-        if skill._label!="":
+        if skill.label!="":
             return False
-        used = [skill._instance.label]
-        #if self._verbose:
-        for i in self._instanciator.getInstances(skill.type):
-            if not i.label in used:
-                log.info("tryOther", "Trying skill {}".format(i.label))
-                used.append(i.label)
-                skill.setInstance(i)
-                if self._ground(skill):
-                    return True
+        ignore_list = [skill._instance.label]
+        while self._instanciator.assignInstance(skill, ignore_list):
+            log.info("tryOther", "Trying skill {}".format(skill._instance.label))
+            ignore_list.append(skill._instance.label)
+            if self._ground(skill):
+                return True
         return False
 
     def _execute(self, skill):
@@ -252,7 +245,7 @@ class NodeExecutor():
             return skill.start()
 
     def init(self, skill):
-        if not skill.hasInstance():
+        if not skill.hasInstance() or skill._instance.hasState(State.Running):
             skill.specifyParams(self._params)
             self._instanciator.assignInstance(skill)
 

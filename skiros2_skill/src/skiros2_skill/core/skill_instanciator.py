@@ -75,7 +75,7 @@ class SkillInstanciator:
         self._available_instances[new.type].append(new)
         return new
 
-    def assignInstance(self, skill):
+    def assignInstance(self, skill, ignore_list=list()):
         """
         @brief Assign an instance to an abstract skill.
 
@@ -83,12 +83,12 @@ class SkillInstanciator:
         """
         to_set = None
         for p in self._available_instances[skill.type]:
-            if p.label == skill.label or skill.label=="":
+            if (p.label == skill.label or skill.label=="") and p.label not in ignore_list:
                 to_set = p
-                if not p.hasState(State.Running):
+                if not p.hasState(State.Running):#The skill is available, just go forward
                     break
         if to_set is not None:
-            if to_set.hasState(State.Running):
+            if to_set.hasState(State.Running):#The skill instance is busy, create a new one
                 to_set = self.duplicate_instance(to_set)
             skill.setInstance(to_set)
         else:
