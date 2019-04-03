@@ -766,14 +766,13 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         self._update_progress_table(msg)
         self._save_log(msg, "skill")
         #Update buttons
-        if msg.label.find("task")>=0:
-            if State(msg.state)==State.Running or State(msg.state)==State.Idle:
-                if not self.skill_stop_button.isEnabled():
-                    self.create_task_tree(msg.id)
-                    self._toggle_task_active()
-                    for manager in self._sli.agents.values():
-                        manager.reset_tick_rate()
-            else:
+        if msg.type.find("Root")>=0:
+            if not self.skill_stop_button.isEnabled():
+                self.create_task_tree(msg.id)
+                self._toggle_task_active()
+                for manager in self._sli.agents.values():
+                    manager.reset_tick_rate()
+            if abs(msg.progress_code)==1:
                 self._toggle_task_active()
         #Update task tree
         with self._task_mutex:
