@@ -315,20 +315,24 @@ class SkillManagerNode(DiscoverableNode):
         self._tick_rate = rospy.Publisher("~tick_rate", Empty, queue_size=20)
         rospy.on_shutdown(self.shutdown)
         self.init_discovery("skill_managers", robot_name)
+        log.info("[{}]".format(rospy.get_name()), "Skill manager ready.")
 
     def _initSkills(self):
         """
         @brief Initialize the robot with a set of skills
         """
         for r in rospy.get_param('~libraries_list', []):
+            log.info("[LoadLibrary]", str(r))
             self._sm.loadSkills(r)
         #Instanciate local primitives
         for r in rospy.get_param('~primitive_list', []):
+            log.info("[LoadPrimitive]", str(r))
             self._sm.addLocalPrimitive(r)
         sl = rospy.get_param('~skill_list', [])
         if not sl:
             pass #TODO: load all defined skills
         for r in sl:
+            log.info("[LoadSkill]", str(r))
             self._sm.addSkill(r)
 
     def _makeTask(self, msg):
