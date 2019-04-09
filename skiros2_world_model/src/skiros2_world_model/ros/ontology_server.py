@@ -38,11 +38,12 @@ import skiros2_common.ros.utils as utils
 from threading import Lock
 from pyparsing import ParseException
 
+
 class OntologyServer(object):
     def __init__(self, anonymous=False):
         rospy.init_node("ontology", anonymous=anonymous)
         self._verbose = rospy.get_param('~verbose', False)
-        self._ontology =  Ontology()
+        self._ontology = Ontology()
         self.init_ontology_services()
 
     def init_ontology_services(self):
@@ -61,7 +62,7 @@ class OntologyServer(object):
         else:
             try:
                 self._mutex.release()
-            except:
+            except BaseException:
                 return SetBoolResponse(False, "Mutex already unlocked.")
         return SetBoolResponse(True, "Ok")
 
@@ -79,12 +80,12 @@ class OntologyServer(object):
                             temp += self._ontology.uri2lightstring(r)
                         else:
                             temp += r.n3()
-                        if len(s)>1:
+                        if len(s) > 1:
                             temp += " "
                     to_ret.answer.append(temp)
             log.assertInfo(self._verbose, "[WoQuery]", "Answer: {}. Time: {:0.3f} sec".format(to_ret.answer, self._times.getLast()))
         except (AttributeError, ParseException) as e:
-            #TODO: test if the bug is fixed, and remove the exception handling
+            # TODO: test if the bug is fixed, and remove the exception handling
             log.error("[WoQuery]", "Parse error with following query: {}.".format(msg.query_string))
             raise e
         return to_ret
@@ -101,6 +102,7 @@ class OntologyServer(object):
 
     def run(self):
         rospy.spin()
+
 
 if __name__ == '__main__':
     node = OntologyServer()

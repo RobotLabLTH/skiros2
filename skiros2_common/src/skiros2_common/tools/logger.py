@@ -29,7 +29,7 @@ class logColor:
 
 class Log:
     __LOG = []
-    
+
     __level = logMode.TRACE
     __indent = 0
     __buffered = False
@@ -37,15 +37,23 @@ class Log:
 
     # colored messages
     def msgMode(self, mode, msg):
-        if (mode == logMode.ALWAYS): return msg
-        elif (mode == logMode.ERROR): return msgError(msg)
-        elif (mode == logMode.WARN): return msgWarn(msg)
-        elif (mode == logMode.INFO): return msgInfo(msg)
-        elif (mode == logMode.OK): return msgOk(msg)
-        elif (mode == logMode.DEBUG): return msgDebug(msg)
-        elif (mode == logMode.TRACE): return msgTrace(msg)
-        else: return msg
-    
+        if (mode == logMode.ALWAYS):
+            return msg
+        elif (mode == logMode.ERROR):
+            return msgError(msg)
+        elif (mode == logMode.WARN):
+            return msgWarn(msg)
+        elif (mode == logMode.INFO):
+            return msgInfo(msg)
+        elif (mode == logMode.OK):
+            return msgOk(msg)
+        elif (mode == logMode.DEBUG):
+            return msgDebug(msg)
+        elif (mode == logMode.TRACE):
+            return msgTrace(msg)
+        else:
+            return msg
+
     @staticmethod
     def msgTrace(msg):    return                                      msg
     @staticmethod
@@ -79,6 +87,7 @@ class Log:
     def countOkMsg(self):    return countMsg(logMode.OK)
     def countInfoMsg(self):  return countMsg(logMode.INFO)
     def countDebugMsg(self): return countMsg(logMode.DEBUG)
+
     def countTraceMsg(self): return countMsg(logMode.TRACE)
 
     def hasError(self): return self.hasMode(logMode.ERROR)
@@ -86,6 +95,7 @@ class Log:
     def hasOk(self):    return self.hasMode(logMode.OK)
     def hasInfo(self):  return self.hasMode(logMode.INFO)
     def hasDebug(self): return self.hasMode(logMode.DEBUG)
+
     def hasTrace(self): return self.hasMode(logMode.TRACE)
 
     def assertError(self, cond, msg, desc = None): return self.test(cond, msg, logMode.ERROR, desc)
@@ -101,12 +111,13 @@ class Log:
     
     # set logging level
     def setLevel(self, mode): self.__level = mode
+
     def getLevel(self): return self.__level
 
     # clear log
     def clear(self):
         self.__LOG = []
-    
+
     # reset log
     def reset(self):
         self.__LOG = []
@@ -123,58 +134,63 @@ class Log:
 
     # set indentation
     def indent(self): self.__indent += 2
+
     def unindent(self): self.__indent = max(0, self.__indent - 2)
-    
+
     # return last message of mode
     def lastModeMsg(self, mode):
         msg = None
         for item in self.__LOG:
             k = item[0]
             v = item[1]
-            if k == mode: msg = v
+            if k == mode:
+                msg = v
         return msg
-    
+
     # get number of messages
     def countMsg(self, mode):
         count = 0
         for msg in self.__LOG:
-            if (msg[0] <= mode) and (msg[0] != logMode.ALWAYS): count += 1
+            if (msg[0] <= mode) and (msg[0] != logMode.ALWAYS):
+                count += 1
         return count
-    
+
     # add log message
-    def log(self, mode, msg, desc = None):
+    def log(self, mode, msg, desc=None):
         if (mode <= self.__level):
             msg = msg.rjust(len(msg) + self.__indent)
-            self.__LOG.append( (mode, msg, desc) )
+            self.__LOG.append((mode, msg, desc))
             if not self.__buffered:
                 print(self.msgToString(self.__LOG[-1]))
-                
 
     # has log message with mode
     def hasMode(self, mode):
         for msg in self.__LOG:
-            if (msg[0] <= mode) and (msg[0] != logMode.ALWAYS): return True
+            if (msg[0] <= mode) and (msg[0] != logMode.ALWAYS):
+                return True
         return False
-    
+
     # test condition and add log message
-    def test(self, cond, msg, modeFailed, descFailed = None, modeSuccess = None, descSuccess = None):
-        if (not cond): self.log(modeFailed, msg, descFailed)
+    def test(self, cond, msg, modeFailed, descFailed=None, modeSuccess=None, descSuccess=None):
+        if (not cond):
+            self.log(modeFailed, msg, descFailed)
         elif (modeSuccess is not None):
             self.log(modeSuccess, msg, descSuccess)
-        
+
         return cond
 
     # convert log to string
     def toString(self):
         resString = ""
-        
+
         maxLength = 0
         for msg in self.__LOG:
-            if (msg[0] == logMode.ALWAYS): continue
+            if (msg[0] == logMode.ALWAYS):
+                continue
             m = re.sub("\\x1b\[[0-9]+m", "", msg[1])
             if (len(m) > maxLength):
                 maxLength = len(m)
-    
+
         maxLength += 2
         for msg in self.__LOG:
             k = msg[0]
@@ -193,9 +209,10 @@ class Log:
             if (d is not None): resString += msgMode(k, d)
         
             resString += "\n"
-    
-        if not self.__useColor: resString = re.sub("\\x1b\[[0-9]+m", "",resString)
-        
+
+        if not self.__useColor:
+            resString = re.sub("\\x1b\[[0-9]+m", "", resString)
+
         return resString.strip("\n")
 
     def msgToString(self, msg):

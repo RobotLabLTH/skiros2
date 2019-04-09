@@ -30,6 +30,7 @@
 
 from multiprocessing.dummy import Process
 
+
 class DiscreteReasoner(object):
     def init(self, wmi):
         """

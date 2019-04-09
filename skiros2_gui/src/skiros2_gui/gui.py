@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (c) 2017, Francesco Rovida 
+# Copyright (c) 2017, Francesco Rovida
 
 # All rights reserved.
 #
@@ -33,6 +33,7 @@
 
 from rqt_gui_py.plugin import Plugin
 from core.skiros_widget import SkirosWidget
+
 
 class Skiros(Plugin):
     def __init__(self, context):

@@ -32,6 +32,7 @@ import subprocess
 from os import walk, remove
 import skiros2_common.tools.logger as log
 
+
 class PddlTypes(object):
     __slots__ = '_types'
 
@@ -39,9 +40,9 @@ class PddlTypes(object):
         self._types = {}
 
     def addType(self, name, supertype):
-        if name==supertype:
+        if name == supertype:
             return
-        if not self._types.has_key(supertype):
+        if supertype not in self._types:
             self._types[supertype] = []
         if not name in self._types[supertype]:
             self._types[supertype].append(name)
@@ -55,11 +56,12 @@ class PddlTypes(object):
         string += ")"
         return string
 
+
 class Predicate(object):
     __slots__ = 'name', 'params', 'negated', 'operator', 'value', 'abstracts'
 
     def __eq__(self, other):
-        if self.name!=other.name:
+        if self.name != other.name:
             return False
         return True
 
@@ -67,20 +69,20 @@ class Predicate(object):
         return not self.__eq__(other)
 
     def isEqualOf(self, other):
-        if self.name==other.name and len(self.params)==len(other.params):
+        if self.name == other.name and len(self.params) == len(other.params):
             for p1, p2 in zip(self.params, other.params):
-                if not p1["key"]==p2["key"]:
+                if not p1["key"] == p2["key"]:
                     return False
-            if self.negated==other.negated:
+            if self.negated == other.negated:
                 return True
         return False
 
     def isNegatedOf(self, other):
-        if self.name==other.name and len(self.params)==len(other.params):
+        if self.name == other.name and len(self.params) == len(other.params):
             for p1, p2 in zip(self.params, other.params):
-                if not p1["key"]==p2["key"]:
+                if not p1["key"] == p2["key"]:
                     return False
-            if self.negated!=other.negated:
+            if self.negated != other.negated:
                 return True
         return False
 
@@ -101,7 +103,7 @@ class Predicate(object):
             self.value = predicate.getProperty("skiros:desiredValue").value
 
     def isFunction(self):
-        return self.operator!=None and not isinstance(self.value, str)
+        return self.operator is not None and not isinstance(self.value, str)
 
     def toActionPddl(self, invert=False):
         string = ''
@@ -132,6 +134,7 @@ class Predicate(object):
         string += ")"
         return string
 
+
 class GroundPredicate(object):
     __slots__ = 'name', 'params', 'operator', 'value'
 
@@ -142,16 +145,16 @@ class GroundPredicate(object):
         self.value = value
 
     def __eq__(self, other):
-        #TODO: check with the functions..
-        if self.name==other.name and len(self.params)==len(other.params):
-            return set(self.params)==set(other.params)
+        # TODO: check with the functions..
+        if self.name == other.name and len(self.params) == len(other.params):
+            return set(self.params) == set(other.params)
         return False
 
     def __ne__(self, other):
         return not self.__eq__(other)
 
     def isFunction(self):
-        return self.operator!=None and not isinstance(self.value, str)
+        return self.operator is not None and not isinstance(self.value, str)
 
     def toPddl(self):
         string = ''
@@ -168,6 +171,7 @@ class GroundPredicate(object):
         string += ")"
         return string
 
+
 class ForallPredicate(object):
     __slots__ = 'predicate'
 
@@ -176,6 +180,7 @@ class ForallPredicate(object):
 
     def toPddl(self):
         return self.predicate
+
 
 class Action(object):
     __slots__ = 'name', 'params', 'preconditions', 'effects'
@@ -187,7 +192,7 @@ class Action(object):
         self.effects = postcons
 
     def __eq__(self, other):
-        if self.name!=other.name:
+        if self.name != other.name:
             return False
         return True
 
@@ -200,7 +205,7 @@ class Action(object):
         for p, t in self.params.iteritems():
             string += "?{} - {} ".format(p, t)
         string += ")\n"
-        string +='\t:duration (= ?duration 1)\n'
+        string += '\t:duration (= ?duration 1)\n'
         string += '\t:condition (and\n'
         for p in self.preconditions:
             string += '\t\t(at start {})\n'.format(p.toActionPddl())
@@ -227,6 +232,7 @@ class PddlInterface:
 
     It generates a pddl definition and invoke a task planner
     """
+
     def __init__(self, workspace, title="untitled"):
         self._title = title
         self._workspace = workspace
@@ -242,7 +248,7 @@ class PddlInterface:
         self._goal = []
 
     def getSubTypes(self, supertype):
-        if self._types._types.has_key(supertype):
+        if supertype in self._types._types:
             return self._types._types[supertype]
 
     def _addSuperTypes(self, predicate):
@@ -250,10 +256,10 @@ class PddlInterface:
         if predicate.isFunction():
             lookuplist = self._functions
         for p in lookuplist:
-            if p==predicate:
+            if p == predicate:
                 for param1, param2 in zip(p.params, predicate.params):
-                    if param1["valueType"]!=param2["valueType"]:
-                        supertypeId = p.name+param1["paramType"]
+                    if param1["valueType"] != param2["valueType"]:
+                        supertypeId = p.name + param1["paramType"]
                         self._types.addType(param1["valueType"], supertypeId)
                         self._types.addType(param2["valueType"], supertypeId)
                         param1["valueType"] = supertypeId
@@ -292,7 +298,7 @@ class PddlInterface:
 
     def addInitState(self, state):
         for s in self._init_state:
-            if s==state:
+            if s == state:
                 return
         self._init_state.append(state)
 
@@ -301,7 +307,7 @@ class PddlInterface:
 
     def printDomain(self, to_file=False):
         string = "(define (domain {})\n".format(self._title)
-        string += "(:requirements :typing :fluents :universal-preconditions)\n" #TODO: make this dynamic?
+        string += "(:requirements :typing :fluents :universal-preconditions)\n"  # TODO: make this dynamic?
         string += self._types.toPddl()
         string += "\n"
         string += "(:predicates \n"
@@ -319,7 +325,7 @@ class PddlInterface:
             string += "\n"
         string += ")\n"
         if to_file:
-            with open(self._workspace+"/domain.pddl", 'w') as f:
+            with open(self._workspace + "/domain.pddl", 'w') as f:
                 f.write(string)
         else:
             return string
@@ -329,9 +335,9 @@ class PddlInterface:
         string += "(:objects \n"
         for objType, objects in self._objects.iteritems():
             if len(objects):
-                 string += '\t'
-                 string += ' '.join(objects)
-                 string += ' - {}\n'.format(objType)
+                string += '\t'
+                string += ' '.join(objects)
+                string += ' - {}\n'.format(objType)
         string += ")\n"
         string += "(:init \n"
         for state in self._init_state:
@@ -347,7 +353,7 @@ class PddlInterface:
         string += "))\n"
         string += ")\n"
         if to_file:
-            with open(self._workspace+"/p01.pddl", 'w') as f:
+            with open(self._workspace + "/p01.pddl", 'w') as f:
                 f.write(string)
         else:
             return string
@@ -358,22 +364,23 @@ class PddlInterface:
             self.printDomain(True)
             self.printProblem(True)
 
-        output = subprocess.Popen(["plan.py", "y+Y+a+T+10+t+5+e+r+O+1+C+1", self._workspace+"/domain.pddl", self._workspace+"/p01.pddl", self._workspace+"/pddlplan"], stdout=subprocess.PIPE).communicate()[0]
+        output = subprocess.Popen(["plan.py", "y+Y+a+T+10+t+5+e+r+O+1+C+1", self._workspace + "/domain.pddl", self._workspace +
+                                   "/p01.pddl", self._workspace + "/pddlplan"], stdout=subprocess.PIPE).communicate()[0]
         outpath = None
         for (dirpath, dirnames, filenames) in walk(self._workspace):
             for name in filenames:
-                if name.find('pddlplan')>=0:
-                    outpath = dirpath+'/'+name
+                if name.find('pddlplan') >= 0:
+                    outpath = dirpath + '/' + name
         if outpath:
             with open(outpath, 'r') as f:
-                data=f.read()
+                data = f.read()
             try:
                 remove(outpath)
                 remove("output")
                 remove("all.groups")
                 remove("variables.groups")
                 remove("output.sas")
-            except:
+            except BaseException:
                 log.warn("[TOCHECK]", "Not all files were generated while planning.")
             return data
         else:
@@ -385,6 +392,6 @@ class PddlInterface:
         """
         a = self._actions[name]
         to_ret = dict()
-        for k,v in zip(a.params.keys(), values):
+        for k, v in zip(a.params.keys(), values):
             to_ret[k] = v
         return to_ret

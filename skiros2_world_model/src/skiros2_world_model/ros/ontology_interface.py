@@ -37,10 +37,12 @@ from std_srvs.srv import SetBool, SetBoolRequest
 from skiros2_common.core.world_element import Element
 from skiros2_world_model.core.world_model_abstract_interface import OntologyAbstractInterface
 
+
 class OntologyInterface(OntologyAbstractInterface):
     """
     Interface for ontology services on a world model node
     """
+
     def __init__(self, author_name="test"):
         self._author_name = author_name
         self._lock = rospy.ServiceProxy('wm/lock', SetBool)
@@ -75,7 +77,6 @@ class OntologyInterface(OntologyAbstractInterface):
         """
         return self._call(self._lock, SetBoolRequest(False)).success
 
-
     def add_class(self, class_uri, parent_uri, context=""):
         req = srvs.WoModifyRequest()
         req.context = context
@@ -94,7 +95,7 @@ class OntologyInterface(OntologyAbstractInterface):
         """
         @brief Add an individual
         """
-        #TODO:
+        # TODO:
         pass
 
     def add_ontology(self, uri):
@@ -175,9 +176,9 @@ class OntologyInterface(OntologyAbstractInterface):
         return uri
 
     def remove_prefix(self, parent_class):
-        if parent_class.find("#")>=0:
+        if parent_class.find("#") >= 0:
             return parent_class.split("#")[-1]
-        elif parent_class.find(":")>=0:
+        elif parent_class.find(":") >= 0:
             return parent_class.split(":")[-1]
         else:
             return parent_class
@@ -191,10 +192,10 @@ class OntologyInterface(OntologyAbstractInterface):
         if recursive:
             return self.query_ontology("SELECT ?x WHERE { ?x rdf:type/rdfs:subClassOf* " + self.add_prefix(parent_class) + " . } ")
         else:
-            return self.query_ontology("SELECT ?x where {?x rdf:type+ "+self.add_prefix(parent_class)+"}")
+            return self.query_ontology("SELECT ?x where {?x rdf:type+ " + self.add_prefix(parent_class) + "}")
 
     def get_type(self, uri):
-        return self.query_ontology("SELECT ?x where {"+self.add_prefix(uri)+" rdf:type ?x}")
+        return self.query_ontology("SELECT ?x where {" + self.add_prefix(uri) + " rdf:type ?x}")
 
     def get_triples(self, subj=None, pred=None, obj=None):
         """
@@ -202,19 +203,25 @@ class OntologyInterface(OntologyAbstractInterface):
 
         Note: at least one between subj, pred or obj must left blank for this function to work.
         """
-        if subj: subj = self.add_prefix(subj)
-        else: subj = "?x"
-        if pred: pred = self.add_prefix(pred)
-        else: pred = "?y"
-        if obj:  obj = self.add_prefix(obj)
-        else:  obj = "?z"
-        return self.query_ontology("SELECT * WHERE { "+ "{} {} {}".format(subj, pred, obj)+" . } ")
+        if subj:
+            subj = self.add_prefix(subj)
+        else:
+            subj = "?x"
+        if pred:
+            pred = self.add_prefix(pred)
+        else:
+            pred = "?y"
+        if obj:
+            obj = self.add_prefix(obj)
+        else:
+            obj = "?z"
+        return self.query_ontology("SELECT * WHERE { " + "{} {} {}".format(subj, pred, obj) + " . } ")
 
     def get_super_class(self, child_class):
         """
         @brief Return the parent class of child_class
         """
-        to_ret = self.query_ontology("SELECT ?x WHERE { "+ self.add_prefix(child_class) +" rdfs:subClassOf ?x. } ")
+        to_ret = self.query_ontology("SELECT ?x WHERE { " + self.add_prefix(child_class) + " rdfs:subClassOf ?x. } ")
         if not to_ret:
             log.error("[get_super_class]", "No super class found for {}".format(child_class))
         return to_ret[0]
@@ -223,7 +230,7 @@ class OntologyInterface(OntologyAbstractInterface):
         """
         @brief Return the child classes of parent_class. If recursive=True, returns also sub childs classes
         """
-        if(self._sub_classes_cache.has_key(parent_class)):
+        if(parent_class in self._sub_classes_cache):
             return self._sub_classes_cache[parent_class]
         if recursive:
             to_ret = self.query_ontology("SELECT ?x WHERE { ?x rdfs:subClassOf* " + self.add_prefix(parent_class) + " . } ")
@@ -236,7 +243,7 @@ class OntologyInterface(OntologyAbstractInterface):
         """
         @brief Return the child properties of parent_property. If recursive=True, returns also sub childs properties
         """
-        if(self._sub_properties_cache.has_key(parent_property)):
+        if(parent_property in self._sub_properties_cache):
             return self._sub_properties_cache[parent_property]
         if recursive:
             to_ret = self.query_ontology("SELECT ?x WHERE { ?x rdfs:subPropertyOf* " + self.add_prefix(parent_property) + " . } ")
@@ -249,6 +256,6 @@ class OntologyInterface(OntologyAbstractInterface):
         try:
             resp1 = service(msg)
             return resp1
-        except rospy.ServiceException, e:
-            print "Service call failed: %s"%e
-            raise Exception("Service call failed: %s"%e)
+        except rospy.ServiceException as e:
+            print "Service call failed: %s" % e
+            raise Exception("Service call failed: %s" % e)

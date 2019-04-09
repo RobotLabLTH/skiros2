@@ -31,6 +31,7 @@
 
 from functools import wraps
 
+
 class PrettyMetaClass(type):
     """
     Meta class for adding a simple string representation to a class
@@ -60,7 +61,6 @@ class PrettyObject(object):
         Return the name of the class in a readable way
         """
         return type(self).__name__
-
 
 
 def abstractmethod(func):

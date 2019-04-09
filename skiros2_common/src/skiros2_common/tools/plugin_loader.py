@@ -36,6 +36,7 @@ import inspect
 
 import re
 
+
 class PluginLoader(object):
 
     @classmethod
@@ -46,19 +47,20 @@ class PluginLoader(object):
             package = importlib.import_module(package)
 
         for loader, modname, is_pkg in pkgutil.walk_packages(path=package.__path__,
-                                                             prefix=package.__name__+'.',
+                                                             prefix=package.__name__ + '.',
                                                              onerror=lambda x: None):
-            if is_pkg: continue
+            if is_pkg:
+                continue
 
             if modname not in sys.modules:
                 importlib.import_module(modname)
 
             module = sys.modules[modname]
 
-            pred = lambda member: inspect.isclass(member) and \
-                                  member.__module__ == modname and \
-                                  issubclass(member, base) and \
-                                  not member.__subclasses__()
+            def pred(member): return inspect.isclass(member) and \
+                member.__module__ == modname and \
+                issubclass(member, base) and \
+                not member.__subclasses__()
 
             classes = dict(inspect.getmembers(module, pred))
             results.extend(classes.values())
@@ -72,8 +74,8 @@ class PluginLoader(object):
         args = inspect.getargspec(plugin.__init__)
         names = args[0]
         defaults = args[-1] if args[-1] is not None else []
-        req = names[1:len(names)-len(defaults)]
-        opt = dict(zip(names[len(names)-len(defaults):], defaults))
+        req = names[1:len(names) - len(defaults)]
+        opt = dict(zip(names[len(names) - len(defaults):], defaults))
         return (names[1:], req, opt)
 
     @classmethod
@@ -88,7 +90,8 @@ class PluginLoader(object):
     def match(self, plugin, desc=None):
         clazz = self.split(plugin)[::-1]
         for a, b in zip(clazz, desc):
-            if b and not re.match("^"+b+"$", a): return False
+            if b and not re.match("^" + b + "$", a):
+                return False
         return True
 
     @classmethod
@@ -101,7 +104,6 @@ class PluginLoader(object):
         except Exception as e:
             print("  ERROR while instantiating: " + str(e))
         return p
-
 
     def __init__(self):
         self._plugins = list()
@@ -118,7 +120,6 @@ class PluginLoader(object):
     def _exclude(self, desc):
         return [p for p in self._plugins if not self.match(p, desc)]
 
-
     def load(self, folder, base_class):
         self._plugins += self.__import_plugins(folder, base_class)
         if self.size() == 0:
@@ -131,12 +132,12 @@ class PluginLoader(object):
     def size(self):
         return len(self._plugins)
 
-    def create(self, args_dict = {}):
+    def create(self, args_dict={}):
         instances = []
         for p in self._plugins:
             names, req, opt = self.signature(p)
             args = opt.copy()
-            args.update( { k:args_dict[k] for k in req if k in args_dict.keys()} )
+            args.update({k: args_dict[k] for k in req if k in args_dict.keys()})
 
             instance = self.instance(p, args)
             if instance is not None:
@@ -146,12 +147,13 @@ class PluginLoader(object):
 
     def getPluginByName(self, name):
         p = self._filter([name])
-        if len(p) == 0: raise Exception("No plugin with name " + str(name) + " found!")
-        elif len(p) > 1: print("WARNING: Multiple plugins with name " + str(name) + " found!\n" + str(p))
+        if len(p) == 0:
+            raise Exception("No plugin with name " + str(name) + " found!")
+        elif len(p) > 1:
+            print("WARNING: Multiple plugins with name " + str(name) + " found!\n" + str(p))
         return p[0]
 
     def list(self):
         for p in self._plugins:
             print(self.split(p))
         return [p.__name__ for p in self._plugins]
-

@@ -28,6 +28,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #################################################################################
 
+
 class OntologyAbstractInterface:
     def lock(self):
         """ Not implemented in abstract class. """
@@ -56,6 +57,7 @@ class OntologyAbstractInterface:
     def add_prefix(self, parent_class):
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
+
     def remove_prefix(self, parent_class):
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
@@ -71,6 +73,7 @@ class OntologyAbstractInterface:
     def get_sub_properties(self, parent_property, recursive=False):
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
+
 
 class WorldModelAbstractInterface:
     def add_element(self, e):
