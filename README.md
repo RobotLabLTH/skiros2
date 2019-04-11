@@ -20,7 +20,7 @@ For detailed info refer to the [wiki](https://github.com/RVMI/skiros2/wiki)
 
 ### Dependencies
 
-> pip install flufl.enum rdflib wrapt
+> pip install flufl.enum rdflib wrapt semanticnet
 
 ### Task planning
 
