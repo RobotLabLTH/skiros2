@@ -98,6 +98,7 @@ class VisitorPrint(VisitorInterface, NodePrinter, NodeExecutor, NodeMemorizer):
 
     def processNode(self, procedure):
         self.init(procedure)
+        procedure.wrapper_expand()
         if self._verbose:
             self.printTree(procedure, self._verbose)
         self.indend()

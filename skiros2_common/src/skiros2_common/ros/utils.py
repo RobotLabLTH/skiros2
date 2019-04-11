@@ -282,7 +282,7 @@ def deserializePropertyMap(msg):
     """
     p_map = {}
     for p in msg:
-        dataValue = json_loads_byteified(p.dataValue)#TODO: if doesn-t work add old check
+        dataValue = json_loads_byteified(p.dataValue)
         if len(dataValue)>0:
             p_map[p.key] =  param.Property(p.key, decode(dataValue, p.dataType))
         else:

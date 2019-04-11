@@ -94,7 +94,6 @@ class SkillManagerInterface:
         elif not res.ok:
             log.error("Can t stop task " + execution_id)
             return False
-        self._active_tasks.remove(execution_id)
         return True
 
     def preempt_all(self, author):
@@ -133,7 +132,7 @@ class SkillManagerInterface:
         pass#self._tick_rate.set_msg_t0(rospy.get_rostime().to_sec())
 
     def _progress_cb(self, msg):
-        if msg.label.find("task")>=0 and msg.progress_message=="End" and msg.state!=msg.IDLE:
+        if msg.type.find("Root")>=0 and abs(msg.progress_code)==1:
             try:
                 self._active_tasks.remove(int(msg.task_id))
             except Exception:

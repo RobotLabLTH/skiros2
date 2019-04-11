@@ -47,37 +47,6 @@ class PrimitiveBase(SkillCore):
                     else:
                         vs[i] = self._wmi.add_element(e)
 
-    #-------- User's functions--------
-    def startError(self, msg, code):
-        """
-        @brief signal an error during the starting routine
-        """
-        self.fail(msg, code)
-        return False
-
-    def step(self, msg=""):
-        """
-        @brief Set a running breakpoint
-        """
-        self._setProgress(msg)
-        return State.Running
-        #print '[{}:{}]'.format(self._label, self._progress)
-
-    def fail(self, msg, code):
-        """
-        @brief Set a failure state
-        """
-        if code > 0:
-            code *= -1
-        self._setProgress(msg, code)
-        return State.Failure
-
-    def success(self, msg=""):
-        """
-        @brief Set a success state
-        """
-        self._setProgress(msg)
-        return State.Success
 
     #--------Virtual functions--------
     def onInit(self):

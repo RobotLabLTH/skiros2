@@ -55,7 +55,6 @@ class SkillLayerInterface(DiscoveryInterface):
         if skill_mgr is None:
             skill_mgr = self._active_sm[0]
         if self.get_agent(skill_mgr).preempt(self._author, tid):
-            self._active_sm.remove(skill_mgr)
             return True
         return False
 
@@ -85,7 +84,7 @@ class SkillLayerInterface(DiscoveryInterface):
             self._new_changes = True
 
     def _progress_cb(self, msg):
-        if msg.label.find("task")>=0 and msg.progress_message=="End" and msg.state!=msg.IDLE:
+        if msg.type.find("Root")>=0 and abs(msg.progress_code)==1:
             try:
                 self._active_sm.remove(msg.robot)
             except Exception:

@@ -93,6 +93,8 @@ class SkillInstanciator:
             skill.setInstance(to_set)
         else:
             log.error("assignInstance", "No instance of type {} found.".format(skill.type))
+            return False
+        return True
 
     def printState(self, verbose=True, filter_type=""):
         s = 'Descriptions:\n'

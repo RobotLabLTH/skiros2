@@ -199,6 +199,7 @@ class ConditionProperty(ConditionBase):
         self._params = ph
         self._wm = wmi
         subj = self._params.getParamValue(self._subject_key)
+        subj = self._wm.get_element(subj.id)
         if self._operator=="=":
             return subj.hasProperty(self._owl_label, self._value) == self._desired_state
         else:

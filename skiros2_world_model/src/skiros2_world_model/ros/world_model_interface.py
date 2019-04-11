@@ -257,16 +257,23 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
             return [utils.msg2element(x) for x in res.elements]
 
     def get_reasoner_relations(self, subj, pred, obj):
-        try:
-            reasoner = subj._getReasoner(pred)
+        reasoner = self.get_reasoner(pred)
+        if reasoner:
             if pred in reasoner.computeRelations(subj, obj):
                return [{"src": subj.id, "type": pred, "dst": obj.id}]
             else:
                 return list()
+    
+    def get_reasoner(self, pred):
+        """
+        @brief Returns the reasoner associated with the predicate, or None
+        """
+        try:
+            return Element("")._getReasoner(pred)
         except KeyError:
             #No reasoner associated with the relation
-            pass
             return None
+        
 
     def get_relations(self, subj, pred, obj):
         if pred!="" and subj!="" and obj!="" and subj!="-1" and obj!="-1":
@@ -294,7 +301,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
             else:
                 e2 = obj.id
             #print "CHECKING {} {} {} = {}".format(e1, pred, e2, (e2 in self.getTriples(e1, pred)) == state)
-            return (e2 in self.getTriples(e1, pred)) == state
+            return (e2 in self.get_triples(e1, pred)) == state
         else:
             return bool(self.get_relations(subj.id, pred, obj.id)) == state
 

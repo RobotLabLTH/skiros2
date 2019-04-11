@@ -296,16 +296,11 @@ class SkillInterface(SkillCore):
         return SkillCore.start(self, params)
 
     def tick(self):
-#        if not self.hasState(State.Running):
-#            raise Exception("Node must be started before ticking. Curr state: {}".format(self._state))
         res = self.execute()
 #        print "{} {}".format(self, res)
-        if res==None:
-            self._setState(State.Idle)
-            return None
-        else:
+        if res is not None:
             self._setState(res)
-            return self._state
+        return res
 
     #--------User functions--------
     def setChildrenProcessor(self, processor):
@@ -394,6 +389,9 @@ class SkillInterface(SkillCore):
         self._setProgress("End", 1)
         return None
 
+    def wrapper_expand(self):
+        pass
+
 class SkillWrapper(SkillInterface):
     """
     A skill wrapper is a placeholder for a real skill
@@ -456,9 +454,12 @@ class SkillWrapper(SkillInterface):
         self._wmi = instance._wmi
         #self._setState(self._instance.getState())
         self._instance.modifyDescription(self)
-        self._children = list()
-        self._instance.specifyParams(self.getParamsNoRemaps(), False)
-        instance.expand(self)
+
+    def wrapper_expand(self):
+        if not self._children or self._instance.expand_on_start:
+            self._children = list()
+            self._instance.specifyParams(self.getParamsNoRemaps(), False)
+            self._instance.expand(self)
 
     def getInstance(self):
         return self._instance
@@ -500,14 +501,14 @@ class SkillWrapper(SkillInterface):
         self._progress_msg = self._instance.progress_msg
         self._progress_time = self._instance.progress_time
         self._progress_code = self._instance.progress_code
-        if res!=None:
+        if res is not None:
             return res
         else:
             return self._state
 
 class SkillBase(SkillInterface, object):
     """
-    Base class for user's skills
+    @brief Base class for user's skills
     """
     def _parse_type(self, ptype):
         if ptype.find("skiros:")>=0:
@@ -519,7 +520,7 @@ class SkillBase(SkillInterface, object):
 
     def getLightCopy(self):
         """
-        Makes a light copy (only description, params and state)
+        @brief Makes a light copy (only description, params and state)
         """
         p = super(SkillBase, self).getLightCopy()
         if self._state!=State.Uninitialized:
@@ -576,7 +577,7 @@ class SkillBase(SkillInterface, object):
 
 class Root(SkillInterface):
     """
-    Special root node
+    @brief Special root node
     """
     def __init__(self, name, wmi=None):
         super(Root, self).__init__()
@@ -593,15 +594,15 @@ class Root(SkillInterface):
     def execute(self):
         if self._state==State.Idle:
             return State.Running
-        if self._state==State.Success:
+        elif self._state==State.Success:
             self._setProgress("End", 1)
-        if self._state==State.Failure:
+        elif self._state==State.Failure:
             self._setProgress("End", -1)
         return self._state
 
 class Skill(SkillInterface):
     """
-    Generic skill node
+    @brief Generic skill node
     """
     def __init__(self, name, children_processor=Sequential(),wmi=None):
         super(Skill, self).__init__()

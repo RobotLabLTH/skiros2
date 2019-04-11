@@ -222,6 +222,7 @@ class SkillCore(SkillDescription):
         self._progress_code=0
         self._progress_time=0.0
         self._progress_msg=""
+        self._expand_on_start=False
     #--------Class functions--------
     def expand(self, skill):
         return
@@ -238,7 +239,7 @@ class SkillCore(SkillDescription):
             code = self._progress_code+1
         self._progress_code=code
         self._progress_time=self._time_keeper.time_from_start()
-        self._progress_msg=msg
+        self._progress_msg=str(msg)
 
     @property
     def id(self):
@@ -259,6 +260,13 @@ class SkillCore(SkillDescription):
     @property
     def state(self):
         return self._state
+
+    @property
+    def expand_on_start(self):
+        """
+        @brief Default False. If true, the skill will expand every time it is started. Used e.g. in a planner skill
+        """
+        return self._expand_on_start
 
     def _resetDescription(self, other=None):
         if other:
@@ -416,6 +424,36 @@ class SkillCore(SkillDescription):
             self._label = label
         self._resetDescription()
 
+    def startError(self, msg, code):
+        """
+        @brief signal an error during the starting routine
+        """
+        self.fail(msg, code)
+        return False
+
+    def step(self, msg=""):
+        """
+        @brief Set a running breakpoint
+        """
+        self._setProgress(msg)
+        return State.Running
+        #print '[{}:{}]'.format(self._label, self._progress)
+
+    def fail(self, msg, code):
+        """
+        @brief Set a failure state
+        """
+        if code > 0:
+            code *= -1
+        self._setProgress(msg, code)
+        return State.Failure
+
+    def success(self, msg=""):
+        """
+        @brief Set a success state
+        """
+        self._setProgress(msg)
+        return State.Success
 
     #-------- Virtual functions--------
     def modifyDescription(self, skill):
