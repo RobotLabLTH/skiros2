@@ -47,8 +47,8 @@ class NodeExecutor():
         self._params=params.ParamHandler()
         self._instanciator = instanciator
 
-    def syncParams(self):
-        for k, p in self._params.iteritems():
+    def syncParams(self, params):
+        for k, p in params.iteritems():
             vs = p.values
             if p.dataTypeIs(Element):
                 for i, e in enumerate(vs):
@@ -210,6 +210,7 @@ class NodeExecutor():
     def _ground(self, skill):
         skill.reset()
         skill.specifyParams(self._params)
+        self.syncParams(skill.params)
         self._printTracked(skill._params, "[{}Params] ".format(skill.label))
         if not self._autoParametrizeBB(skill):
             log.info("[ground]", "Parametrization fail for skill {}".format(skill.printInfo()))
@@ -279,6 +280,7 @@ class NodeExecutor():
 
     def postExecute(self, skill):
         skill.specifyParams(self._params)#Re-apply parameters.... Important!
+        self.syncParams(skill.params)
         self._printTracked(skill._params, "[{}Params] ".format(skill._type))
         state = self._postExecute(skill)
         if self._verbose:

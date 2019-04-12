@@ -179,7 +179,6 @@ class VisitorExecutor(VisitorInterface, NodeExecutor, NodeMemorizer):
     def processingStart(self, procedure):
         #self._wm.lock()
         self.reset_memory()
-        self.syncParams()
         return True
 
     def processingDone(self, procedure):
