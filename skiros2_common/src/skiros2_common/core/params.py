@@ -264,7 +264,7 @@ class ParamHandler(object):
                 t = self._params[key]
                 if keep_default and t.hasSpecifiedDefault():
                     if t.dataTypeIs(Element):
-                        if t.getDefaultValue().getIdNumber() < 0 or t.getDefaultValue().getIdNumber() == param.value.getIdNumber():
+                        if t.getDefaultValue().getIdNumber() < 0 or set(v.getIdNumber() for v in t.getDefaultValues()) == set(v.getIdNumber() for v in param.values):
                             t.values = param.values
                 else:
                     t.values = param.values

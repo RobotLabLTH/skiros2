@@ -133,6 +133,7 @@ class BtTicker:
         BtTicker._process.join()
 
     def preempt(self, uid):
+        log.info("preempt", "Ending task {}...".format(uid))
         BtTicker._tasks_to_preempt.append(uid)
         starttime = rospy.Time.now()
         timeout = rospy.Duration(5.0)

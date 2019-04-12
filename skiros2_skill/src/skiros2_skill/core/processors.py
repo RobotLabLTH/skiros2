@@ -223,7 +223,7 @@ class NoFail():
         self._processor = processor
 
     def reset(self):
-        pass
+        self._processor.reset()
 
     def printType(self):
         return 'NoFail({})'.format(self._processor.printType())

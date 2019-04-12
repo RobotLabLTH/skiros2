@@ -358,6 +358,18 @@ class PddlInterface:
         else:
             return string
 
+    def selectMinDurationPlan(self, outpaths):
+        """
+        @brief Selects the shortest plan
+        """
+        data = []
+        for p in outpaths:
+            with open(p, 'r') as f:
+                data.append(f.read())
+            remove(p)
+        return min(data, key=len)#TODO: implement a proper selection
+
+
     def invokePlanner(self, generate_pddl=True):
         #subprocess.call(["plan.py", "y+Y+a+T+10+t+5+e+r+O+1+C+1", self._workspace+"/domain.pddl", self._workspace+"/p01.pddl", "mypddlplan"])
         if generate_pddl:
@@ -366,16 +378,14 @@ class PddlInterface:
 
         output = subprocess.Popen(["plan.py", "y+Y+a+T+10+t+5+e+r+O+1+C+1", self._workspace + "/domain.pddl", self._workspace +
                                    "/p01.pddl", self._workspace + "/pddlplan"], stdout=subprocess.PIPE).communicate()[0]
-        outpath = None
+        outpaths = []
         for (dirpath, dirnames, filenames) in walk(self._workspace):
             for name in filenames:
-                if name.find('pddlplan') >= 0:
-                    outpath = dirpath + '/' + name
-        if outpath:
-            with open(outpath, 'r') as f:
-                data = f.read()
+                if name.find('pddlplan')>=0:
+                    outpaths.append(dirpath+'/'+name)
+        if outpaths:
+            data = self.selectMinDurationPlan(outpaths)
             try:
-                remove(outpath)
                 remove("output")
                 remove("all.groups")
                 remove("variables.groups")

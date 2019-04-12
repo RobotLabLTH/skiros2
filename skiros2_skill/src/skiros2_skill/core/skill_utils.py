@@ -48,12 +48,12 @@ class NodeExecutor():
         self._params = params.ParamHandler()
         self._instanciator = instanciator
 
-    def syncParams(self):
-        for k, p in self._params.iteritems():
+    def syncParams(self, params):
+        for k, p in params.iteritems():
             vs = p.values
             if p.dataTypeIs(Element):
                 for i, e in enumerate(vs):
-                    if e.id != "":
+                    if e.getIdNumber() >= 0:
                         vs[i] = self._wm.get_element(e.id)
                 p.values = vs
 
@@ -67,15 +67,16 @@ class NodeExecutor():
         to_print = prefix
         for key, prop, relation, print_all in self._tracked_params:
             if params.hasParam(key):
-                e = params.getParamValue(key)
-                if isinstance(e, Element):
-                    to_print += "{} {} ".format(key, e.printState(print_all))
-                    if e.hasProperty(prop):
-                        to_print += '. {}: {}. '.format(prop, e.getProperty(prop).value)
-                    if relation:
-                        to_print += ' {} '.format(e.getRelations(pred=relation))
-                else:
-                    to_print += "{} {} ".format(key, e)
+                es = params.getParamValues(key)
+                for e in es:
+                    if isinstance(e, Element):
+                        to_print += "{} {} ".format(key, e.printState(print_all))
+                        if e.hasProperty(prop):
+                            to_print += '. {}: {}. '.format(prop, e.getProperty(prop).value)
+                        if relation:
+                            to_print += ' {} '.format(e.getRelations(pred=relation))
+                    else:
+                        to_print += "{} {} ".format(key, e)
             else:
                 to_print += key + ' not available. '
         if to_print != prefix:
@@ -139,7 +140,7 @@ class NodeExecutor():
         if not to_resolve:
             return True
         log.assertInfo(self._verbose, "[Autoparametrize]", "Resolving {}:{}".format(skill.type, to_resolve))
-        self._importParentsConditions(skill, to_resolve)
+        #self._importParentsConditions(skill, to_resolve)
         remap = {}
         cp = params.ParamHandler()
         cp.reset(skill._params.getCopy())
@@ -187,7 +188,7 @@ class NodeExecutor():
 
     def _autoParametrizeWm(self, skill, to_resolve, cp):
         """
-        ground undefined parameters with elements in the world model
+        @brief ground undefined parameters with elements in the world model
         """
         matches = self._wm.resolve_elements2(to_resolve, cp)
         _grounded = ''
@@ -195,21 +196,22 @@ class NodeExecutor():
             if match.any():
                 if isinstance(key, tuple):
                     for i, key2 in enumerate(key):
-                        skill._params.specify(key2, match[0][i])
+                        skill.params.specify(key2, match[0][i])
                         _grounded += '[{}={}]'.format(key2, match[0][i].printState())
                 else:
-                    skill._params.specify(key, match[0])
+                    skill.params.specify(key, match[0])
                     _grounded += '[{}={}]'.format(key, match[0].printState())
             else:
                 #print '{}: {}'.format(skill._label, to_resolve)
                 log.error("_autoParametrizeWm", "Can t autoparametrize param {}.".format(key))
                 return False
-        log.info("MatchWm", "{} {}".format(skill._label, _grounded))
+        log.info("MatchWm", "{}:{}".format(skill.type, _grounded))
         return True
 
     def _ground(self, skill):
         skill.reset()
         skill.specifyParams(self._params)
+        self.syncParams(skill.params)
         self._printTracked(skill._params, "[{}Params] ".format(skill.label))
         if not self._autoParametrizeBB(skill):
             log.info("[ground]", "Parametrization fail for skill {}".format(skill.printInfo()))
@@ -248,13 +250,15 @@ class NodeExecutor():
     def init(self, skill):
         if not skill.hasInstance() or skill._instance.hasState(State.Running):
             skill.specifyParams(self._params)
-            self._instanciator.assignInstance(skill)
+            if not self._instanciator.assignInstance(skill):
+                raise Exception("Skill {} is not available.".format(skill.type))
 
     def execute(self, skill):
         self.init(skill)
         if not self._ground(skill):
             if not self.tryOther(skill):
                 return State.Idle
+        skill.wrapper_expand()
         state = self._execute(skill)
         if self._verbose:
             log.info("[VisitorStart]", "{}".format(skill.printState(self._verbose)))
@@ -277,6 +281,7 @@ class NodeExecutor():
 
     def postExecute(self, skill):
         skill.specifyParams(self._params)  # Re-apply parameters.... Important!
+        self.syncParams(skill.params)
         self._printTracked(skill._params, "[{}Params] ".format(skill._type))
         state = self._postExecute(skill)
         if self._verbose:

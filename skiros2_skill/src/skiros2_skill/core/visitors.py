@@ -102,6 +102,7 @@ class VisitorPrint(VisitorInterface, NodePrinter, NodeExecutor, NodeMemorizer):
 
     def processNode(self, procedure):
         self.init(procedure)
+        procedure.wrapper_expand()
         if self._verbose:
             self.printTree(procedure, self._verbose)
         self.indend()
@@ -184,7 +185,6 @@ class VisitorExecutor(VisitorInterface, NodeExecutor, NodeMemorizer):
     def processingStart(self, procedure):
         # self._wm.lock()
         self.reset_memory()
-        self.syncParams()
         return True
 
     def processingDone(self, procedure):

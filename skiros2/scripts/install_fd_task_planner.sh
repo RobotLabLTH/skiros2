@@ -15,10 +15,12 @@ DIR=$( pwd )
 #Install
 wget "http://gki.informatik.uni-freiburg.de/tools/tfd/downloads/version-0.4/${tfd}.tgz"
 tar xzf "${tfd}.tgz"
-cd "${tfd}" && ./build
+cd "${tfd}"
+sed -e s/"-Werror"//g -i ./downward/search/Makefile
 sed -e s/"translate\/"//g -i ./downward/plan.py
 sed -e s/"preprocess\/"//g -i ./downward/plan.py
 sed -e s/"search\/"//g -i ./downward/plan.py
+./build
 cd -
 rm -r "${tfd}.tgz"
 

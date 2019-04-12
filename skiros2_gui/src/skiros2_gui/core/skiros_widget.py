@@ -739,8 +739,8 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         if msg.progress_message != "Start" and (msg.label.find("task") >= 0 or (msg.progress_message != "End" and msg.progress_message != last_msg)):
             self.tableWidget_output.insertRow(self.tableWidget_output.rowCount())
             self.tableWidget_output.setItem(self.tableWidget_output.rowCount() - 1, 0, QTableWidgetItem("{:0.3f}".format(msg.progress_time)))
-            self.tableWidget_output.setItem(self.tableWidget_output.rowCount() - 1, 1, QTableWidgetItem(msg.parent_label))
-            self.tableWidget_output.setItem(self.tableWidget_output.rowCount() - 1, 2, QTableWidgetItem(msg.label))
+            self.tableWidget_output.setItem(self.tableWidget_output.rowCount() - 1, 1, QTableWidgetItem("{}_{}".format(msg.parent_label, msg.parent_id)))
+            self.tableWidget_output.setItem(self.tableWidget_output.rowCount() - 1, 2, QTableWidgetItem("{}_{}".format(msg.label, msg.id)))
             self.tableWidget_output.setItem(self.tableWidget_output.rowCount() - 1, 3, QTableWidgetItem(State(msg.state).name))
             self.tableWidget_output.setItem(self.tableWidget_output.rowCount() - 1, 4, QTableWidgetItem(str(msg.progress_code)))
             progress = QTableWidgetItem(str(msg.progress_message))
@@ -901,7 +901,8 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
 
     @Slot()
     def on_skill_stop_button_clicked(self):
-        self._sli.preempt_one()
+        if not self._sli.preempt_one():
+            log.error("", "Nothing to preempt.")
 
 #==============================================================================
 # Logs

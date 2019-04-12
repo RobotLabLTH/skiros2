@@ -258,15 +258,21 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
             return [utils.msg2element(x) for x in res.elements]
 
     def get_reasoner_relations(self, subj, pred, obj):
-        try:
-            reasoner = subj._getReasoner(pred)
+        reasoner = self.get_reasoner(pred)
+        if reasoner:
             if pred in reasoner.computeRelations(subj, obj):
                 return [{"src": subj.id, "type": pred, "dst": obj.id}]
             else:
                 return list()
+    
+    def get_reasoner(self, pred):
+        """
+        @brief Returns the reasoner associated with the predicate, or None
+        """
+        try:
+            return Element("")._getReasoner(pred)
         except KeyError:
             # No reasoner associated with the relation
-            pass
             return None
 
     def get_relations(self, subj, pred, obj):
@@ -295,7 +301,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
             else:
                 e2 = obj.id
             #print "CHECKING {} {} {} = {}".format(e1, pred, e2, (e2 in self.getTriples(e1, pred)) == state)
-            return (e2 in self.getTriples(e1, pred)) == state
+            return (e2 in self.get_triples(e1, pred)) == state
         else:
             return bool(self.get_relations(subj.id, pred, obj.id)) == state
 
@@ -376,8 +382,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
                         except BaseException:
                             log.error("", "MERGING: {} and {} ".format(couples[(key, key2)], np.array(temp)))
                     else:
-                        log.warn("resolve_elements", "No input for params {} {}. Resolving: {} {}".format(
-                            key, key2, ph.getParamValue(key).printState(verbose), ph.getParamValue(key2).printState(verbose)))
+                        log.warn("resolve_elements", "No input for params {} {}. No match for: {} {} {}".format(key, key2, set1, j["type"], set2))
                 else:
                     if key in coupled_keys:
                         overlap_keys.append(key)
@@ -390,9 +395,8 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
                     temp = [np.array([e1, e2]) for e1 in set1 for e2 in set2 if self.check_relation(e1, j["type"], e2, j['state'], j['abstract'])]
                     couples[(key, key2)] = np.array(temp)
                     if not temp:
-                        log.warn("resolve_elements", "No input for params {} {}. Resolving: {} {}".format(
-                            key, key2, ph.getParamValue(key).printState(verbose), ph.getParamValue(key2).printState(verbose)))
-        # Merge the tuples with an overlapping key
+                        log.warn("resolve_elements", "No input for params {} {}. No match for: {} {} {}".format(key, key2, set1, j["type"], set2))
+        #Merge the tuples with an overlapping key
         if overlap_keys:
             loop = True
             iters = 5

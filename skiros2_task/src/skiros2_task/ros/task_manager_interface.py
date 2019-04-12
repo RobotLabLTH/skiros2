@@ -9,10 +9,10 @@ import skiros2_common.tools.logger as log
 
 class TaskManagerInterface(PrettyObject):
     def __init__(self):
-        self._assign_task_client = actionlib.SimpleActionClient('/tm/assign_task', msgs.AssignTaskAction)
+        self._assign_task_client = actionlib.SimpleActionClient('/tm/task_plan', msgs.AssignTaskAction)
         self._assign_task_client.wait_for_server()
 
-    def start_task(self, goals, done_cb=None, feedback_cb=None):
+    def plan(self, goals, done_cb=None, feedback_cb=None):
         """
         @brief Send goals to task manager. If the task is accepted returns True, False otherwise
         """
