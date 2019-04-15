@@ -781,6 +781,9 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
                 items[0].setData(0, 0, "{}({})".format(msg.label, State(msg.state).name))
             else:
                 parents = self.task_tree_widget.findItems(str(msg.parent_id), Qt.MatchRecursive | Qt.MatchFixedString, 1)
+                if not parents:
+                    log.error("No parent found. Debug: {}".format(msg))
+                    return
                 item = QTreeWidgetItem(parents[0], ["{}({})".format(msg.label, State(msg.state).name), str(msg.id)])
                 item.setExpanded(True)
 
