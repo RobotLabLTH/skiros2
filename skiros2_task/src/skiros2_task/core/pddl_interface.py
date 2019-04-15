@@ -230,7 +230,7 @@ class PddlInterface:
     """
     Class to manage a pddl domain and do task planning
 
-    It generates a pddl definition and invoke a task planner
+    It generates a pddl definition and invokes a task planner
     """
 
     def __init__(self, workspace, title="untitled"):

@@ -99,7 +99,7 @@ class TaskManagerNode(PrettyObject):
             self._result = msgs.AssignTaskResult(1, str(e))
             self._assign_task_action.set_aborted(self._result)
 
-    def _task_plan(self):#TODO: make this concurrent
+    def _task_plan(self):  # TODO: make this concurrent
         with tk.Timer(self.class_name) as timer:
             self._pddl_interface.clear()
             self.initDomain()

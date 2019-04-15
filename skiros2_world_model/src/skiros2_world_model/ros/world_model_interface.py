@@ -272,7 +272,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         try:
             return Element("")._getReasoner(pred)
         except KeyError:
-            # No reasoner associated with the relation
+            #No reasoner associated with the relation
             return None
 
     def get_relations(self, subj, pred, obj):

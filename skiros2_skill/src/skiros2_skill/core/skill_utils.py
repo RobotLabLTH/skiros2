@@ -153,38 +153,39 @@ class NodeExecutor():
                     if p.getValue().isInstance(cp.getParamValue(key), self._wm):
                         remap[key].append(k)
                     else:
-                        pass  # log.info("Not instance", "{} Model: {} Match: {}".format(key, cp.getParamValue(key).printState(True), p.getValue().printState(True)))
+                        pass # log.info("Not instance", "{} Model: {} Match: {}".format(key, cp.getParamValue(key).printState(True), p.getValue().printState(True)))
+        return self._autoParametrizeWm(skill, to_resolve, cp)
 
-        l = np.zeros(len(to_resolve), dtype=int)
-        unvalid_params = to_resolve
-        loop = True
-        while loop:
-            loop = False
-            # Set params and check preCond
-            for index, key in enumerate(to_resolve):
-                #print '{}: {}'.format(key, remap[key])
-                if not remap[key]:
-                    return self._autoParametrizeWm(skill, to_resolve, cp)
-                skill._params.specify(key, self._params.getParamValues(remap[key][l[index]]))
-            unvalid_params = skill.checkPreCond()
-            # If there are unvalid params, increment 1 of the counters. Loop breaks when all counters are at last element
-            for key in unvalid_params:
-                if key in to_resolve:
-                    if l[to_resolve.index(key)] < len(remap[key]) - 1:
-                        l[to_resolve.index(key)] += 1
-                        loop = True
-                        break
-                    else:
-                        l[to_resolve.index(key)] = 0
-        if unvalid_params:
-            return self._autoParametrizeWm(skill, to_resolve, cp)
-        remapped = ''
-        for index, key in enumerate(to_resolve):
-            if key != remap[key][l[index]]:
-                skill.remap(key, remap[key][l[index]])
-                remapped += "[{}={}]".format(key, remap[key][l[index]])
-        log.info("MatchBB", "{}: {}".format(skill.type, remapped))
-        return True
+#        l = np.zeros(len(to_resolve), dtype=int)
+#        unvalid_params = to_resolve
+#        loop = True
+#        while loop:
+#            loop = False
+#            #Set params and check preCond
+#            for index, key in enumerate(to_resolve):
+#                #print '{}: {}'.format(key, remap[key])
+#                if not remap[key]:
+#                    return self._autoParametrizeWm(skill, to_resolve, cp)
+#                skill._params.specify(key, self._params.getParamValues(remap[key][l[index]]))
+#            unvalid_params = skill.checkPreCond()
+#            #If there are unvalid params, increment 1 of the counters. Loop breaks when all counters are at last element
+#            for key in unvalid_params:
+#                if key in to_resolve:
+#                    if l[to_resolve.index(key)]<len(remap[key])-1:
+#                        l[to_resolve.index(key)] += 1
+#                        loop = True
+#                        break
+#                    else:
+#                        l[to_resolve.index(key)] = 0
+#        if unvalid_params:
+#            return self._autoParametrizeWm(skill, to_resolve, cp)
+#        remapped = ''
+#        for index, key in enumerate(to_resolve):
+#            if key != remap[key][l[index]]:
+#                skill.remap(key, remap[key][l[index]])
+#                remapped += "[{}={}]".format(key, remap[key][l[index]])
+#        log.info("MatchBB","{}: {}".format(skill.type, remapped))
+#        return True
 
     def _autoParametrizeWm(self, skill, to_resolve, cp):
         """
