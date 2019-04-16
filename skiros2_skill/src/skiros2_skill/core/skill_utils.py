@@ -286,7 +286,9 @@ class NodeExecutor():
         if skill.checkHoldCond(self._verbose):
             if self._verbose:
                 log.info("[ground]", "Hold-conditions fail for skill {}".format(skill.printInfo()))
-            return self.preemptSkill(skill)
+            self.preemptSkill(skill)
+            skill.checkHoldCond()#This ensure the skill ends printing the failed conditions
+            return skill.state
         state = self._postExecute(skill)
         if self._verbose:
             log.info("[VisitorExecute]", "{}".format(skill.printState(self._verbose)))

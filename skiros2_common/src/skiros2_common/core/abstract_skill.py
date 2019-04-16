@@ -278,46 +278,55 @@ class SkillCore(SkillDescription):
         self._post_conditions = deepcopy(self._description._post_conditions)
 
     def hasPreCond(self):
-        if self._pre_conditions:
-            return True
-        else:
-            return False
+        return bool(self._pre_conditions)
 
     def checkPreCond(self, verbose=False):
         """
         @brief Check pre-conditions.
         @return A list of parameters that breaks the conditions, or an empty list if all are satisfied
         """
-        to_ret = Set()
+        to_ret = list()
         err_msg = ""
         for c in self._pre_conditions:
             if not c.evaluate(self._params, self._wmi):
                 err_msg += "{} Check failed. \n".format(c.getDescription())
                 if verbose:
                     log.error(c.getDescription(), "ConditionCheck failed")
-                for key in c.getKeys():
-                    to_ret.add(key)
+                to_ret += c.getKeys()
         self._setProgress(err_msg, -1)
-        return list(to_ret)
+        return list(set(to_ret))
+
+    def checkHoldCond(self, verbose=False):
+        """
+        @brief Check hold-conditions.
+        @return A list of parameters that breaks the conditions, or an empty list if all are satisfied
+        """
+        to_ret = list()
+        err_msg = ""
+        for c in self._hold_conditions:
+            if not c.evaluate(self._params, self._wmi):
+                err_msg += "{} Check failed. \n".format(c.getDescription())
+                if verbose:
+                    log.error(c.getDescription(), "ConditionCheck failed")
+                to_ret += c.getKeys()
+        self._setProgress(err_msg, -2)
+        return list(set(to_ret))
 
     def hasPostCond(self):
-        if self._post_conditions:
-            return True
-        else:
-            return False
+        return bool(self._post_conditions)
 
     def checkPostCond(self, verbose=False):
         """
         @brief Check post-conditions.
         @return A list of parameters that breaks the conditions, or an empty list if all are satisfied
         """
-        to_ret = []
+        to_ret = list()
         for c in self._post_conditions:
             if not c.evaluate(self._params, self._wmi):
                 if verbose:
                     log.error(c.getDescription(), "ConditionCheck failed")
                 to_ret += c.getKeys()
-        return to_ret
+        return list(set(to_ret))
     #-------- Control functions--------
     def preempt(self):
         if self.hasState(State.Running):
