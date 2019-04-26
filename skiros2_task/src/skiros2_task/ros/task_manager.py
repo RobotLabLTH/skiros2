@@ -137,6 +137,7 @@ class TaskManagerNode(PrettyObject):
         for skill in skills:
             params = {}
             preconds = []
+            holdconds = []
             postconds = []
             # Note: Only skills with pre AND post conditions are considered for planning
             for p in skill.getRelations(pred="skiros:hasParam"):
@@ -144,13 +145,17 @@ class TaskManagerNode(PrettyObject):
                 params[e._label] = e.getProperty("skiros:DataType").value
             for p in skill.getRelations(pred="skiros:hasPreCondition"):
                 e = self._wmi.get_element(p['dst'])
-                if e._type.find("ConditionRelation") != -1 or e._type == "skiros:ConditionProperty" or e._type == "skiros:ConditionHasProperty":
-                    preconds.append(pddl.Predicate(e, params, e._type.find("Abs") != -1))
+                if e.type.find("ConditionRelation") != -1 or e.type == "skiros:ConditionProperty" or e.type == "skiros:ConditionHasProperty":
+                    preconds.append(pddl.Predicate(e, params, e.type.find("Abs") != -1))
+            for p in skill.getRelations(pred="skiros:hasHoldCondition"):
+                e = self._wmi.get_element(p['dst'])
+                if e.type.find("ConditionRelation") != -1 or e.type == "skiros:ConditionProperty" or e.type == "skiros:ConditionHasProperty":
+                    holdconds.append(pddl.Predicate(e, params, e.type.find("Abs") != -1))
             for p in skill.getRelations(pred="skiros:hasPostCondition"):
                 e = self._wmi.get_element(p['dst'])
-                if e._type.find("ConditionRelation") != -1 or e._type == "skiros:ConditionProperty" or e._type == "skiros:ConditionHasProperty":
-                    postconds.append(pddl.Predicate(e, params, e._type.find("Abs") != -1))
-            self._pddl_interface.addAction(pddl.Action(skill, params, preconds, postconds))
+                if e.type.find("ConditionRelation") != -1 or e.type == "skiros:ConditionProperty" or e.type == "skiros:ConditionHasProperty":
+                    postconds.append(pddl.Predicate(e, params, e.type.find("Abs") != -1))
+            self._pddl_interface.addAction(pddl.Action(skill, params, preconds, holdconds, postconds))
         if self._verbose:
             log.info("[Domain]", self._pddl_interface.printDomain(False))
 

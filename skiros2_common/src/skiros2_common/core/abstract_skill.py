@@ -190,6 +190,8 @@ class SkillDescription(object):
                 to_ret.addRelation(self, "skiros:hasParam", p.toElement())
         for c in self._pre_conditions:
             to_ret.addRelation(self, "skiros:hasPreCondition", c.toElement())
+        for c in self._hold_conditions:
+            to_ret.addRelation(self, "skiros:hasHoldCondition", c.toElement())
         for c in self._post_conditions:
             to_ret.addRelation(self, "skiros:hasPostCondition", c.toElement())
         return to_ret

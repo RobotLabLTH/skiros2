@@ -153,11 +153,12 @@ class ForallPredicate(object):
 
 
 class Action(object):
-    __slots__ = 'name', 'params', 'preconditions', 'effects'
+    __slots__ = 'name', 'params', 'preconditions', 'holdconditions', 'effects'
 
-    def __init__(self, skill, params, precons, postcons):
+    def __init__(self, skill, params, precons, holdcons, postcons):
         self.name = skill._label
         self.params = params
+        self.holdconditions = holdcons
         self.preconditions = precons
         self.effects = postcons
 
@@ -179,6 +180,8 @@ class Action(object):
         string += '\t:condition (and\n'
         for p in self.preconditions:
             string += '\t\t(at start {})\n'.format(p.toActionPddl())
+        for p in self.holdconditions:
+            string += '\t\t(over all {})\n'.format(p.toActionPddl())
         string += "\t)\n"
         string += "\t:effect (and\n"
         for e in self.effects:
