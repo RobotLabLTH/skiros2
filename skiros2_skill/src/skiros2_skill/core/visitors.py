@@ -3,10 +3,9 @@ from skiros2_common.core.abstract_skill import State, Event
 import skiros2_common.tools.logger as log
 import traceback
 
-
-class VisitorInterface:
+class VisitorInterface(object):
     """
-    Base interface for visitors
+    @brief Base interface for visitors
     """
     #--------Class functions--------
 
@@ -54,14 +53,7 @@ class VisitorInterface:
                 return state
         # Post-process node
         return self.postProcessNode(procedure)
-
-    def processPreempt(self, procedure):
-        # Preempt children
-        for c in procedure._children:
-            c.visitPreempt(self)
-        # Preempt node
-        procedure.preempt()
-
+      
     def processNode(self, procedure):
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
@@ -170,12 +162,8 @@ class VisitorExecutor(VisitorInterface, NodeExecutor, NodeMemorizer):
         return state
 
     def processPreempt(self, procedure):
-        # Preempt children
-        for c in procedure._children:
-            c.visitPreempt(self)
-        # Preempt node
         try:
-            self.preemptSkill(procedure)
+            super(VisitorExecutor, self).processPreempt(procedure)
         except Exception:
             log.error(self.__class__.__name__, traceback.format_exc())
             procedure._setProgress("Error on preemption: {}. Blackboard data: {}".format(traceback.format_exc(), self._params.printState()), -406)
@@ -183,12 +171,10 @@ class VisitorExecutor(VisitorInterface, NodeExecutor, NodeMemorizer):
         self.memorizeProgress(procedure)
 
     def processingStart(self, procedure):
-        # self._wm.lock()
         self.reset_memory()
         return True
 
     def processingDone(self, procedure):
-        # self._wm.unlock()
         return True
 
     def memorizeProgress(self, procedure):

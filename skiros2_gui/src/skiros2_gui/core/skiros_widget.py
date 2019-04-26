@@ -357,11 +357,11 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
             self.last_executed_skill = instance_settings.value("last_executed_skill")
             print(self.last_executed_skill)
 
-#    def trigger_configuration(self):
-#        # Comment in to signal that the plugin has a way to configure
-#        # This will enable a setting button (gear icon) in each dock widget title bar
-#        # Usually used to open a modal configuration dialog
-#        pass
+    def trigger_configuration(self):
+        # Comment in to signal that the plugin has a way to configure
+        # This will enable a setting button (gear icon) in each dock widget title bar
+        # Usually used to open a modal configuration dialog
+        pass
 
 
 #==============================================================================

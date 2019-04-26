@@ -95,15 +95,14 @@ class Selector():
         """
         for c in children:
             state = c.visit(visitor)
-            if state == State.Success or state == State.Running:
-                if state == State.Success:
-                    self.stopAll(children, visitor)
+            if state==State.Success or state==State.Running:
+                self.stopAll(children, visitor, children.index(c)+1)
                 return state
         return state
 
-    def stopAll(self, children, visitor):
-        for c in children:
-            if c.state == State.Running:
+    def stopAll(self, children, visitor, index):
+        for c in children[index:]:
+            if c.state==State.Running:
                 c.visitPreempt(visitor)
 
 
@@ -126,15 +125,14 @@ class SelectorStar():
             if c.state == State.Failure:
                 continue
             state = c.visit(visitor)
-            if state == State.Success or state == State.Running:
-                if state == State.Success:
-                    self.stopAll(children, visitor)
+            if state==State.Success or state==State.Running:
+                self.stopAll(children, visitor, children.index(c)+1)
                 return state
         return State.Failure
 
-    def stopAll(self, children, visitor):
-        for c in children:
-            if c.state == State.Running:
+    def stopAll(self, children, visitor, index):
+        for c in children[index:]:
+            if c.state==State.Running:
                 c.visitPreempt(visitor)
 
 

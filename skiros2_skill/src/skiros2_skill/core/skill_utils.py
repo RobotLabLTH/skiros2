@@ -249,12 +249,18 @@ class NodeExecutor():
             return skill.start()
 
     def init(self, skill):
+        """
+        @brief Assign an instance to an abstract skill
+        """
         if not skill.hasInstance() or skill._instance.hasState(State.Running):
             skill.specifyParams(self._params)
             if not self._instanciator.assignInstance(skill):
                 raise Exception("Skill {} is not available.".format(skill.type))
 
     def execute(self, skill):
+        """
+        @brief Start a skill
+        """
         self.init(skill)
         if not self._ground(skill):
             if not self.tryOther(skill):
@@ -267,13 +273,6 @@ class NodeExecutor():
             self.mergeParams(skill)  # Update params
         return state
 
-    def preemptSkill(self, skill):
-        skill.specifyParams(self._params)
-        skill.preempt()
-        if self._verbose:
-            log.info("[VisitorPreempt]", "{}".format(skill.printState(self._verbose)))
-        self.mergeParams(skill)
-
     def _postExecute(self, skill):
         if self._simulate:
             return skill.simulate()  # Set post-cond to true
@@ -281,14 +280,37 @@ class NodeExecutor():
             return skill.tick()
 
     def postExecute(self, skill):
-        skill.specifyParams(self._params)  # Re-apply parameters.... Important!
+        """
+        @brief Tick a skill
+        """
+        skill.specifyParams(self._params)#Re-apply parameters.... Important!
         self.syncParams(skill.params)
         self._printTracked(skill._params, "[{}Params] ".format(skill._type))
+        if skill.checkHoldCond(self._verbose):
+            if self._verbose:
+                log.info("[ground]", "Hold-conditions fail for skill {}".format(skill.printInfo()))
+            self.processPreempt(skill)
+            skill.checkHoldCond()#This ensure the skill ends printing the failed conditions
+            return skill.state
         state = self._postExecute(skill)
         if self._verbose:
             log.info("[VisitorExecute]", "{}".format(skill.printState(self._verbose)))
         self.mergeParams(skill)  # Update params
         return state
+
+    def processPreempt(self, skill):
+        """
+        @brief Stop a skill execution. Visit recursively all children
+        """
+        skill.specifyParams(self._params)
+        if self._verbose:
+            log.info("[Preempt]", "{}".format(skill.printState(self._verbose)))
+        #Preempt children
+        for c in skill._children:
+            c.visitPreempt(self)
+        #Preempt skill
+        skill.preempt()
+        self.mergeParams(skill)
 
 
 class NodeMemorizer:
