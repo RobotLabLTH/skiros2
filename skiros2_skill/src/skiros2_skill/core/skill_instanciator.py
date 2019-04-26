@@ -3,10 +3,11 @@ import skiros2_common.tools.logger as log
 from skiros2_common.core.abstract_skill import State
 from copy import deepcopy
 
+
 class SkillInstanciator:
     def __init__(self, wmi):
-        self._available_descriptions={}
-        self._available_instances=defaultdict(list)
+        self._available_descriptions = {}
+        self._available_instances = defaultdict(list)
         self._wm = wmi
 
     def addDescription(self, skill):
@@ -53,12 +54,12 @@ class SkillInstanciator:
         """
         to_set = None
         for p in self._available_instances[skill.type]:
-            if (p.label == skill.label or skill.label=="") and p.label not in ignore_list:
+            if (p.label == skill.label or skill.label == "") and p.label not in ignore_list:
                 to_set = p
-                if not p.hasState(State.Running):#The skill is available, just go forward
+                if not p.hasState(State.Running):  # The skill is available, just go forward
                     break
         if to_set is not None:
-            if to_set.hasState(State.Running):#The skill instance is busy, create a new one
+            if to_set.hasState(State.Running):  # The skill instance is busy, create a new one
                 to_set = self.duplicate_instance(to_set)
             skill.setInstance(to_set)
         else:
@@ -69,14 +70,13 @@ class SkillInstanciator:
     def printState(self, verbose=True, filter_type=""):
         s = 'Descriptions:\n'
         for t, p in self._available_descriptions.iteritems():
-            if p.type==filter_type or filter_type=="":
+            if p.type == filter_type or filter_type == "":
                 s += p.printInfo(verbose)
                 s += '\n'
         s += '\nInstances:\n'
         for k, l in self._available_instances.iteritems():
             for p in l:
-                if p.type==filter_type or filter_type=="":
+                if p.type == filter_type or filter_type == "":
                     s += p.printInfo(verbose)
                     s += '\n'
         return s
-

@@ -66,8 +66,8 @@ class SkillManagerInterface:
 
     def execute(self, skill_list, author):
         msg = srvs.SkillCommandRequest()
-        msg.action = msg.START;
-        msg.author = author;
+        msg.action = msg.START
+        msg.author = author
         for s in skill_list:
             msg.skills.append(s.toMsg())
         res = self.call(self._skill_exe_client, msg)
@@ -81,8 +81,8 @@ class SkillManagerInterface:
 
     def preempt(self, author, execution_id=None):
         msg = srvs.SkillCommandRequest()
-        msg.action = msg.PREEMPT;
-        msg.author = author;
+        msg.action = msg.PREEMPT
+        msg.author = author
         if not self.active_tasks:
             return False
         if execution_id is None:
@@ -98,8 +98,8 @@ class SkillManagerInterface:
 
     def preempt_all(self, author):
         msg = srvs.SkillCommandRequest()
-        msg.action = msg.PREEMPT;
-        msg.author = author;
+        msg.action = msg.PREEMPT
+        msg.author = author
         msg.execution_id = -1
         res = self.call(self._skill_exe_client, msg)
         if res is None:
@@ -129,10 +129,10 @@ class SkillManagerInterface:
         """
         @brief Reset the tick rate information
         """
-        pass#self._tick_rate.set_msg_t0(rospy.get_rostime().to_sec())
+        pass  # self._tick_rate.set_msg_t0(rospy.get_rostime().to_sec())
 
     def _progress_cb(self, msg):
-        if msg.type.find("Root")>=0 and abs(msg.progress_code)==1:
+        if msg.type.find("Root") >= 0 and abs(msg.progress_code) == 1:
             try:
                 self._active_tasks.remove(int(msg.task_id))
             except Exception:

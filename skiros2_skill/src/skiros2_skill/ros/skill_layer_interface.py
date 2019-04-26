@@ -2,6 +2,7 @@ import skiros2_common.tools.logger as log
 from skiros2_skill.ros.skill_manager_interface import SkillManagerInterface
 from discovery_interface import DiscoveryInterface
 
+
 class SkillLayerInterface(DiscoveryInterface):
     def __init__(self, author="unknown"):
         self._author = author
@@ -40,7 +41,7 @@ class SkillLayerInterface(DiscoveryInterface):
         @brief Start a task execution
         """
         tid = self.get_agent(skill_mgr).execute(skill_list, self._author)
-        if tid>=0:
+        if tid >= 0:
             self._active_sm.insert(0, skill_mgr)
         return tid
 
@@ -72,19 +73,19 @@ class SkillLayerInterface(DiscoveryInterface):
         self._monitor_cb = cb
 
     def _discovery_cb(self, msg):
-        #TODO: make a call for changes
-        if msg.state==msg.ACTIVE and not self._agents.has_key(msg.name):
+        # TODO: make a call for changes
+        if msg.state == msg.ACTIVE and msg.name not in self._agents:
             log.info("[SkillLayerInterface]", "New skill manager detected: {}".format(msg.name))
             self._agents[msg.name] = SkillManagerInterface(msg.name)
             self._agents[msg.name].set_monitor_cb(self._progress_cb)
             self._new_changes = True
-        elif msg.state==msg.INACTIVE and self._agents.has_key(msg.name):
+        elif msg.state == msg.INACTIVE and msg.name in self._agents:
             log.info("[SkillLayerInterface]", "Skill manager {} went down.".format(msg.name))
             del self._agents[msg.name]
             self._new_changes = True
 
     def _progress_cb(self, msg):
-        if msg.type.find("Root")>=0 and abs(msg.progress_code)==1:
+        if msg.type.find("Root") >= 0 and abs(msg.progress_code) == 1:
             try:
                 self._active_sm.remove(msg.robot)
             except Exception:

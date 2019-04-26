@@ -46,12 +46,11 @@ class TaskManagerNode(PrettyObject):
         self._sli = sli.SkillLayerInterface(self._author_name)
         self._pddl_interface = pddl.PddlInterface(workspace=rospkg.RosPack().get_path("skiros2_task"))
 
-        self._verbose=rospy.get_param('~verbose', True)
-        self._assign_task_action = actionlib.SimpleActionServer('~task_plan', msgs.AssignTaskAction, execute_cb = self._assign_task_cb, auto_start = False)
+        self._verbose = rospy.get_param('~verbose', True)
+        self._assign_task_action = actionlib.SimpleActionServer('~task_plan', msgs.AssignTaskAction, execute_cb=self._assign_task_cb, auto_start=False)
         self._assign_task_action.start()
 
         self._is_ready = False
-
 
     @property
     def skills(self):
@@ -100,7 +99,7 @@ class TaskManagerNode(PrettyObject):
             self._result = msgs.AssignTaskResult(1, str(e))
             self._assign_task_action.set_aborted(self._result)
 
-    def _task_plan(self):#TODO: make this concurrent
+    def _task_plan(self):  # TODO: make this concurrent
         with tk.Timer(self.class_name) as timer:
             self._pddl_interface.clear()
             self.initDomain()
@@ -119,7 +118,7 @@ class TaskManagerNode(PrettyObject):
         task = SkillHolder("", "Processor", "Sequential")
         skills = plan.splitlines()
         for s in skills:
-            s = s[s.find('(')+1: s.find(')')]
+            s = s[s.find('(') + 1: s.find(')')]
             tokens = s.split(' ')
             skill = deepcopy(self.skills[tokens.pop(0)])
             planned_map = self._pddl_interface.getActionParamMap(skill.name, tokens)
@@ -139,22 +138,21 @@ class TaskManagerNode(PrettyObject):
             params = {}
             preconds = []
             postconds = []
-            #Note: Only skills with pre AND post conditions are considered for planning
+            # Note: Only skills with pre AND post conditions are considered for planning
             for p in skill.getRelations(pred="skiros:hasParam"):
                 e = self._wmi.get_element(p['dst'])
                 params[e._label] = e.getProperty("skiros:DataType").value
             for p in skill.getRelations(pred="skiros:hasPreCondition"):
                 e = self._wmi.get_element(p['dst'])
-                if e._type.find("ConditionRelation")!=-1 or e._type == "skiros:ConditionProperty" or e._type == "skiros:ConditionHasProperty":
-                    preconds.append(pddl.Predicate(e, params, e._type.find("Abs")!=-1))
+                if e._type.find("ConditionRelation") != -1 or e._type == "skiros:ConditionProperty" or e._type == "skiros:ConditionHasProperty":
+                    preconds.append(pddl.Predicate(e, params, e._type.find("Abs") != -1))
             for p in skill.getRelations(pred="skiros:hasPostCondition"):
                 e = self._wmi.get_element(p['dst'])
-                if e._type.find("ConditionRelation")!=-1 or e._type == "skiros:ConditionProperty" or e._type == "skiros:ConditionHasProperty":
-                    postconds.append(pddl.Predicate(e, params, e._type.find("Abs")!=-1))
+                if e._type.find("ConditionRelation") != -1 or e._type == "skiros:ConditionProperty" or e._type == "skiros:ConditionHasProperty":
+                    postconds.append(pddl.Predicate(e, params, e._type.find("Abs") != -1))
             self._pddl_interface.addAction(pddl.Action(skill, params, preconds, postconds))
         if self._verbose:
             log.info("[Domain]", self._pddl_interface.printDomain(False))
-
 
     def get_element(self, uid):
         return self._elements[uid]
@@ -163,11 +161,11 @@ class TaskManagerNode(PrettyObject):
         objects = {}
         elements = {}
         self._elements = {}
-        #Find objects
+        # Find objects
         for objType in self._pddl_interface._types._types["thing"]:
             temp = self._wmi.resolve_elements(wmi.Element(objType))
             elements[objType] = temp
-            if len(temp)>0:
+            if len(temp) > 0:
                 objects[objType] = []
             for e in temp:
                 objects[objType].append(e.id)
@@ -175,17 +173,17 @@ class TaskManagerNode(PrettyObject):
                 self._elements[e.id.lower()] = e
         for e in self._abstract_objects:
             ctype = self._wmi.get_super_class(e.type)
-            if not objects.has_key(ctype):
-                 objects[ctype] = []
-                 elements[ctype] = []
+            if ctype not in objects:
+                objects[ctype] = []
+                elements[ctype] = []
             e._id = e.label
-            if not e.label in objects[ctype]:#Avoids duplicates
+            if not e.label in objects[ctype]:  # Avoids duplicates
                 objects[ctype].append(e._label)
                 elements[ctype].append(e)
                 self._elements[e.id] = e
                 self._elements[e.id.lower()] = e
         self._pddl_interface.setObjects(objects)
-        #Evaluate inital state
+        # Evaluate inital state
         for supertype, types in self._pddl_interface._types._types.iteritems():
             elements[supertype] = []
             for t in types:
@@ -196,7 +194,7 @@ class TaskManagerNode(PrettyObject):
         params.addParam("y", Element(), skirosp.ParamTypes.Required)
         for p in self._pddl_interface._predicates:
             if self._wmi.get_reasoner(p.name) is not None:
-                #The predicate is handled by a reasoner
+                # The predicate is handled by a reasoner
                 xtype = p.params[0]["valueType"]
                 ytype = p.params[1]["valueType"]
                 for xe in elements[xtype]:
@@ -208,8 +206,8 @@ class TaskManagerNode(PrettyObject):
                             self._pddl_interface.addInitState(pddl.GroundPredicate(p.name, [xe.id, ye.id]))
             else:
                 #The predicate is handled normally
-                if len(p.params)==1:
-                    if p.value!=None:
+                if len(p.params) == 1:
+                    if p.value != None:
                         c = cond.ConditionProperty("", p.name, "x", p.operator, p.value, True)
                     else:
                         c = cond.ConditionHasProperty("", p.name, "x", True)
@@ -273,31 +271,29 @@ class TaskManagerNode(PrettyObject):
             for g in goals:
                 if not g:
                     continue
-                if g.find("forall")!=-1:
+                if g.find("forall") != -1:
                     self._pddl_interface.addGoal(pddl.ForallPredicate(g))
                 else:
                     g = g[1:-1]
                     tokens = g.split(" ")
-                    if len(tokens)==3:
+                    if len(tokens) == 3:
                         self._pddl_interface.addGoal(pddl.GroundPredicate(tokens[0], [tokens[1], tokens[2]]))
-                        if tokens[1].find("-")==-1: #If isAbstractObject
+                        if tokens[1].find("-") == -1:  # If isAbstractObject
                             self._abstract_objects.append(self._wmi.get_template_element(tokens[1]))
-                        if tokens[2].find("-")==-1: #If isAbstractObject
+                        if tokens[2].find("-") == -1:  # If isAbstractObject
                             self._abstract_objects.append(self._wmi.get_template_element(tokens[2]))
                     else:
                         self._pddl_interface.addGoal(pddl.GroundPredicate(tokens[0], [tokens[1]]))
-                        if tokens[1].find("-")==-1: #If isAbstractObject
+                        if tokens[1].find("-") == -1:  # If isAbstractObject
                             self._abstract_objects.append(self._wmi.get_template_element(tokens[1]))
-        except:
+        except BaseException:
             raise Exception("Error while parsing input goal: {}".format(goal))
-
 
     def plan(self):
         return self._pddl_interface.invokePlanner()
 
     def run(self):
         rospy.spin()
-
 
 
 if __name__ == '__main__':

@@ -5,23 +5,23 @@ import skiros2_skill.ros.skill_layer_interface as sli
 import sys
 
 if __name__ == '__main__':
-    if len(sys.argv)<4:
+    if len(sys.argv) < 4:
         print "usage: cmd skill_mgr_name start|stop skill_name|execution_id wait"
     else:
         mgr = sys.argv[1]
         action = sys.argv[2]
         skill = sys.argv[3]
         wait = False
-        if  len(sys.argv)>4:
+        if len(sys.argv) > 4:
             wait = True
         wmi = wmi.WorldModelInterface()
         sli = sli.SkillLayerInterface()
         agent = sli.getAgent(mgr)
-        if action=="start":
+        if action == "start":
             eid = agent.execute([agent.getSkill(skill)], "cmd_line_tool")
             if wait:
-                agent.waitResult(eid) #Bugged
+                agent.waitResult(eid)  # Bugged
             else:
                 print eid
-        if action=="stop":
+        if action == "stop":
             agent.preempt(int(skill), "cmd_line_tool")

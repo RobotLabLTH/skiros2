@@ -9,10 +9,12 @@ from wrapt.decorators import synchronized
 from skiros2_common.tools.id_generator import IdGen
 from skiros2_common.tools.time_keeper import TimeKeepers
 
+
 class IndividualsDataset(Ontology):
     """
     An ontology with methods to handle individuals using the Element class
     """
+
     def __init__(self, verbose, context_id, graph=None, init=False):
         Ontology.__init__(self, graph)
         self._reasoners = {}
@@ -76,15 +78,15 @@ class IndividualsDataset(Ontology):
             raise Exception("Element {} doesn't exist in ontology. Uri: {}. Context: {}.".format(name, subject, context_id))
         e = Element()
         for predicate, obj in self.ontology(context_id).predicate_objects(subject):
-            if OWL.DatatypeProperty in self.ontology().objects(predicate, RDF.type) or predicate==RDFS.comment:
+            if OWL.DatatypeProperty in self.ontology().objects(predicate, RDF.type) or predicate == RDFS.comment:
                 e.setProperty(self.uri2lightstring(predicate), obj.value, self.uri2lightstring(obj.datatype), force_convertion=True)
             elif OWL.ObjectProperty in self.ontology().objects(predicate, RDF.type):
                 e.addRelation("-1", self.uri2lightstring(predicate), self.uri2lightstring(obj))
-            elif predicate==RDF.type and obj!=OWL.NamedIndividual:
+            elif predicate == RDF.type and obj != OWL.NamedIndividual:
                 e._type = self.uri2lightstring(str(obj))
-            elif obj==OWL.NamedIndividual:
+            elif obj == OWL.NamedIndividual:
                 pass
-            elif predicate==RDFS.label:
+            elif predicate == RDFS.label:
                 e._label = obj.value
             else:
                 log.error("[get_individual]", "Ignoring {}-{}-{}. Predicate is not defined in the ontology.".format(name, self.uri2lightstring(predicate), self.uri2lightstring(obj)))
@@ -137,7 +139,7 @@ class IndividualsDataset(Ontology):
         """
         @brief Get an element from the scene
         """
-        if self._elements_cache.has_key(uri):
+        if uri in self._elements_cache:
             return self._elements_cache[uri]
         e = self.get_individual(uri, self.context.identifier)
         e._id = uri
@@ -221,10 +223,10 @@ class IndividualsDataset(Ontology):
             prop_to_update = reasoner.getAssociatedData()
         else:
             prop_to_update = e.available_properties()
-            #Horrible hack to update also the label. Label should be moved with other properties to make this clean
+            # Horrible hack to update also the label. Label should be moved with other properties to make this clean
             old_e.label = e.label
             self._set((subject, RDFS.label, rdflib.term.Literal(e.label)), author)
-        #Set properties
+        # Set properties
         for k in prop_to_update:
             predicate = self.lightstring2uri(k)
             p = e.getProperty(k)
@@ -233,7 +235,7 @@ class IndividualsDataset(Ontology):
                 old_e.setProperty(k, values)
                 for i in range(0, len(values)):
                     self._add((subject, predicate, rdflib.term.Literal(values[i], datatype=self._get_datatype(p))), author)
-            elif old_e.getProperty(k).values!=values:
+            elif old_e.getProperty(k).values != values:
                 old_e.setProperty(k, values)
                 if values:
                     self._set((subject, predicate, rdflib.term.Literal(values[0], datatype=self._get_datatype(p))), author)
@@ -249,9 +251,9 @@ class IndividualsDataset(Ontology):
         first = []
         to_ret = []
         for e in self._get_types(description._type):
-            if description._label=="" or description._label=="Unknown" or e._label==description._label:
+            if description._label == "" or description._label == "Unknown" or e._label == description._label:
                 first.append(e)
-        #Filter by properties
+        # Filter by properties
         for e in first:
             add = True
             for k, p in description._properties.iteritems():
@@ -259,7 +261,7 @@ class IndividualsDataset(Ontology):
                     add = False
                     break
                 for v in p.values:
-                    if v == "" or v==None:
+                    if v == "" or v is None:
                         break
                     if not v in e.getProperty(k).values:
                         add = False
@@ -277,7 +279,7 @@ class IndividualsDataset(Ontology):
         """
         try:
             e = self.get_element(e.id)
-        except:
+        except BaseException:
             log.warn("[remove_element]", "Trying to remove element {}, but doesn't exist.".format(e.id))
             return False
         for name, r in self._reasoners.iteritems():
@@ -296,9 +298,9 @@ class IndividualsDataset(Ontology):
         """
         rels_filter = []
         types_filter = []
-        if rel_filter!="":
+        if rel_filter != "":
             rels_filter = self.get_sub_relations(rel_filter)
-        if type_filter!="":
+        if type_filter != "":
             types_filter = self.get_sub_classes(type_filter)
         self._remove_recursive(e, author, rels_filter, types_filter)
 
@@ -318,15 +320,15 @@ class IndividualsDataset(Ontology):
         to_ret = {}
         rels_filter = []
         types_filter = []
-        if rel_filter!="":
+        if rel_filter != "":
             rels_filter = self.get_sub_relations(rel_filter)
-        if type_filter!="":
+        if type_filter != "":
             types_filter = self.get_sub_classes(type_filter)
         self._get_recursive(self.get_element(eid), rels_filter, types_filter, to_ret)
         return to_ret
 
     def get_reasoner(self, reasoner_class):
-        if not self._reasoners.has_key(reasoner_class):
+        if reasoner_class not in self._reasoners:
             return None
         return self._reasoners[reasoner_class]
 
@@ -342,7 +344,7 @@ class IndividualsDataset(Ontology):
         """
         if e.hasProperty("skiros:DiscreteReasoner"):
             for v in e.getProperty("skiros:DiscreteReasoner").values:
-                if self._reasoners.has_key(v):
+                if v in self._reasoners:
                     self._reasoners[v].addProperties(e)
 
     def _stop_reasoners(self):
@@ -354,14 +356,14 @@ class IndividualsDataset(Ontology):
             r.execute()
 
     def _make_unique_uri(self, e):
-        if e.id=="":
+        if e.id == "":
             if not e.label:
                 e.label = "unknown"
             e._id = e.label
         i = 1
         while self.uri_exists(self.lightstring2uri(e.id)):
             e._id = "{}_{}".format(e.label, i)
-            i+=1
+            i += 1
 
     def _get_recursive(self, e, rels_filter, types_filter, elist):
         """
@@ -371,7 +373,7 @@ class IndividualsDataset(Ontology):
         for r in e.getRelations("-1", rels_filter):
             if self.uri_exists(self.lightstring2uri(r['dst']), self.context.identifier):
                 e2 = self.get_element(r['dst'])
-                if (e2._type in types_filter or not types_filter) and not elist.has_key(e2._id):
+                if (e2._type in types_filter or not types_filter) and e2._id not in elist:
                     self._get_recursive(e2, rels_filter, types_filter, elist)
 
     def _get_datatype(self, param):
@@ -396,8 +398,10 @@ class IndividualsDataset(Ontology):
         """
         self.context.set(statement)
         if self._verbose:
-            log.info("{}->{}".format(author, self.context.identifier.n3()), log.logColor.RED + log.logColor.BOLD  + "[-] ({}) - ({}) - (*)) . ".format(self.uri2lightstring(statement[0]), self.uri2lightstring(statement[1])))
-            log.info("{}->{}".format(author, self.context.identifier.n3()), log.logColor.GREEN + log.logColor.BOLD  + "[+] ({}) - ({}) - ({}) .".format(self.uri2lightstring(statement[0]), self.uri2lightstring(statement[1]), self.uri2lightstring(statement[2])))
+            log.info("{}->{}".format(author, self.context.identifier.n3()), log.logColor.RED + log.logColor.BOLD +
+                     "[-] ({}) - ({}) - (*)) . ".format(self.uri2lightstring(statement[0]), self.uri2lightstring(statement[1])))
+            log.info("{}->{}".format(author, self.context.identifier.n3()), log.logColor.GREEN + log.logColor.BOLD +
+                     "[+] ({}) - ({}) - ({}) .".format(self.uri2lightstring(statement[0]), self.uri2lightstring(statement[1]), self.uri2lightstring(statement[2])))
 
     def _remove(self, statement, author, is_relation=False):
         """
@@ -408,12 +412,13 @@ class IndividualsDataset(Ontology):
             s0 = self.uri2lightstring(statement[0])
             s1 = self.uri2lightstring(statement[1])
             s2 = self.uri2lightstring(statement[2])
-            if self._elements_cache.has_key(s0):
+            if s0 in self._elements_cache:
                 self._elements_cache[s0].removeRelation2("-1", s1, s2)
-            if self._elements_cache.has_key(s2):
+            if s2 in self._elements_cache:
                 self._elements_cache[s2].removeRelation2(s0, s1, "-1")
         if self._verbose:
-            log.info("{}->{}".format(author, self.context.identifier.n3()), log.logColor.RED + log.logColor.BOLD  + "[-] ({}) - ({}) - ({}) .".format(self.uri2lightstring(statement[0]), self.uri2lightstring(statement[1]), self.uri2lightstring(statement[2])))
+            log.info("{}->{}".format(author, self.context.identifier.n3()), log.logColor.RED + log.logColor.BOLD +
+                     "[-] ({}) - ({}) - ({}) .".format(self.uri2lightstring(statement[0]), self.uri2lightstring(statement[1]), self.uri2lightstring(statement[2])))
 
     def _add(self, statement, author, is_relation=False):
         """
@@ -424,12 +429,13 @@ class IndividualsDataset(Ontology):
             s0 = self.uri2lightstring(statement[0])
             s1 = self.uri2lightstring(statement[1])
             s2 = self.uri2lightstring(statement[2])
-            if self._elements_cache.has_key(s0):
+            if s0 in self._elements_cache:
                 self._elements_cache[s0].addRelation("-1", s1, s2)
-            if self._elements_cache.has_key(s2):
+            if s2 in self._elements_cache:
                 self._elements_cache[s2].addRelation(s0, s1, "-1")
         if self._verbose:
-            log.info("{}->{}".format(author, self.context.identifier.n3()), log.logColor.GREEN + log.logColor.BOLD  + "[+] ({}) - ({}) - ({}) . ".format(self.uri2lightstring(statement[0]), self.uri2lightstring(statement[1]), self.uri2lightstring(statement[2])))
+            log.info("{}->{}".format(author, self.context.identifier.n3()), log.logColor.GREEN + log.logColor.BOLD +
+                     "[+] ({}) - ({}) - ({}) . ".format(self.uri2lightstring(statement[0]), self.uri2lightstring(statement[1]), self.uri2lightstring(statement[2])))
 
     def _element2statements(self, e):
         to_ret = []
@@ -443,7 +449,7 @@ class IndividualsDataset(Ontology):
                 value = rdflib.term.Literal(v, datatype=self._get_datatype(p))
                 to_ret.append(((subject, predicate, value), False))
         for r in list(e._relations):
-            if r['src']=="-1" or r['src']==e.id:
+            if r['src'] == "-1" or r['src'] == e.id:
                 if not self.uri_exists(self.lightstring2uri(r['dst'])):
                     log.error("[element2statements]", "Element with key {} is not defined in ontology. Skipped relation: {}".format(r['dst'], r))
                     e.removeRelation(r)
@@ -468,10 +474,12 @@ class IndividualsDataset(Ontology):
                 to_ret.append(self.get_element(self.uri2lightstring(subj)))
         return to_ret
 
+
 class WorldModel(IndividualsDataset):
     """
     @brief A set of individuals with unique ID generation
     """
+
     def __init__(self, verbose, context_id, change_cb):
         self._id_gen = IdGen()
         self._change_cb = change_cb
@@ -510,7 +518,7 @@ class WorldModel(IndividualsDataset):
         return uri.split('-')[0]
 
     def _uri2id(self, uri):
-        if uri.find('-')<0:
+        if uri.find('-') < 0:
             return -1
         return int(uri.split('-')[1])
 
@@ -531,7 +539,7 @@ class WorldModel(IndividualsDataset):
         for i in individuals:
             i = self.uri2lightstring(i[0])
             iid = self._uri2id(i)
-            if iid>=0:
+            if iid >= 0:
                 self._id_gen.getId(iid)
         self._start_reasoners()
         log.info("[load_scene]", "Loaded scene {}. ".format(self.filename))

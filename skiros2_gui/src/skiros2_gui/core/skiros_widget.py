@@ -28,10 +28,11 @@ from numpy.linalg import norm
 from threading import Lock
 from datetime import datetime
 
+
 class SkirosAddObjectDialog(QDialog):
-#==============================================================================
-#  Modal dialog
-#==============================================================================
+    #==============================================================================
+    #  Modal dialog
+    #==============================================================================
 
     default_type = 'sumo:Object'
 
@@ -54,8 +55,7 @@ class SkirosAddObjectDialog(QDialog):
         self._comboBoxes = []
         self.create_comboBox(label='Type')
         self.comboBox_individual.clear()
-        [self.comboBox_individual.addItem(l,d) for l,d in self.get_individuals(self.default_type).iteritems()]
-
+        [self.comboBox_individual.addItem(l, d) for l, d in self.get_individuals(self.default_type).iteritems()]
 
     @property
     def object(self):
@@ -65,7 +65,6 @@ class SkirosAddObjectDialog(QDialog):
             str: Selected (ontology) type (e.g. skiros:Product)
         """
         return self.comboBox_individual.itemData(self.comboBox_individual.currentIndex())
-
 
     def on_select_type(self, id, index):
         """Callback for change selection in dropdown lists.
@@ -79,18 +78,18 @@ class SkirosAddObjectDialog(QDialog):
         # log.debug(self.__class__.__name__, 'Selected {}: {}'.format(id, index))
 
         # clear filters after selected
-        while id < len(self._comboBoxes)-1:
+        while id < len(self._comboBoxes) - 1:
             # log.debug(self.__class__.__name__, 'Delete {}'.format(id+1))
-            label = self.formLayout.labelForField(self._comboBoxes[id+1])
+            label = self.formLayout.labelForField(self._comboBoxes[id + 1])
             label.deleteLater()
-            self._comboBoxes[id+1].deleteLater()
-            del self._comboBoxes[id+1]
+            self._comboBoxes[id + 1].deleteLater()
+            del self._comboBoxes[id + 1]
 
         # get current selection
-        if index > 0: # if not 'All' is selected
+        if index > 0:  # if not 'All' is selected
             selected = self._comboBoxes[id].itemData(self._comboBoxes[id].currentIndex())
-        elif id > 0: # if 'All' is selected and it is not the first combo box
-            selected = self._comboBoxes[id-1].itemData(self._comboBoxes[id-1].currentIndex())
+        elif id > 0:  # if 'All' is selected and it is not the first combo box
+            selected = self._comboBoxes[id - 1].itemData(self._comboBoxes[id - 1].currentIndex())
         else:  # if 'All' is selected and it is the first combo box
             selected = self.default_type
         # log.debug(self.__class__.__name__, 'Selected type {}'.format(selected))
@@ -104,9 +103,8 @@ class SkirosAddObjectDialog(QDialog):
         self.comboBox_individual.clear()
         if index > 0 or (id > 0 and index == 0):
             self.comboBox_individual.addItem('new ' + utils.ontology_type2name(selected), selected)
-        [self.comboBox_individual.addItem(l,d) for l,d in self.get_individuals(selected).iteritems()]
+        [self.comboBox_individual.addItem(l, d) for l, d in self.get_individuals(selected).iteritems()]
         QTimer.singleShot(0, self.adjustSize)
-
 
     def create_comboBox(self, subtype='sumo:Object', label='Subtype'):
         """Inserts a new combobox in the dialog based on the subtype.
@@ -121,11 +119,10 @@ class SkirosAddObjectDialog(QDialog):
         sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         comboBox.setSizePolicy(sizePolicy)
         comboBox.addItem('All')
-        [comboBox.addItem(l,d) for l,d in self.get_types(subtype).iteritems()]
+        [comboBox.addItem(l, d) for l, d in self.get_types(subtype).iteritems()]
         comboBox.currentIndexChanged.connect(partial(self.on_select_type, len(self._comboBoxes)))
         self.formLayout.insertRow(len(self._comboBoxes), label, comboBox)
         self._comboBoxes.append(comboBox)
-
 
     def get_types(self, subtype):
         """Retrieves available subtype from the ontology.
@@ -137,7 +134,6 @@ class SkirosAddObjectDialog(QDialog):
             dict(str, str): Keys: Short type name. Values: Type identifier (e.g. {'Product': 'skiros:Product'})
         """
         return utils.ontology_type2name_dict(self.parent()._wmi.get_sub_classes(subtype, False))
-
 
     def get_individuals(self, subtype):
         """Retrieves available individuals from the world model.
@@ -182,10 +178,10 @@ class SkirosInteractiveMarkers:
         return marker
 
     def _make_box_control(self, msg, size):
-        control =  InteractiveMarkerControl()
+        control = InteractiveMarkerControl()
         control.always_visible = True
-        control.markers.append( self._make_box(msg, size) )
-        msg.controls.append( control )
+        control.markers.append(self._make_box(msg, size))
+        msg.controls.append(control)
         return control
 
     def initInteractiveServer(self, name):
@@ -216,10 +212,10 @@ class SkirosInteractiveMarkers:
         self._make_box_control(int_marker, size)
         int_marker.controls[0].interaction_mode = interaction_mode
 
-        n = norm([1,1])
+        n = norm([1, 1])
         control = InteractiveMarkerControl()
-        control.orientation.w = 1/n
-        control.orientation.x = 1/n
+        control.orientation.w = 1 / n
+        control.orientation.x = 1 / n
         control.orientation.y = 0
         control.orientation.z = 0
         control.name = "rotate_x"
@@ -227,8 +223,8 @@ class SkirosInteractiveMarkers:
         int_marker.controls.append(control)
 
         control = InteractiveMarkerControl()
-        control.orientation.w = 1/n
-        control.orientation.x = 1/n
+        control.orientation.w = 1 / n
+        control.orientation.x = 1 / n
         control.orientation.y = 0
         control.orientation.z = 0
         control.name = "move_x"
@@ -236,37 +232,37 @@ class SkirosInteractiveMarkers:
         int_marker.controls.append(control)
 
         control = InteractiveMarkerControl()
-        control.orientation.w = 1/n
+        control.orientation.w = 1 / n
         control.orientation.x = 0
-        control.orientation.y = 1/n
+        control.orientation.y = 1 / n
         control.orientation.z = 0
         control.name = "rotate_y"
         control.interaction_mode = InteractiveMarkerControl.ROTATE_AXIS
         int_marker.controls.append(control)
 
         control = InteractiveMarkerControl()
-        control.orientation.w = 1/n
+        control.orientation.w = 1 / n
         control.orientation.x = 0
-        control.orientation.y = 1/n
+        control.orientation.y = 1 / n
         control.orientation.z = 0
         control.name = "move_y"
         control.interaction_mode = InteractiveMarkerControl.MOVE_AXIS
         int_marker.controls.append(control)
 
         control = InteractiveMarkerControl()
-        control.orientation.w = 1/n
+        control.orientation.w = 1 / n
         control.orientation.x = 0
         control.orientation.y = 0
-        control.orientation.z = 1/n
+        control.orientation.z = 1 / n
         control.name = "rotate_z"
         control.interaction_mode = InteractiveMarkerControl.ROTATE_AXIS
         int_marker.controls.append(control)
 
         control = InteractiveMarkerControl()
-        control.orientation.w = 1/n
+        control.orientation.w = 1 / n
         control.orientation.x = 0
         control.orientation.y = 0
-        control.orientation.z = 1/n
+        control.orientation.z = 1 / n
         control.name = "move_z"
         control.interaction_mode = InteractiveMarkerControl.MOVE_AXIS
         int_marker.controls.append(control)
@@ -274,10 +270,11 @@ class SkirosInteractiveMarkers:
         self._server.insert(int_marker, self.on_marker_feedback)
         self._server.applyChanges()
 
+
 class SkirosWidget(QWidget, SkirosInteractiveMarkers):
-#==============================================================================
-#  General
-#==============================================================================
+    #==============================================================================
+    #  General
+    #==============================================================================
 
     widget_id = 'skiros_gui'
 
@@ -290,9 +287,9 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         ui_file = os.path.join(rospkg.RosPack().get_path('skiros2_gui'), 'src/skiros2_gui/core', 'skiros_gui.ui')
         loadUi(ui_file, self)
 
-        self.skill_tree_widget.currentItemChanged.connect( lambda : self.on_skill_tree_widget_item_selection_changed( self.skill_tree_widget.currentItem() ) )
-        self.wm_tree_widget.itemSelectionChanged.connect( lambda : self.on_wm_tree_widget_item_selection_changed( self.wm_tree_widget.currentItem() ) )
-        self.wm_properties_widget.itemChanged.connect( lambda p: self.on_properties_table_item_changed( self.wm_tree_widget.currentItem(), p.row() ) )
+        self.skill_tree_widget.currentItemChanged.connect(lambda: self.on_skill_tree_widget_item_selection_changed(self.skill_tree_widget.currentItem()))
+        self.wm_tree_widget.itemSelectionChanged.connect(lambda: self.on_wm_tree_widget_item_selection_changed(self.wm_tree_widget.currentItem()))
+        self.wm_properties_widget.itemChanged.connect(lambda p: self.on_properties_table_item_changed(self.wm_tree_widget.currentItem(), p.row()))
         self.wm_relations_widget.resizeEvent = self.on_wm_relations_widget_resized
         self.wm_update_signal.connect(lambda d: self.on_wm_update(d))
         self.task_progress_signal.connect(lambda d: self.on_progress_update(d))
@@ -304,21 +301,20 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         self.tableWidget_output.setColumnWidth(4, 40)
         self.reset()
 
-
     def reset(self):
-        #The plugin should not call init_node as this is performed by rqt_gui_py.
-        #Due to restrictions in Qt, you cannot manipulate Qt widgets directly within ROS callbacks,
-        #because they are running in a different thread.
+        # The plugin should not call init_node as this is performed by rqt_gui_py.
+        # Due to restrictions in Qt, you cannot manipulate Qt widgets directly within ROS callbacks,
+        # because they are running in a different thread.
         self.initInteractiveServer(SkirosWidget.widget_id)
         self._wmi = wmi.WorldModelInterface(SkirosWidget.widget_id)
         self._sli = sli.SkillLayerInterface(SkirosWidget.widget_id)
 
-        #Setup a timer to keep interface updated
+        # Setup a timer to keep interface updated
         self.refresh_timer = QTimer()
         self.refresh_timer.timeout.connect(self.refresh_timer_cb)
         self.refresh_timer.start(500)
 
-        #World model tab
+        # World model tab
         self._wmi.set_monitor_cb(lambda d: self.wm_update_signal.emit(d))
         self._sli.set_monitor_cb(lambda d: self.task_progress_signal.emit(d))
         self._snapshot_id = ""
@@ -326,15 +322,14 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         self._wm_mutex = Lock()
         self._task_mutex = Lock()
 
-        #Skill tab
+        # Skill tab
         self.last_executed_skill = ""
         self.skill_stop_button.setEnabled(False)
-        self.space_shortcut=QShortcut(QtGui.QKeySequence(Qt.Key_Space), self)
+        self.space_shortcut = QShortcut(QtGui.QKeySequence(Qt.Key_Space), self)
         self.space_shortcut.activated.connect(self.skill_start_stop)
-        #self.space_shortcut.setContext(QtCore.Qt.WidgetWithChildrenShortcut)
-        #Log tab
+        # self.space_shortcut.setContext(QtCore.Qt.WidgetWithChildrenShortcut)
+        # Log tab
         self.log_file = None
-
 
     def shutdown_plugin(self):
         # TODO unregister all publishers here
@@ -347,17 +342,16 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         instance_settings.set_value("logs_file_name", self.logs_file_lineEdit.text())
         instance_settings.set_value("last_executed_skill", self.last_executed_skill)
 
-
     def restore_settings(self, plugin_settings, instance_settings):
         # TODO restore intrinsic configuration, usually using:
-        if self._wmi.get_scene_name()!="":
+        if self._wmi.get_scene_name() != "":
             self.scene_file_lineEdit.setText(self._wmi.get_scene_name())
-        elif instance_settings.value("scene_name") is not None and instance_settings.value("scene_name")!="":
+        elif instance_settings.value("scene_name") is not None and instance_settings.value("scene_name") != "":
             self.scene_file_lineEdit.setText(instance_settings.value("scene_name"))
         if instance_settings.value("logs_file_name") is not None:
             self.logs_file_lineEdit.setText(instance_settings.value("logs_file_name"))
         if instance_settings.value("save_logs") is not None:
-            self.save_logs_checkBox.setChecked(instance_settings.value("save_logs")=='true')
+            self.save_logs_checkBox.setChecked(instance_settings.value("save_logs") == 'true')
             self.on_save_logs_checkBox_clicked()
         if instance_settings.value("last_executed_skill") is not None:
             self.last_executed_skill = instance_settings.value("last_executed_skill")
@@ -370,7 +364,6 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         pass
 
 
-
 #==============================================================================
 #  General
 #==============================================================================
@@ -379,13 +372,13 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         """
         Keeps ui updated
         """
-        #Update robot BT rate
+        # Update robot BT rate
         if self._sli.agents:
             robot_txt = ""
             for name, manager in self._sli.agents.iteritems():
                 robot_txt += "{}: {:0.1f}hz ".format(name.replace("/", ""), manager.get_tick_rate())
             self.robot_rate_info.setText(robot_txt)
-        #Update skill list
+        # Update skill list
         if self._sli.has_changes:
             self.skill_tree_widget.clear()
             self.skill_tree_widget.setColumnCount(3)
@@ -420,19 +413,19 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         log.debug(self.__class__.__name__, 'Saving world model to <{}>'.format(file))
         self._wmi.save(file)
 
-
     @Slot()
     def on_add_object_button_clicked(self):
         dialog = SkirosAddObjectDialog(self)
         ret = dialog.exec_()
-        if not ret: return
+        if not ret:
+            return
 
         log.debug(self.__class__.__name__, 'Create element based on {}'.format(dialog.object))
 
         parent = self.wm_tree_widget.currentItem()
         parent_id = parent.text(1)
-        if not parent_id: return
-
+        if not parent_id:
+            return
 
         elem = self._wmi.get_template_element(dialog.object)
         elem.label = utils.ontology_type2name(dialog.object)
@@ -445,12 +438,12 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         # item = QTreeWidgetItem(parent, [utils.ontology_type2name(elem_id), elem_id])
         # self.wm_tree_widget.setCurrentItem(item)
 
-
     @Slot()
     def on_remove_object_button_clicked(self):
         item = self.wm_tree_widget.currentItem()
         item_id = item.text(1)
-        if not item_id: return
+        if not item_id:
+            return
         parent = item.parent()
         self.wm_tree_widget.setCurrentItem(parent)
 
@@ -460,7 +453,6 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         # parent = self.wm_tree_widget.currentItem()
         # parent_id = parent.text(1)
         log.debug(self.__class__.__name__, 'Removed element {}'.format(item_id))
-
 
         #item = self.wm_tree_widget.currentItem()
         # self.remove_wm_tree_widget_item(item)
@@ -474,11 +466,10 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
     #     else:
     #         [self.remove_wm_tree_widget_item(child) for child in item.takeChildren()]
 
-
     @Slot()
     def on_wm_update(self, data):
         with self._wm_mutex:
-            if self._snapshot_id==data.prev_snapshot_id and data.action!="reset":#Discard msgs not in sync with local wm version
+            if self._snapshot_id == data.prev_snapshot_id and data.action != "reset":  # Discard msgs not in sync with local wm version
                 self._snapshot_id = data.snapshot_id
                 cur_item = self.wm_tree_widget.currentItem()
                 cur_item_id = cur_item.text(1)
@@ -488,7 +479,8 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
 
                         # check if element is already in tree
                         items = self.wm_tree_widget.findItems(elem.id, Qt.MatchRecursive | Qt.MatchFixedString, 1)
-                        if not items: continue
+                        if not items:
+                            continue
 
                         # check if updated item is selected
                         if elem.id == cur_item_id:
@@ -499,7 +491,8 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
 
                         # get parent node in tree
                         parent = items[0].parent()
-                        if not parent: continue
+                        if not parent:
+                            continue
 
                         # check if the old parent is still parent of the updated element
                         has_child = elem.getRelations(subj=parent.text(1), pred=self._wmi.get_sub_properties('skiros:spatiallyRelated'), obj='-1')
@@ -520,10 +513,9 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
                 if items:
                     self.wm_tree_widget.setCurrentItem(items[0])
                 #self._save_log(data, "wm_edit")
-            elif data.stamp>self._snapshot_stamp or self._snapshot_id=="":#Ignores obsolete msgs
+            elif data.stamp > self._snapshot_stamp or self._snapshot_id == "":  # Ignores obsolete msgs
                 log.info("[wm_update]", "Wm not in sync, querying wm scene")
                 self.create_wm_tree()
-
 
     def on_marker_feedback(self, feedback):
         if feedback.event_type == InteractiveMarkerFeedback.POSE_UPDATE:
@@ -535,7 +527,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
     def on_wm_tree_widget_item_selection_changed(self, item):
         self.wm_properties_widget.blockSignals(True)
         self.clear_markers()
-        if item.text(1).find("_skills")<0:
+        if item.text(1).find("_skills") < 0:
             elem = self._wmi.get_element(item.text(1))
             self.fill_properties_table(elem)
             self.fill_relations_table(elem)
@@ -543,12 +535,11 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
                 p = elem.getData(":Pose")
                 size = elem.getData(":Size")
                 if not None in p[0] and not None in p[1]:
-                    self.make_6dof_marker(p, size, elem.id, elem.getProperty("skiros:BaseFrameId").value, InteractiveMarkerControl.NONE) # NONE,MOVE_3D, MOVe_ROTATE_3D
+                    self.make_6dof_marker(p, size, elem.id, elem.getProperty("skiros:BaseFrameId").value, InteractiveMarkerControl.NONE)  # NONE,MOVE_3D, MOVe_ROTATE_3D
         else:
             self.wm_properties_widget.setRowCount(0)
             self.wm_relations_widget.setRowCount(0)
         self.wm_properties_widget.blockSignals(False)
-
 
     @Slot()
     def on_properties_table_item_changed(self, item, row):
@@ -560,8 +551,10 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
 
         if elem.hasProperty(key):
             prop = elem.getProperty(key)
-            if value == '': value = None
-            if prop.dataTypeIs(bool): value = item_val.checkState() == Qt.Checked
+            if value == '':
+                value = None
+            if prop.dataTypeIs(bool):
+                value = item_val.checkState() == Qt.Checked
             try:
                 elem.setProperty(prop.key, value, is_list=prop.isList(), force_convertion=value is not None)
                 log.debug(self.__class__.__name__, '<{}> property {} to {}'.format(item.text(1), prop.key, value))
@@ -580,15 +573,12 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         name = utils.ontology_type2name(elem.id) if not elem.label else utils.ontology_type2name(elem.label)
         item.setText(0, name)
 
-
-
     @Slot()
     def on_wm_relations_widget_resized(self, event):
-        width = self.wm_relations_widget.size().width()-2
+        width = self.wm_relations_widget.size().width() - 2
         cols = self.wm_relations_widget.columnCount()
         for i in range(cols):
-            self.wm_relations_widget.setColumnWidth(i, float(width)/cols)
-
+            self.wm_relations_widget.setColumnWidth(i, float(width) / cols)
 
     def create_wm_tree(self):
         scene_tuple = self._wmi.get_scene()
@@ -625,7 +615,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
                 return
             parent_id = '{}_skills'.format(parent_rel['src'])
             item = self.wm_tree_widget.findItems(parent_id, Qt.MatchRecursive | Qt.MatchFixedString, 1)
-            if not item:#In case it is still not existing i create the "support" skill node
+            if not item:  # In case it is still not existing i create the "support" skill node
                 item = self.wm_tree_widget.findItems(parent_rel['src'], Qt.MatchRecursive | Qt.MatchFixedString, 1)[0]
                 item = QTreeWidgetItem(item, ['Skills', parent_id])
             else:
@@ -656,28 +646,27 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         for rel in skillPropRel:
             self._create_wm_tree(item, scene, scene[rel['dst']])
 
-
-
     def fill_properties_table(self, elem):
         self.wm_properties_widget.setRowCount(0)
-        type =  elem.id[:elem.id.rfind('-')]
-        id =  elem.id[elem.id.rfind('-')+1:]
+        type = elem.id[:elem.id.rfind('-')]
+        id = elem.id[elem.id.rfind('-') + 1:]
         self._add_properties_table_row(Property('ID', id), editable_value=False)
         self._add_properties_table_row(Property('Type', type), editable_value=False)
         self._add_properties_table_row(Property('Label', elem.label), editable_value=True)
         props = sorted(elem.properties, key=lambda e: e.key)
         [self._add_properties_table_row(p, False, True) for p in props]
 
-
     def _add_properties_table_row(self, prop, editable_key=False, editable_value=True):
         key = QTableWidgetItem(utils.ontology_type2name(prop.key))
-        if not editable_key: key.setFlags(key.flags() & ~Qt.ItemIsEditable)
+        if not editable_key:
+            key.setFlags(key.flags() & ~Qt.ItemIsEditable)
         value = prop.values if prop.isList() else prop.value
         if prop.dataTypeIs(float):
             val = QTableWidgetItem(format(value, '.4f') if value is not None else '')
         else:
             val = QTableWidgetItem(str(value) if value is not None else '')
-        if not editable_value: val.setFlags(val.flags() & ~Qt.ItemIsEditable)
+        if not editable_value:
+            val.setFlags(val.flags() & ~Qt.ItemIsEditable)
 
         if prop.dataTypeIs(bool):
             val.setText('')
@@ -689,9 +678,8 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         key.id = val.id = prop.key
 
         self.wm_properties_widget.insertRow(self.wm_properties_widget.rowCount())
-        self.wm_properties_widget.setItem(self.wm_properties_widget.rowCount()-1, 0, key)
-        self.wm_properties_widget.setItem(self.wm_properties_widget.rowCount()-1, 1, val)
-
+        self.wm_properties_widget.setItem(self.wm_properties_widget.rowCount() - 1, 0, key)
+        self.wm_properties_widget.setItem(self.wm_properties_widget.rowCount() - 1, 1, val)
 
     def fill_relations_table(self, elem):
         self.wm_relations_widget.setRowCount(0)
@@ -699,11 +687,10 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         rel = sorted(rel, key=lambda r: r['src'], reverse=True)
         rel = map(lambda r: {
             'src': r['src'] if r['src'] != '-1' else elem.id,
-            'type':r['type'],
+            'type': r['type'],
             'dst': r['dst'] if r['dst'] != '-1' else elem.id
-            }, rel)
+        }, rel)
         [self._add_relations_table_row(r, r['src'] != elem.id, r['dst'] != elem.id) for r in rel]
-
 
     def _add_relations_table_row(self, relation, editable_src=False, editable_dst=False):
         src = QTableWidgetItem(utils.ontology_type2name(relation['src']))
@@ -718,27 +705,27 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         rel.setTextAlignment(Qt.AlignHCenter)
         dst.setTextAlignment(Qt.AlignLeft)
 
-        if not editable_src: src.setFlags(src.flags() & ~Qt.ItemIsEditable)
+        if not editable_src:
+            src.setFlags(src.flags() & ~Qt.ItemIsEditable)
         rel.setFlags(rel.flags() & ~Qt.ItemIsEditable)
-        if not editable_dst: dst.setFlags(dst.flags() & ~Qt.ItemIsEditable)
+        if not editable_dst:
+            dst.setFlags(dst.flags() & ~Qt.ItemIsEditable)
 
         self.wm_relations_widget.insertRow(self.wm_relations_widget.rowCount())
         # self.wm_relations_widget.setSpan(self.wm_relations_widget.rowCount()-1, 0, 1, 3)
-        self.wm_relations_widget.setItem(self.wm_relations_widget.rowCount()-1, 0, src)
-        self.wm_relations_widget.setItem(self.wm_relations_widget.rowCount()-1, 1, rel)
-        self.wm_relations_widget.setItem(self.wm_relations_widget.rowCount()-1, 2, dst)
-
-
+        self.wm_relations_widget.setItem(self.wm_relations_widget.rowCount() - 1, 0, src)
+        self.wm_relations_widget.setItem(self.wm_relations_widget.rowCount() - 1, 1, rel)
+        self.wm_relations_widget.setItem(self.wm_relations_widget.rowCount() - 1, 2, dst)
 
     @Slot('QTreeWidgetItem*', 'QTreeWidgetItem*')
     def wm_tree_widget_currentItemChanged(self, item, prev_item):
-        while self.wm_properties_widget.rowCount()>0:
-           self.wm_properties_widget.removeRow(0)
+        while self.wm_properties_widget.rowCount() > 0:
+            self.wm_properties_widget.removeRow(0)
         item = QTableWidgetItem(str(item.text(0)))
         self.wm_properties_widget.insertRow(0)
         self.wm_properties_widget.setItem(0, 0, item)
-        while self.wm_relations_widget.rowCount()>0:
-           self.wm_relations_widget.removeRow(0)
+        while self.wm_relations_widget.rowCount() > 0:
+            self.wm_relations_widget.removeRow(0)
         item = QTableWidgetItem("")
         self.wm_relations_widget.insertRow(0)
         self.wm_relations_widget.setItem(0, 0, item)
@@ -748,33 +735,33 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
 # Skill
 #==============================================================================
     def _update_progress_table(self, msg):
-        last_msg = self.tableWidget_output.item(self.tableWidget_output.rowCount()-1, 5).text() if self.tableWidget_output.rowCount()>0 else ""
-        if msg.progress_message!="Start" and (msg.label.find("task")>=0 or (msg.progress_message!="End" and msg.progress_message!=last_msg)):
+        last_msg = self.tableWidget_output.item(self.tableWidget_output.rowCount() - 1, 5).text() if self.tableWidget_output.rowCount() > 0 else ""
+        if msg.progress_message != "Start" and (msg.label.find("task") >= 0 or (msg.progress_message != "End" and msg.progress_message != last_msg)):
             self.tableWidget_output.insertRow(self.tableWidget_output.rowCount())
-            self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 0, QTableWidgetItem("{:0.3f}".format(msg.progress_time)))
-            self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 1, QTableWidgetItem("{}_{}".format(msg.parent_label, msg.parent_id)))
-            self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 2, QTableWidgetItem("{}_{}".format(msg.label, msg.id)))
-            self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 3, QTableWidgetItem(State(msg.state).name))
-            self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 4, QTableWidgetItem(str(msg.progress_code)))
+            self.tableWidget_output.setItem(self.tableWidget_output.rowCount() - 1, 0, QTableWidgetItem("{:0.3f}".format(msg.progress_time)))
+            self.tableWidget_output.setItem(self.tableWidget_output.rowCount() - 1, 1, QTableWidgetItem("{}_{}".format(msg.parent_label, msg.parent_id)))
+            self.tableWidget_output.setItem(self.tableWidget_output.rowCount() - 1, 2, QTableWidgetItem("{}_{}".format(msg.label, msg.id)))
+            self.tableWidget_output.setItem(self.tableWidget_output.rowCount() - 1, 3, QTableWidgetItem(State(msg.state).name))
+            self.tableWidget_output.setItem(self.tableWidget_output.rowCount() - 1, 4, QTableWidgetItem(str(msg.progress_code)))
             progress = QTableWidgetItem(str(msg.progress_message))
             progress.setToolTip(str(msg.progress_message))
-            self.tableWidget_output.setItem(self.tableWidget_output.rowCount()-1, 5, progress)
+            self.tableWidget_output.setItem(self.tableWidget_output.rowCount() - 1, 5, progress)
             self.tableWidget_output.scrollToBottom()
 
     @Slot()
     def on_progress_update(self, msg):
         self._update_progress_table(msg)
         self._save_log(msg, "skill")
-        #Update buttons
-        if msg.type.find("Root")>=0:
+        # Update buttons
+        if msg.type.find("Root") >= 0:
             if not self.skill_stop_button.isEnabled():
                 self.create_task_tree(msg.id)
                 self._toggle_task_active()
                 for manager in self._sli.agents.values():
                     manager.reset_tick_rate()
-            if abs(msg.progress_code)==1:
+            if abs(msg.progress_code) == 1:
                 self._toggle_task_active()
-        #Update task tree
+        # Update task tree
         with self._task_mutex:
             items = self.task_tree_widget.findItems(str(msg.id), Qt.MatchRecursive | Qt.MatchFixedString, 1)
             if items:
@@ -827,7 +814,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
             cbox = QCheckBox()
             if param.isSpecified():
                 cbox.setChecked(param.default)
-            self.skill_params_table.setCellWidget(row, 1,cbox)
+            self.skill_params_table.setCellWidget(row, 1, cbox)
         elif param.dataTypeIs(Element):
             combobox = QComboBox()
             self.skill_params_table.setCellWidget(row, 1, combobox)
@@ -842,7 +829,6 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
                 lineedit.setText(str(param.value))
             self.skill_params_table.setCellWidget(row, 1, lineedit)
 
-
     def _add_available_skill(self, s):
         stype = self.skill_tree_widget.findItems(s.type, Qt.MatchRecursive | Qt.MatchFixedString, 1)
         if not stype:
@@ -855,10 +841,10 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         skill.setData(2, 0, s)
 
     def _add_frequently_used_skill(self, s):
-        self.last_executed_skill=s.name
+        self.last_executed_skill = s.name
         fu = self.skill_tree_widget.findItems("fu", Qt.MatchRecursive | Qt.MatchFixedString, 1)[0]
-        for i in range(0, fu.childCount()):#avoid adding same node multiple times
-            if s.name==fu.child(i).data(1, 0):
+        for i in range(0, fu.childCount()):  # avoid adding same node multiple times
+            if s.name == fu.child(i).data(1, 0):
                 return
         skill = QTreeWidgetItem(fu, [s.name, s.name])
         skill.setData(2, 0, s)
@@ -884,9 +870,9 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
             return
         skill = item.data(2, 0)
         if skill:
-            #Clean
+            # Clean
             self.skill_params_table.setRowCount(0)
-            #Add params
+            # Add params
             self.skill_name_label.setText(skill.name)
             for p in skill.ph.values():
                 if self.modality_checkBox.isChecked() or not p.paramTypeIs(ParamTypes.Optional):
@@ -905,13 +891,13 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         if skill is None:
             return
         self._add_frequently_used_skill(self.skill_tree_widget.currentItem().data(2, 0))
-        #Start logger
+        # Start logger
         if not self._sli.has_active_tasks:
             prefix = self.logs_file_lineEdit.text()
             prefix = prefix[0:prefix.rfind("/")]
             self.logs_file_lineEdit.setText("{}/{}_{}".format(prefix, datetime.now().strftime("%Y-%m-%d:%H:%M:%S"), skill.name))
             self.on_save_logs_checkBox_clicked()
-        #Send command
+        # Send command
         if not self._get_parameters(skill.ph):
             return
         self._sli.execute(skill.manager, [skill])
@@ -944,9 +930,10 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
             self.log_file = open(file_name, "a")
 
     def _save_log(self, msg, log_type):
-        if log_type=="skill":
-            string = "{};{:0.4f};{};{};{};{};{};{};{}".format(datetime.now().strftime("%H:%M:%S"), msg.progress_time, msg.parent_label, msg.parent_id, msg.label, msg.id, State(msg.state).name, msg.progress_code, msg.progress_message)
-        elif log_type=="wm_edit":
+        if log_type == "skill":
+            string = "{};{:0.4f};{};{};{};{};{};{};{}".format(datetime.now().strftime("%H:%M:%S"), msg.progress_time, msg.parent_label, msg.parent_id,
+                                                              msg.label, msg.id, State(msg.state).name, msg.progress_code, msg.progress_message)
+        elif log_type == "wm_edit":
             if not msg.relation:
                 string = "{} {} {} {}".format(datetime.now(), "WM", msg.action, [e.id for e in msg.elements])
             else:
@@ -954,4 +941,4 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
                 string = "{} {} {}_relation {}-{}-{}".format(datetime.now().strftime("%H:%M:%S"), "WM", msg.action, relation['src'], relation['type'], relation['dst'])
         if self.save_logs_checkBox.isChecked():
             self.logs_textEdit.append(string)
-            self.log_file.write(string+"\n")
+            self.log_file.write(string + "\n")

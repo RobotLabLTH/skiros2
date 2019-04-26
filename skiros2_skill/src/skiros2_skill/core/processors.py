@@ -3,10 +3,13 @@ from skiros2_common.core.abstract_skill import State
 """
 Collection of processor, defining how a skill visits its children
 """
+
+
 class Serial():
     """
     @brief Process children serially. Also succeded one are re-executed
     """
+
     def printType(self):
         return '->'
 
@@ -19,14 +22,16 @@ class Serial():
         """
         for c in children:
             state = c.visit(visitor)
-            if state!=State.Success:
+            if state != State.Success:
                 return state
         return State.Success
+
 
 class Sequential():
     """
     @brief Process children sequentially. Succeded ones are skipped
     """
+
     def __init__(self):
         self.reset()
 
@@ -43,16 +48,18 @@ class Sequential():
         for i in range(self.index, len(children)):
             c = children[i]
             state = c.visit(visitor)
-            if state!=State.Success:
+            if state != State.Success:
                 return state
-            self.index+=1
+            self.index += 1
         self.index = 0
         return State.Success
+
 
 class Enforce():
     """
     @brief Process children sequentially. Succeded ones are skipped, Failed are restarted
     """
+
     def printType(self):
         return '->*!'
 
@@ -70,10 +77,12 @@ class Enforce():
                     return State.Running
         return State.Success
 
+
 class Selector():
     """
     @brief Process children sequentially.
     """
+
     def printType(self):
         return '?'
 
@@ -96,10 +105,12 @@ class Selector():
             if c.state==State.Running:
                 c.visitPreempt(visitor)
 
+
 class SelectorStar():
     """
     @brief Process children sequentially. Skips failed
     """
+
     def printType(self):
         return '?*'
 
@@ -111,7 +122,7 @@ class SelectorStar():
         Serial processor - return on first running/success, or return failure
         """
         for c in children:
-            if c.state==State.Failure:
+            if c.state == State.Failure:
                 continue
             state = c.visit(visitor)
             if state==State.Success or state==State.Running:
@@ -124,10 +135,12 @@ class SelectorStar():
             if c.state==State.Running:
                 c.visitPreempt(visitor)
 
+
 class ParallelFf():
     """
     @brief Parallel First Fail - Process children in parallel. Stop all processes if a child fails.
     """
+
     def printType(self):
         return '|ff|'
 
@@ -138,24 +151,26 @@ class ParallelFf():
         state = State.Success
         for c in children:
             cstate = c.visit(visitor)
-            if cstate==State.Running:
+            if cstate == State.Running:
                 state = State.Running
-            if cstate==State.Idle and state!=State.Running:
+            if cstate == State.Idle and state != State.Running:
                 state = State.Idle
-            if cstate==State.Failure:
+            if cstate == State.Failure:
                 self.stopAll(children, visitor)
                 return State.Failure
         return state
 
     def stopAll(self, children, visitor):
         for c in children:
-            if c.state==State.Running:
+            if c.state == State.Running:
                 c.visitPreempt(visitor)
+
 
 class ParallelFs():
     """
     Parallel First Stop - Process children in parallel. Stop all processes if a child ends (success or fail).
     """
+
     def printType(self):
         return '|fs|'
 
@@ -165,16 +180,18 @@ class ParallelFs():
     def processChildren(self, children, visitor):
         for c in children:
             state = c.visit(visitor)
-            if state!=State.Running and state!=State.Idle:
+            if state != State.Running and state != State.Idle:
                 self.stopAll(children, visitor)
                 return state
         return State.Running
 
     def stopAll(self, children, visitor):
         for c in children:
-            if c.state==State.Running:
+            if c.state == State.Running:
                 c.visitPreempt(visitor)
-#Decorators
+# Decorators
+
+
 class Loop():
     def __init__(self, processor):
         self._processor = processor
@@ -190,14 +207,16 @@ class Loop():
         Repeat execution
         """
         state = self._processor.processChildren(children, visitor)
-        if state==State.Failure:
+        if state == State.Failure:
             return state
         return State.Running
+
 
 class NoFail():
     """
     @brief Returns only running or success
     """
+
     def __init__(self, processor):
         self._processor = processor
 
@@ -212,7 +231,7 @@ class NoFail():
         Ignore failed execution
         """
         state = self._processor.processChildren(children, visitor)
-        if state==State.Running:
+        if state == State.Running:
             return state
         else:
             return State.Success

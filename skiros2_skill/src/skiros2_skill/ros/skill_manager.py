@@ -19,12 +19,14 @@ from std_msgs.msg import Empty
 
 log.setLevel(log.INFO)
 
+
 def skill2msg(skill):
     msg = msgs.ResourceDescription()
     msg.type = skill._type
     msg.name = skill._label
     msg.params = utils.serializeParamMap(skill._description._params.getParamMap())
     return msg
+
 
 class BtTicker:
     """
@@ -89,8 +91,8 @@ class BtTicker:
 
     def publish_progress(self, uid, visitor):
         finished_skill_ids = BtTicker._finished_skill_ids
-        for (id,desc) in visitor.snapshot():
-            if finished_skill_ids.has_key(id):
+        for (id, desc) in visitor.snapshot():
+            if id in finished_skill_ids:
                 if finished_skill_ids[id]['state'] == desc['state'] and finished_skill_ids[id]['msg'] == desc['msg']:
                     continue
             finished_skill_ids[id] = desc
@@ -135,7 +137,7 @@ class BtTicker:
         BtTicker._tasks_to_preempt.append(uid)
         starttime = rospy.Time.now()
         timeout = rospy.Duration(5.0)
-        while(self.is_running() and rospy.Time.now()-starttime<timeout):
+        while(self.is_running() and rospy.Time.now() - starttime < timeout):
             rospy.sleep(0.1)
         if self.is_running():
             log.info("preempt", "Task {} is not answering. Killing process.".format(uid))
@@ -147,6 +149,7 @@ class SkillManager:
     """
     The skill manager manage a sub-system of the robot
     """
+
     def __init__(self, prefix, agent_name, verbose=True):
         self._agent_name = agent_name
         self._wmi = wmi.WorldModelInterface(agent_name, make_cache=True)
@@ -159,7 +162,7 @@ class SkillManager:
         self._ticker._verbose = verbose
         self._registerAgent(agent_name)
         self._skills = []
-        #self._wmi.unlock() #Ensures the world model's mutex is unlocked
+        # self._wmi.unlock() #Ensures the world model's mutex is unlocked
 
     def observeTaskProgress(self, func):
         self._ticker.observe_progress(func)
@@ -183,14 +186,13 @@ class SkillManager:
                 self._wmi.set_relation(self._robot._id, "skiros:at", start_location._id)
                 self._robot = self._wmi.get_element(self._robot.id)
         log.info("[{}]".format(self.__class__.__name__), "Registered robot {}".format(self._robot))
-        self._robot.setProperty("skiros:SkillMgr", self._agent_name[self._agent_name.rfind(":")+1:])
+        self._robot.setProperty("skiros:SkillMgr", self._agent_name[self._agent_name.rfind(":") + 1:])
         self._wmi.update_element(self._robot)
-
 
     def shutdown(self):
         for s in self._skills:
             self._wmi.remove_element(s)
-        self._wmi.unlock() #Ensures the world model's mutex gets unlocked
+        self._wmi.unlock()  # Ensures the world model's mutex gets unlocked
 
     def loadSkills(self, package):
         """
@@ -222,7 +224,7 @@ class SkillManager:
     def add_task(self, task):
         root = skill.Root("root", self._local_wm)
         for i in task:
-            log.info("[SkillManager]", "Add task {}:{} \n {}".format(i.type,i.name,i.ph.printState()))
+            log.info("[SkillManager]", "Add task {}:{} \n {}".format(i.type, i.name, i.ph.printState()))
             root.addChild(skill.SkillWrapper(i.type, i.name, self._instanciator))
             root.last().specifyParamsDefault(i.ph)
         return self._ticker.add_task(root, root.id)
@@ -235,7 +237,7 @@ class SkillManager:
         self.visitor.setVerbose(self._verbose)
         return self._ticker.start(self.visitor)
 
-    def executeTask(self, uid, sim=False, track_params=list()):#[("MotionChange",)]
+    def executeTask(self, uid, sim=False, track_params=list()):  # [("MotionChange",)]
         self.visitor = visitors.VisitorExecutor(self._local_wm, self._instanciator)
         self.visitor.setSimulate(sim)
         for t in track_params:
@@ -247,26 +249,26 @@ class SkillManager:
         self._ticker.clear()
 
     def executeOptimal(self):
-        #Optimize Procedure
+        # Optimize Procedure
         self.optimizeTask()
         self.printTask()
-        #Execute
+        # Execute
         return self.executeTask(False)
 
     def simulateTask(self, uid):
         self.visitor = visitors.VisitorReversibleSimulator(self._local_wm, self._instanciator)
         self.visitor.setVerbose(self._verbose)
-        #self.visitor.trackParam("Initial")
-        #self.visitor.trackParam("Gripper")
+        # self.visitor.trackParam("Initial")
+        # self.visitor.trackParam("Gripper")
         if self.visitor.traverse(self._tasks[uid]):
             self._task = self.visitor.getExecutionRoot()
 
     def optimizeTask(self):
         self.visitor = optimizer.VisitorOptimizer(self._local_wm, self._instanciator)
-        #self.visitor.setVerbose(True)
-        #self.visitor.trackParam("PlacingCell")
-        #self.visitor.trackParam("Object")
-        #rospy.sleep(1.)
+        # self.visitor.setVerbose(True)
+        # self.visitor.trackParam("PlacingCell")
+        # self.visitor.trackParam("Object")
+        # rospy.sleep(1.)
         self.publish("Optimization", 1, "Start.")
         try:
             if self.visitor.traverse(self._task):
@@ -281,6 +283,7 @@ class SkillManager:
             self.printTask()
             raise e
 
+
 class SkillManagerNode(DiscoverableNode):
     """
     At boot:
@@ -293,24 +296,25 @@ class SkillManagerNode(DiscoverableNode):
         -currently available visitors: print, execute, simulate, optimize
         -publish feedback on topic /monitor (TODO)
     """
+
     def __init__(self):
         rospy.init_node("skill_mgr", anonymous=False)
         robot_name = rospy.get_name()
         prefix = ""
-        full_name = rospy.get_param('~prefix', prefix) + ':' + robot_name[robot_name.rfind("/")+1:]
+        full_name = rospy.get_param('~prefix', prefix) + ':' + robot_name[robot_name.rfind("/") + 1:]
         self._sm = SkillManager(rospy.get_param('~prefix', prefix), full_name, verbose=rospy.get_param('~verbose', True))
         self._sm.observeTaskProgress(self._onProgressUpdate)
         self._sm.observeTick(self._onTick)
-        #Init skills
+        # Init skills
         self._initialized = False
         self._getskills = rospy.Service('~get_skills', srvs.ResourceGetDescriptions, self._getDescriptionsCb)
         self._initSkills()
         #self._sm._wmi.instanciate("skiros:large_box_test_starter", relations=[])
         rospy.sleep(0.5)
         self._initialized = True
-        #self._sm._local_wm.sync()
-        #self._sm._local_wm.printModel()
-        #Start communications
+        # self._sm._local_wm.sync()
+        # self._sm._local_wm.printModel()
+        # Start communications
         self._command = rospy.Service('~command', srvs.SkillCommand, self._commandCb)
         self._monitor = rospy.Publisher("~monitor", msgs.SkillProgress, queue_size=20)
         self._tick_rate = rospy.Publisher("~tick_rate", Empty, queue_size=20)
@@ -325,13 +329,13 @@ class SkillManagerNode(DiscoverableNode):
         for r in rospy.get_param('~libraries_list', []):
             log.info("[LoadLibrary]", str(r))
             self._sm.loadSkills(r)
-        #Instanciate local primitives
+        # Instanciate local primitives
         for r in rospy.get_param('~primitive_list', []):
             log.info("[LoadPrimitive]", str(r))
             self._sm.addLocalPrimitive(r)
         sl = rospy.get_param('~skill_list', [])
         if not sl:
-            pass #TODO: load all defined skills
+            pass  # TODO: load all defined skills
         for r in sl:
             log.info("[LoadSkill]", str(r))
             self._sm.addSkill(r)
@@ -345,7 +349,7 @@ class SkillManagerNode(DiscoverableNode):
     def _commandCb(self, msg):
         if msg.action == msg.START:
             task_id = self._sm.add_task(self._makeTask(msg.skills))
-            #self._sm.printTask(task_id)
+            # self._sm.printTask(task_id)
             self._sm.executeTask(task_id)
         elif msg.action == msg.PREEMPT:
             task_id = self._sm.preemptTask(msg.execution_id)

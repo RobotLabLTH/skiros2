@@ -3,11 +3,13 @@ import skiros2_common.tools.logger as log
 from skiros2_common.core.world_element import Element
 from datetime import datetime
 
+
 class PrimitiveBase(SkillCore):
     """
     @brief Base class for primitive skills
     """
     #--------Control functions--------
+
     def tick(self):
         if self.hasState(State.Success) or self.hasState(State.Failure):
             log.error("tick", "Reset required before ticking.")

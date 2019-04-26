@@ -22,22 +22,24 @@ RespectType: (preCondition) The value must respect the type of the default param
 """
 ParamOptions = Enum('ParamOptions', 'Consume Output Unspecify Lock RespectType')
 
+
 class SkillDescription(object):
     """
     An abstract skill description
     """
+
     def __init__(self):
-        #Description
-        self._type= "skiros:" + self.__class__.__name__
-        #Params
-        self._params=params.ParamHandler()
-        #Conditions
-        self._pre_conditions=[]
-        self._hold_conditions=[]
-        self._post_conditions=[]
+        # Description
+        self._type = "skiros:" + self.__class__.__name__
+        # Params
+        self._params = params.ParamHandler()
+        # Conditions
+        self._pre_conditions = []
+        self._hold_conditions = []
+        self._post_conditions = []
         self.createDescription()
         self.generateDefParams()
-        #self.generateDefConditions()
+        # self.generateDefConditions()
 
     @property
     def params(self):
@@ -78,18 +80,18 @@ class SkillDescription(object):
         description: an optional verbose description
         """
         self._params.addParam(key, value, param_type, description)
-        if type(value) == type(Element()):
+        if isinstance(value, type(Element())):
             for o in options:
                 if o == ParamOptions.Consume:
-                    self._post_conditions += [self.getGenerateCond("Consume"+key, key, False)]
+                    self._post_conditions += [self.getGenerateCond("Consume" + key, key, False)]
                 elif o == ParamOptions.Unspecify:
-                    self._post_conditions += [self.getIsSpecifiedCond("Unset"+key, key, False)]
+                    self._post_conditions += [self.getIsSpecifiedCond("Unset" + key, key, False)]
                 elif o == ParamOptions.Lock:
-                    self._pre_conditions += [self.getPropCond(key+'Idle', "skiros:StateProperty", key, "=", "Idle", True)]
-                    self._hold_conditions += [self.getPropCond(key+'Busy', "skiros:StateProperty", key, "=", "Idle", False)]
-                    self._post_conditions += [self.getPropCond(key+'Idle', "skiros:StateProperty", key, "=", "Idle", True)]
+                    self._pre_conditions += [self.getPropCond(key + 'Idle', "skiros:StateProperty", key, "=", "Idle", True)]
+                    self._hold_conditions += [self.getPropCond(key + 'Busy', "skiros:StateProperty", key, "=", "Idle", False)]
+                    self._post_conditions += [self.getPropCond(key + 'Idle', "skiros:StateProperty", key, "=", "Idle", True)]
                 elif o == ParamOptions.RespectType:
-                    self._pre_conditions.append(self.getOnTypeCond(key+'OfType', key, self.params[key].default.type))
+                    self._pre_conditions.append(self.getOnTypeCond(key + 'OfType', key, self.params[key].default.type))
 
     def generateDefParams(self):
         """
@@ -97,7 +99,7 @@ class SkillDescription(object):
         """
         if not self._params.hasParam('Robot'):
             self._params.addParam("Robot", Element("sumo:Agent"), params.ParamTypes.Required)
-        #if not self._params.hasParam('Skill'):
+        # if not self._params.hasParam('Skill'):
         #    self._params.addParam("Skill", self.toElement(), params.ParamTypes.Required)
 
     def generateDefConditions(self):
@@ -105,16 +107,17 @@ class SkillDescription(object):
         Some default preconditions are added automatically
         """
         #self.addPreCondition(self.getRelationCond("HasSkill", "hasSkill", "Robot", "Skill", True))
-        #for key, param in self._params.getParamMapFiltered(params.ParamTypes.Hardware).iteritems():
+        # for key, param in self._params.getParamMapFiltered(params.ParamTypes.Hardware).iteritems():
         #    self.addPreCondition(self.getPropCond("DeviceIdle", "deviceState", key, "Idle", True))
         for key, param in self._params.getParamMapFiltered(params.ParamTypes.Optional).iteritems():
-            if param.dataType() == type(Element()):
-                c1 = self.getGenerateCond("Has"+key, key, True)
+            if isinstance(Element(), param.dataType()):
+                c1 = self.getGenerateCond("Has" + key, key, True)
                 dont_add = False
                 for c2 in self._post_conditions:
                     if c1.isEqual(c2) or c1.hasConflict(c2):
                         dont_add = True
-                if not dont_add: self._post_conditions = [c1] + self._post_conditions
+                if not dont_add:
+                    self._post_conditions = [c1] + self._post_conditions
         return True
 
     def getOutputParams(self):
@@ -156,7 +159,7 @@ class SkillDescription(object):
     def getModifiedParams(self):
         param_list = set([])
         for c in self._post_conditions:
-            #if isinstance(c, cond.ConditionGenerate):
+            # if isinstance(c, cond.ConditionGenerate):
             param_list = param_list.union(set(c.getKeys()))
         return param_list
 
@@ -196,6 +199,7 @@ class SkillDescription(object):
         """ Optional, Not implemented in abstract class. """
         return
 
+
 class SkillCore(SkillDescription):
     """
     @brief An abstract executable skill with a description (type, label, params, conditions), a state and progress code
@@ -204,26 +208,27 @@ class SkillCore(SkillDescription):
     gen_id = IdGen()
 
     def __init__(self):
-        #Description
-        self._id=SkillCore.gen_id.getId()
-        self._type=""
-        self._label=""
+        # Description
+        self._id = SkillCore.gen_id.getId()
+        self._type = ""
+        self._label = ""
         self._description = SkillDescription()
-        #Params
-        self._params=params.ParamHandler()
-        #Conditions
-        self._pre_conditions=[]
-        self._hold_conditions=[]
-        self._post_conditions=[]
-        #Execution
+        # Params
+        self._params = params.ParamHandler()
+        # Conditions
+        self._pre_conditions = []
+        self._hold_conditions = []
+        self._post_conditions = []
+        # Execution
         self._state_change = Event()
-        self._state=State.Uninitialized
+        self._state = State.Uninitialized
         self._time_keeper = TimeKeeper()
-        self._progress_code=0
-        self._progress_time=0.0
-        self._progress_msg=""
-        self._expand_on_start=False
+        self._progress_code = 0
+        self._progress_time = 0.0
+        self._progress_msg = ""
+        self._expand_on_start = False
     #--------Class functions--------
+
     def expand(self, skill):
         return
 
@@ -235,11 +240,11 @@ class SkillCore(SkillDescription):
         self._state_change.set()
 
     def _setProgress(self, msg, code=None):
-        if code==None:
-            code = self._progress_code+1
-        self._progress_code=code
-        self._progress_time=self._time_keeper.time_from_start()
-        self._progress_msg=str(msg)
+        if code is None:
+            code = self._progress_code + 1
+        self._progress_code = code
+        self._progress_time = self._time_keeper.time_from_start()
+        self._progress_msg = str(msg)
 
     @property
     def id(self):
@@ -328,6 +333,7 @@ class SkillCore(SkillDescription):
                 to_ret += c.getKeys()
         return list(set(to_ret))
     #-------- Control functions--------
+
     def preempt(self):
         if self.hasState(State.Running):
             self._setState(self.onPreempt())
@@ -340,13 +346,13 @@ class SkillCore(SkillDescription):
         return self._state == state
 
     def waitState(self, state, isset=True):
-        if isset:#Xor?
-            while self._state!=state:
+        if isset:  # Xor?
+            while self._state != state:
                 #print 'Waiting set.. {}'.format(self._state)
                 self._state_change.clear()
                 self._state_change.wait()
         else:
-            while self._state==state:
+            while self._state == state:
                 #print 'Waiting not set.. {}'.format(self._state)
                 self._state_change.clear()
                 self._state_change.wait()
@@ -372,7 +378,7 @@ class SkillCore(SkillDescription):
         return self._state
 
     def printInfo(self, verbose=False):
-        s = "{}-{} ".format(self._type,self._label)
+        s = "{}-{} ".format(self._type, self._label)
         if verbose:
             s += "["
             s += self._params.printState() + ']\n'
@@ -382,7 +388,7 @@ class SkillCore(SkillDescription):
         return s
 
     def printState(self, verbose=False):
-        s = "{}-{}({})".format(self.type[self.type.find(":")+1:], self.label, self.state)
+        s = "{}-{}({})".format(self.type[self.type.find(":") + 1:], self.label, self.state)
         if verbose:
             s += "[{}]".format(self.params.printState())
         return s
@@ -429,7 +435,7 @@ class SkillCore(SkillDescription):
         """
         self._description = description
         self._type = description._type
-        if label!="":
+        if label != "":
             self._label = label
         self._resetDescription()
 
