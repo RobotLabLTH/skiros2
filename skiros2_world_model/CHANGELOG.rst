@@ -2,8 +2,8 @@
 Changelog for package skiros2_world_model
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.0 (2019-04-30)
+------------------
 * Ignoring skiros:hasTemplate relations in get_individual
 * Merge pull request `#11 <https://github.com/RVMI/skiros2/issues/11>`_ from matthiashh/matthias-devel-pycodestyle
   Matthias devel pycodestyle

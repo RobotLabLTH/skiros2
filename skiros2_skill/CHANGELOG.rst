@@ -2,8 +2,8 @@
 Changelog for package skiros2_skill
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.0 (2019-04-30)
+------------------
 * Merge pull request `#11 <https://github.com/RVMI/skiros2/issues/11>`_ from matthiashh/matthias-devel-pycodestyle
   Matthias devel pycodestyle
 * Merge branch 'develop' into matthias-devel-pycodestyle

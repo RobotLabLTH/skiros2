@@ -2,8 +2,8 @@
 Changelog for package skiros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.0 (2019-04-30)
+------------------
 * Planner uses hold conditions
 * Added xterm ros dependency
 * Merged 'develop' into 'pycodestyle'.

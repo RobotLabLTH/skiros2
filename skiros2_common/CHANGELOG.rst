@@ -2,8 +2,8 @@
 Changelog for package skiros2_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.0 (2019-04-30)
+------------------
 * onEnd is now called when a skill is preempted, not only when it ends by itself
 * Planner uses hold conditions
 * Removed unnecessary command
