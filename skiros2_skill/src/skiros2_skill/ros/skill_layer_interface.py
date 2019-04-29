@@ -1,39 +1,7 @@
-#################################################################################
-# Software License Agreement (BSD License)
-#
-# Copyright (c) 2016, Francesco Rovida
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-#
-# * Redistributions of source code must retain the above copyright
-#   notice, this list of conditions and the following disclaimer.
-# * Redistributions in binary form must reproduce the above copyright
-#   notice, this list of conditions and the following disclaimer in the
-#   documentation and/or other materials provided with the distribution.
-# * Neither the name of the copyright holder nor the
-#   names of its contributors may be used to endorse or promote products
-#   derived from this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
-# ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#################################################################################
-
-import rospy
-
-import skiros2_msgs.msg as msgs
 import skiros2_common.tools.logger as log
 from skiros2_skill.ros.skill_manager_interface import SkillManagerInterface
 from discovery_interface import DiscoveryInterface
+
 
 class SkillLayerInterface(DiscoveryInterface):
     def __init__(self, author="unknown"):
@@ -73,7 +41,7 @@ class SkillLayerInterface(DiscoveryInterface):
         @brief Start a task execution
         """
         tid = self.get_agent(skill_mgr).execute(skill_list, self._author)
-        if tid>=0:
+        if tid >= 0:
             self._active_sm.insert(0, skill_mgr)
         return tid
 
@@ -88,7 +56,6 @@ class SkillLayerInterface(DiscoveryInterface):
         if skill_mgr is None:
             skill_mgr = self._active_sm[0]
         if self.get_agent(skill_mgr).preempt(self._author, tid):
-            self._active_sm.remove(skill_mgr)
             return True
         return False
 
@@ -106,19 +73,19 @@ class SkillLayerInterface(DiscoveryInterface):
         self._monitor_cb = cb
 
     def _discovery_cb(self, msg):
-        #TODO: make a call for changes
-        if msg.state==msg.ACTIVE and not self._agents.has_key(msg.name):
+        # TODO: make a call for changes
+        if msg.state == msg.ACTIVE and msg.name not in self._agents:
             log.info("[SkillLayerInterface]", "New skill manager detected: {}".format(msg.name))
             self._agents[msg.name] = SkillManagerInterface(msg.name)
             self._agents[msg.name].set_monitor_cb(self._progress_cb)
             self._new_changes = True
-        elif msg.state==msg.INACTIVE and self._agents.has_key(msg.name):
+        elif msg.state == msg.INACTIVE and msg.name in self._agents:
             log.info("[SkillLayerInterface]", "Skill manager {} went down.".format(msg.name))
             del self._agents[msg.name]
             self._new_changes = True
 
     def _progress_cb(self, msg):
-        if msg.label.find("task")>=0 and msg.progress_message=="End" and msg.state!=msg.IDLE:
+        if msg.type.find("Root") >= 0 and abs(msg.progress_code) == 1:
             try:
                 self._active_sm.remove(msg.robot)
             except Exception:

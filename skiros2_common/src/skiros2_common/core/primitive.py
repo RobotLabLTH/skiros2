@@ -3,11 +3,13 @@ import skiros2_common.tools.logger as log
 from skiros2_common.core.world_element import Element
 from datetime import datetime
 
+
 class PrimitiveBase(SkillCore):
     """
     @brief Base class for primitive skills
     """
     #--------Control functions--------
+
     def tick(self):
         if self.hasState(State.Success) or self.hasState(State.Failure):
             log.error("tick", "Reset required before ticking.")
@@ -22,7 +24,8 @@ class PrimitiveBase(SkillCore):
 #            if self._progress_msg!="":
 #                log.info("[{}]".format(self.printState()), self._progress_msg)
             if self.hasState(State.Success) or self.hasState(State.Failure):
-                self.onEnd()
+                if not self.onEnd():
+                    self._setState(State.Failure)
             return self._state
 
     def init(self, wmi, _=None):
@@ -47,43 +50,9 @@ class PrimitiveBase(SkillCore):
                     else:
                         vs[i] = self._wmi.add_element(e)
 
-    #-------- User's functions--------
-    def startError(self, msg, code):
-        """
-        @brief signal an error during the starting routine
-        """
-        self.fail(msg, code)
-        return False
-
-    def step(self, msg=""):
-        """
-        @brief Set a running breakpoint
-        """
-        self._setProgress(msg)
-        return State.Running
-        #print '[{}:{}]'.format(self._label, self._progress)
-
-    def fail(self, msg, code):
-        """
-        @brief Set a failure state
-        """
-        if code > 0:
-            code *= -1
-        self._setProgress(msg, code)
-        return State.Failure
-
-    def success(self, msg=""):
-        """
-        @brief Set a success state
-        """
-        self._setProgress(msg)
-        return State.Success
 
     #--------Virtual functions--------
     def onInit(self):
         """Called once when loading the primitive. If return False, the primitive is not loaded"""
         return True
 
-    def onEnd(self):
-        """Called just after last execute"""
-        pass

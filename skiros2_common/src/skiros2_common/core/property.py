@@ -1,6 +1,7 @@
 import skiros2_common.tools.logger as log
 import ast
 
+
 class Property(object):
     """
     @brief Touple key-value with datatype check
@@ -18,7 +19,7 @@ class Property(object):
         Value can also be a type, in such a case the _data_type is set and the value list is left empty
         """
         self._is_list = is_list
-        self._key=key
+        self._key = key
         if isinstance(value, list):
             self._values = value
             self._data_type = type(value[0])
@@ -27,13 +28,13 @@ class Property(object):
             self._data_type = value
         else:
             self._values = [value]
-            self._data_type= type(value)
+            self._data_type = type(value)
 
     def isSpecified(self):
         """
         @brief Return true if the property has at least one value specified
         """
-        return len(self._values)>0
+        return len(self._values) > 0
 
     def isList(self):
         """
@@ -86,7 +87,7 @@ class Property(object):
         if isinstance(vtype, type):
             return self._data_type == vtype
         else:
-            return self._data_type == type(vtype)
+            return isinstance(vtype, self._data_type)
 
     def setValue(self, value, index=0):
         """
@@ -115,7 +116,7 @@ class Property(object):
         @brief Set all the values
         """
         if isinstance(value, list):
-            if len(value)==0:
+            if len(value) == 0:
                 self._values = list()
                 return
             if isinstance(value[0], self._data_type):
@@ -134,7 +135,7 @@ class Property(object):
         @brief Removes the first value matching. Does nothing if value is not present
         """
         i = self.find(value)
-        if i>=0:
+        if i >= 0:
             del self._values[i]
 
     def find(self, value):
@@ -153,7 +154,7 @@ class Property(object):
         if isinstance(value, self._data_type):
             self._values.append(value)
         else:
-            log.error("append", self._key+": "+str(type(value))+"!="+str(self._data_type))
+            log.error("append", self._key + ": " + str(type(value)) + "!=" + str(self._data_type))
             return
 
     def getValue(self, index=0):
@@ -180,4 +181,6 @@ class Property(object):
         """
         @brief Return a string with key and values
         """
-        return "{}:{}".format(self._key, self._values)
+        v = str(self._values)
+        max_lenght = 500
+        return "{}:{}".format(self._key, v) if len(v) < max_lenght else "{}:{} ...]".format(self._key, v[0:max_lenght])

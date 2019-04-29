@@ -54,311 +54,287 @@
        <string>Task</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_2">
-       <item row="0" column="0">
-        <widget class="QGroupBox" name="groupBox_2">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <item row="0" column="0" colspan="3">
+        <widget class="QFrame" name="frame_3">
+         <property name="frameShape">
+          <enum>QFrame::NoFrame</enum>
          </property>
-         <property name="title">
-          <string>Active tasks</string>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
          </property>
-         <layout class="QVBoxLayout" name="verticalLayout_4">
+         <property name="lineWidth">
+          <number>1</number>
+         </property>
+         <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>9</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
           <item>
-           <widget class="QTableView" name="tasks_table_view">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-              <horstretch>1</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
+           <widget class="QCommandLinkButton" name="skill_exe_button">
+            <property name="maximumSize">
+             <size>
+              <width>45</width>
+              <height>47</height>
+             </size>
             </property>
-            <property name="editTriggers">
-             <set>QAbstractItemView::AnyKeyPressed|QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed</set>
+            <property name="toolTip">
+             <string>Execute skill</string>
             </property>
-            <attribute name="horizontalHeaderStretchLastSection">
-             <bool>true</bool>
-            </attribute>
+            <property name="accessibleName">
+             <string/>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>imgs/Play-Icon.png</normaloff>
+              <normalon>imgs/Pause-icon.png</normalon>imgs/Play-Icon.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>30</width>
+              <height>30</height>
+             </size>
+            </property>
+            <property name="description">
+             <string/>
+            </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="stop_task_button">
+           <widget class="QCommandLinkButton" name="skill_stop_button">
+            <property name="maximumSize">
+             <size>
+              <width>45</width>
+              <height>47</height>
+             </size>
+            </property>
+            <property name="toolTip">
+             <string>Stop skill</string>
+            </property>
             <property name="text">
-             <string>Stop</string>
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>imgs/Stop-Icon.png</normaloff>imgs/Stop-Icon.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>30</width>
+              <height>30</height>
+             </size>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="stop_all_tasks_button">
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QLabel" name="robot_rate_info">
+            <property name="toolTip">
+             <string>Robot name and tick rate</string>
+            </property>
             <property name="text">
-             <string>Stop all</string>
+             <string>No robot connected</string>
             </property>
            </widget>
           </item>
          </layout>
         </widget>
        </item>
-       <item row="0" column="1" colspan="2">
-        <widget class="QFrame" name="frame_5">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-           <horstretch>2</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
+       <item row="1" column="0">
+        <widget class="QFrame" name="frame">
          <property name="frameShape">
-          <enum>QFrame::StyledPanel</enum>
+          <enum>QFrame::WinPanel</enum>
          </property>
          <property name="frameShadow">
           <enum>QFrame::Raised</enum>
          </property>
-         <layout class="QVBoxLayout" name="verticalLayout_2">
+         <layout class="QHBoxLayout" name="horizontalLayout_7">
           <item>
-           <widget class="QTabWidget" name="task_tab">
+           <widget class="QTreeWidget" name="task_tree_widget">
             <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-              <horstretch>3</horstretch>
-              <verstretch>100</verstretch>
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <horstretch>6</horstretch>
+              <verstretch>0</verstretch>
              </sizepolicy>
             </property>
-            <property name="currentIndex">
-             <number>1</number>
+            <property name="toolTip">
+             <string>The current (or last executed) task</string>
             </property>
-            <widget class="QWidget" name="goal_tab">
-             <attribute name="title">
-              <string>Goal</string>
-             </attribute>
-             <layout class="QGridLayout" name="gridLayout_10">
-              <item row="0" column="2">
-               <widget class="QGroupBox" name="groupBox_11">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                  <horstretch>3</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="title">
-                 <string>Goal</string>
-                </property>
-                <layout class="QGridLayout" name="gridLayout_3">
-                 <item row="2" column="0">
-                  <widget class="QTableView" name="goal_table_view">
-                   <property name="editTriggers">
-                    <set>QAbstractItemView::AnyKeyPressed|QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed</set>
-                   </property>
-                   <attribute name="horizontalHeaderStretchLastSection">
-                    <bool>true</bool>
-                   </attribute>
-                   <attribute name="verticalHeaderVisible">
-                    <bool>false</bool>
-                   </attribute>
-                  </widget>
-                 </item>
-                 <item row="2" column="1">
-                  <widget class="QFrame" name="frame_3">
-                   <property name="frameShape">
-                    <enum>QFrame::StyledPanel</enum>
-                   </property>
-                   <property name="frameShadow">
-                    <enum>QFrame::Raised</enum>
-                   </property>
-                   <layout class="QVBoxLayout" name="verticalLayout_3">
-                    <item>
-                     <widget class="QPushButton" name="plan_button">
-                      <property name="text">
-                       <string>Plan task</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item>
-                     <widget class="QPushButton" name="condition_remove_button">
-                      <property name="text">
-                       <string>Remove goal</string>
-                      </property>
-                     </widget>
-                    </item>
-                   </layout>
-                  </widget>
-                 </item>
-                </layout>
-               </widget>
-              </item>
-              <item row="2" column="2">
-               <widget class="QFrame" name="frame_6">
-                <property name="frameShape">
-                 <enum>QFrame::StyledPanel</enum>
-                </property>
-                <property name="frameShadow">
-                 <enum>QFrame::Raised</enum>
-                </property>
-                <layout class="QHBoxLayout" name="horizontalLayout_4">
-                 <item>
-                  <widget class="QGroupBox" name="groupBox_condition">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                     <horstretch>3</horstretch>
-                     <verstretch>6</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="title">
-                    <string>Condition</string>
-                   </property>
-                   <layout class="QGridLayout" name="gridLayout_9">
-                    <item row="7" column="1">
-                     <widget class="QComboBox" name="condition_sub_combo_box">
-                      <property name="sizePolicy">
-                       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                        <horstretch>4</horstretch>
-                        <verstretch>0</verstretch>
-                       </sizepolicy>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="7" column="0">
-                     <widget class="QLabel" name="label_19">
-                      <property name="sizePolicy">
-                       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                        <horstretch>2</horstretch>
-                        <verstretch>0</verstretch>
-                       </sizepolicy>
-                      </property>
-                      <property name="text">
-                       <string>Subject</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="8" column="1">
-                     <widget class="QComboBox" name="condition_obj_combo_box">
-                      <property name="sizePolicy">
-                       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                        <horstretch>1</horstretch>
-                        <verstretch>0</verstretch>
-                       </sizepolicy>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="8" column="0">
-                     <widget class="QLabel" name="label_17">
-                      <property name="sizePolicy">
-                       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                        <horstretch>2</horstretch>
-                        <verstretch>0</verstretch>
-                       </sizepolicy>
-                      </property>
-                      <property name="text">
-                       <string>Object</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="6" column="1">
-                     <widget class="QComboBox" name="condition_combo_box">
-                      <property name="sizePolicy">
-                       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                        <horstretch>1</horstretch>
-                        <verstretch>0</verstretch>
-                       </sizepolicy>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="6" column="0">
-                     <widget class="QPushButton" name="condition_add_button">
-                      <property name="sizePolicy">
-                       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                        <horstretch>4</horstretch>
-                        <verstretch>0</verstretch>
-                       </sizepolicy>
-                      </property>
-                      <property name="text">
-                       <string>Add condition</string>
-                      </property>
-                     </widget>
-                    </item>
-                   </layout>
-                  </widget>
-                 </item>
-                </layout>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-            <widget class="QWidget" name="skill_tab">
-             <attribute name="title">
-              <string>Skill</string>
-             </attribute>
-             <layout class="QGridLayout" name="gridLayout_8">
-              <item row="0" column="0">
-               <widget class="QLabel" name="label_15">
+            <property name="editTriggers">
+             <set>QAbstractItemView::AnyKeyPressed|QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed</set>
+            </property>
+            <property name="rootIsDecorated">
+             <bool>false</bool>
+            </property>
+            <attribute name="headerVisible">
+             <bool>true</bool>
+            </attribute>
+            <column>
+             <property name="text">
+              <string>Current task</string>
+             </property>
+            </column>
+           </widget>
+          </item>
+          <item>
+           <widget class="QTreeWidget" name="skill_tree_widget">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="toolTip">
+             <string>List of available skills</string>
+            </property>
+            <column>
+             <property name="text">
+              <string>Skills</string>
+             </property>
+            </column>
+           </widget>
+          </item>
+          <item>
+           <widget class="QFrame" name="skill_parameters_group_box">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <horstretch>4</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_19">
+             <property name="leftMargin">
+              <number>2</number>
+             </property>
+             <property name="rightMargin">
+              <number>2</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="skill_name_label">
+               <property name="font">
+                <font>
+                 <pointsize>12</pointsize>
+                </font>
+               </property>
+               <property name="text">
+                <string>Skill</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="modality_checkBox">
+               <property name="toolTip">
+                <string>Visualize/Hide optional parameters</string>
+               </property>
+               <property name="text">
+                <string>Advanced options</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QTableWidget" name="skill_params_table">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="baseSize">
+                <size>
+                 <width>0</width>
+                 <height>30</height>
+                </size>
+               </property>
+               <property name="toolTip">
+                <string>Parameters selection</string>
+               </property>
+               <property name="autoFillBackground">
+                <bool>true</bool>
+               </property>
+               <property name="alternatingRowColors">
+                <bool>true</bool>
+               </property>
+               <property name="showGrid">
+                <bool>true</bool>
+               </property>
+               <property name="cornerButtonEnabled">
+                <bool>false</bool>
+               </property>
+               <property name="rowCount">
+                <number>2</number>
+               </property>
+               <attribute name="horizontalHeaderVisible">
+                <bool>true</bool>
+               </attribute>
+               <attribute name="horizontalHeaderStretchLastSection">
+                <bool>true</bool>
+               </attribute>
+               <attribute name="verticalHeaderVisible">
+                <bool>false</bool>
+               </attribute>
+               <attribute name="verticalHeaderHighlightSections">
+                <bool>true</bool>
+               </attribute>
+               <attribute name="verticalHeaderStretchLastSection">
+                <bool>true</bool>
+               </attribute>
+               <row/>
+               <row/>
+               <column>
                 <property name="text">
-                 <string>Skill</string>
+                 <string>Parameter</string>
                 </property>
-               </widget>
-              </item>
-              <item row="0" column="1">
-               <widget class="QComboBox" name="skill_combo_box"/>
-              </item>
-              <item row="3" column="0">
-               <widget class="QLabel" name="label_16">
+               </column>
+               <column>
                 <property name="text">
-                 <string>Result</string>
+                 <string>Value</string>
                 </property>
-               </widget>
-              </item>
-              <item row="3" column="1" colspan="2">
-               <widget class="QLabel" name="skill_result_label">
-                <property name="text">
-                 <string>-</string>
-                </property>
-               </widget>
-              </item>
-              <item row="5" column="0" colspan="3">
-               <widget class="QGroupBox" name="skill_parameters_group_box">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                  <horstretch>1</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="title">
-                 <string>Parameters</string>
-                </property>
-                <layout class="QVBoxLayout" name="verticalLayout_19">
-                 <item>
-                  <layout class="QGridLayout" name="skill_params_layout" rowstretch="0">
-                   <property name="sizeConstraint">
-                    <enum>QLayout::SetNoConstraint</enum>
-                   </property>
-                   <property name="bottomMargin">
-                    <number>0</number>
-                   </property>
-                  </layout>
-                 </item>
-                </layout>
-               </widget>
-              </item>
-              <item row="0" column="2">
-               <widget class="QPushButton" name="skill_exe_button">
-                <property name="text">
-                 <string>Execute</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="2">
-               <widget class="QPushButton" name="skill_stop_button">
-                <property name="text">
-                 <string>Stop</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="1">
-               <widget class="QCheckBox" name="modality_checkBox">
-                <property name="text">
-                 <string>Advanced options</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </widget>
+               </column>
+              </widget>
+             </item>
+             <item>
+              <spacer name="verticalSpacer">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>80</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
            </widget>
           </item>
          </layout>
@@ -385,6 +361,9 @@
          <layout class="QVBoxLayout" name="verticalLayout_6">
           <item>
            <widget class="QTreeWidget" name="wm_tree_widget">
+            <property name="toolTip">
+             <string>The world scene</string>
+            </property>
             <property name="editTriggers">
              <set>QAbstractItemView::AllEditTriggers</set>
             </property>
@@ -409,6 +388,9 @@
             <property name="columnCount">
              <number>1</number>
             </property>
+            <attribute name="headerVisible">
+             <bool>false</bool>
+            </attribute>
             <column>
              <property name="text">
               <string notr="true">Scene name</string>
@@ -497,6 +479,9 @@
               <verstretch>2</verstretch>
              </sizepolicy>
             </property>
+            <property name="toolTip">
+             <string>Object's properties</string>
+            </property>
             <property name="editTriggers">
              <set>QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed|QAbstractItemView::SelectedClicked</set>
             </property>
@@ -522,7 +507,7 @@
              <bool>false</bool>
             </attribute>
             <attribute name="verticalHeaderDefaultSectionSize">
-             <number>15</number>
+             <number>21</number>
             </attribute>
             <column>
              <property name="text">
@@ -544,6 +529,9 @@
               <verstretch>1</verstretch>
              </sizepolicy>
             </property>
+            <property name="toolTip">
+             <string>Object's relations</string>
+            </property>
             <attribute name="horizontalHeaderDefaultSectionSize">
              <number>200</number>
             </attribute>
@@ -554,7 +542,7 @@
              <bool>false</bool>
             </attribute>
             <attribute name="verticalHeaderDefaultSectionSize">
-             <number>15</number>
+             <number>21</number>
             </attribute>
             <column>
              <property name="text">
@@ -583,6 +571,9 @@
             </property>
             <item>
              <widget class="QPushButton" name="add_object_button">
+              <property name="toolTip">
+               <string>Add a new child object  to the current selected object in the scene</string>
+              </property>
               <property name="text">
                <string>Add object</string>
               </property>

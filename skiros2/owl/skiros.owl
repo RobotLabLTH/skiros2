@@ -73,6 +73,12 @@
     </owl:ObjectProperty>
 
 
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#hasHoldCondition -->
+
+    <owl:ObjectProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#hasHoldCondition">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#skillProperty"/>
+    </owl:ObjectProperty>
+
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#hasPreCondition -->
 

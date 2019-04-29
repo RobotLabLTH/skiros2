@@ -4,7 +4,7 @@ class IdGen:
         self._ids = []
 
     def getId(self, desired=-1):
-        if desired>=0:
+        if desired >= 0:
             self._id = desired
         while self._id in self._ids:
             self._id += 1

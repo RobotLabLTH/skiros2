@@ -2,13 +2,15 @@ import rdflib
 import skiros2_common.tools.logger as log
 from rdflib.namespace import RDF, RDFS, OWL
 import os.path
+from wrapt.decorators import synchronized
+
 
 class Ontology:
     def __init__(self, graph=None):
         if graph is not None:
             self._ontology = graph
         else:
-            self._ontology = rdflib.ConjunctiveGraph()#store='Sleepycat' #TODO:
+            self._ontology = rdflib.ConjunctiveGraph()  # store='Sleepycat' #TODO:
 
     def ontology(self, context_id=""):
         """
@@ -16,17 +18,17 @@ class Ontology:
 
         @param context_id can be a rdflib.Graph, an rdflib.URIRef or a string
         """
-        if context_id=="" or context_id==self._ontology.identifier:
+        if context_id == "" or context_id == self._ontology.identifier:
             return self._ontology
         else:
             return self._ontology.get_context(context_id)
 
     def _add_prefix(self, uri, prefix=None):
         if prefix is None:
-            prefix = uri[uri.rfind("/")+1:].lower()
-            if prefix.rfind(".")!=-1:
+            prefix = uri[uri.rfind("/") + 1:].lower()
+            if prefix.rfind(".") != -1:
                 prefix = prefix[:prefix.rfind(".")]
-        uri = uri+"#"
+        uri = uri + "#"
         self._bind(prefix, uri)
         log.info("[{}]".format(self.__class__.__name__), "Set id: {} for ontology: {}".format(prefix, uri))
         return prefix
@@ -53,28 +55,28 @@ class Ontology:
         tokens = uri.split("#")
         for prefix, uri1 in self._ontology.namespaces():
             if tokens[0] == uri1[:-1]:
-                return "{}:{}".format(prefix, tokens[1])#TODO: can it be optimized?
+                return "{}:{}".format(prefix, tokens[1])  # TODO: can it be optimized?
         return uri
 
     def lightstring2uri(self, name):
         if isinstance(name, rdflib.URIRef):
             return name
-        if name=="":
+        if name == "":
             return None
         if name.find("#") > 0:
             return name
         if name.find(":") < 1:
-            if name.find(":")==0:
+            if name.find(":") == 0:
                 name = name[1:]
             return self.add_default_prefix(name)
         tokens = name.split(":")
         for prefix, uri in self._ontology.namespaces():
             if tokens[0] == prefix:
-                return rdflib.term.URIRef("{}{}".format(uri, tokens[1]))#TODO: can it be optimized?
+                return rdflib.term.URIRef("{}{}".format(uri, tokens[1]))  # TODO: can it be optimized?
         return rdflib.term.URIRef(name)
 
     def has_context(self, context_id):
-        #TODO:
+        # TODO:
         return
 
     def add_context(self, context_id, uri=None, imports=[]):
@@ -104,7 +106,7 @@ class Ontology:
         if initialize and context_id is not None:
             self._ontology.remove_context(context_id)
         if not context_id:
-            context_id = ontology_uri[ontology_uri.rfind("/")+1:ontology_uri.rfind(".")].lower()
+            context_id = ontology_uri[ontology_uri.rfind("/") + 1:ontology_uri.rfind(".")].lower()
         contextg = self._ontology.parse(ontology_uri, publicID=context_id)
         context = contextg.value(predicate=RDF.type, object=OWL.Ontology)
         if context:
@@ -118,6 +120,7 @@ class Ontology:
         """
         self.ontology(context_id).serialize(destination=file, format='turtle')
 
+    @synchronized
     def query(self, query, context_id=""):
         return self.ontology(context_id).query(query)
 

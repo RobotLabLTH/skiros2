@@ -3,14 +3,15 @@ from skiros2_common.core.abstract_skill import State, Event
 import skiros2_common.tools.logger as log
 import traceback
 
-class VisitorInterface:
+class VisitorInterface(object):
     """
-    Base interface for visitors
+    @brief Base interface for visitors
     """
     #--------Class functions--------
+
     def __init__(self):
-        #Execution
-        self._state=State.Idle
+        # Execution
+        self._state = State.Idle
         self._preempt_request = Event()
 
     def preempt(self):
@@ -41,25 +42,18 @@ class VisitorInterface:
         return self.getState()
 
     def process(self, procedure):
-        #Process node
+        # Process node
         state = self.processNode(procedure)
-        if state!=State.Running: #Skill start always return Running State until postProcess
+        if state != State.Running:  # Skill start always return Running State until postProcess
             return state
-        #Process children
+        # Process children
         if procedure.hasChildren():
             state = self.processChildren(procedure)
-            if state==State.Running:
+            if state == State.Running:
                 return state
-        #Post-process node
+        # Post-process node
         return self.postProcessNode(procedure)
-
-    def processPreempt(self, procedure):
-        #Preempt children
-        for c in procedure._children:
-            c.visitPreempt(self)
-        #Preempt node
-        procedure.preempt()
-
+      
     def processNode(self, procedure):
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
@@ -80,24 +74,31 @@ class VisitorInterface:
         """ Optional - Not implemented in abstract class. """
         return True
 
-class VisitorPrint(VisitorInterface, NodePrinter, NodeExecutor):
+
+class VisitorPrint(VisitorInterface, NodePrinter, NodeExecutor, NodeMemorizer):
     """
-    Expands and print the whole procedure tree
+    Expands and memorize the whole procedure tree. printout if verbose
     """
-    def __init__(self, wmi, instanciator):
-        #Execution
+
+    def __init__(self, wmi, instanciator, verbose=False):
+        # Execution
         VisitorInterface.__init__(self)
         NodePrinter.__init__(self)
         NodeExecutor.__init__(self, wmi, instanciator)
+        NodeMemorizer.__init__(self, 'trace')
+        self._verbose = verbose
         self._processor = Serial()
 
     def setVerbose(self, verbose):
-        self._verbose=verbose
+        self._verbose = verbose
 
     def processNode(self, procedure):
         self.init(procedure)
-        self.printTree(procedure, self._verbose)
+        procedure.wrapper_expand()
+        if self._verbose:
+            self.printTree(procedure, self._verbose)
         self.indend()
+        self.memorizeProcedure(procedure)
         return State.Running
 
     def processChildren(self, procedure):
@@ -108,27 +109,40 @@ class VisitorPrint(VisitorInterface, NodePrinter, NodeExecutor):
         self.unindend()
         return State.Success
 
+    def memorizeProcedure(self, procedure):
+        self.memorize(procedure.id, {"type": procedure.type,
+                                     "label": procedure.label,
+                                     "parent_id": procedure.parent.id if procedure.parent is not None else -1,
+                                     "parent_label": procedure.parent.label if procedure.parent is not None else "",
+                                     "state": procedure.state,
+                                     "msg": procedure.progress_msg,
+                                     "code": procedure.progress_code,
+                                     "time": procedure.progress_time})
+
+
 class VisitorExecutor(VisitorInterface, NodeExecutor, NodeMemorizer):
     """
     @brief Execute the behavior tree
 
     Memorizes the nodes with a progress for later process
     """
+
     def __init__(self, wmi, instanciator):
-        #Execution
+        # Execution
         VisitorInterface.__init__(self)
         NodeExecutor.__init__(self, wmi, instanciator)
+        NodeMemorizer.__init__(self, 'trace')
 
     def setVerbose(self, verbose):
-        self._verbose=verbose
+        self._verbose = verbose
 
     def processNode(self, procedure):
         if not procedure.hasState(State.Running):
             try:
                 state = self.execute(procedure)
-            except Exception, e:
+            except Exception:
                 log.error(self.__class__.__name__, traceback.format_exc())
-                procedure._setProgress("Error on start: {}".format(traceback.format_exc()), -404)
+                procedure._setProgress("Error on start: {}. Blackboard data: {}".format(traceback.format_exc(), self._params.printState()), -404)
                 procedure._setState(State.Failure)
                 state = State.Failure
             self.memorizeProgress(procedure)
@@ -139,60 +153,55 @@ class VisitorExecutor(VisitorInterface, NodeExecutor, NodeMemorizer):
     def postProcessNode(self, procedure):
         try:
             state = self.postExecute(procedure)
-        except Exception, e:
+        except Exception:
             log.error(self.__class__.__name__, traceback.format_exc())
-            procedure._setProgress("Error on execution: {}".format(traceback.format_exc()), -405)
+            procedure._setProgress("Error on execution: {}. Blackboard data: {}".format(traceback.format_exc(), self._params.printState()), -405)
             procedure._setState(State.Failure)
             state = State.Failure
         self.memorizeProgress(procedure)
         return state
 
     def processPreempt(self, procedure):
-        #Preempt children
-        for c in procedure._children:
-            c.visitPreempt(self)
-        #Preempt node
         try:
-            self.preemptSkill(procedure)
-        except Exception, e:
+            super(VisitorExecutor, self).processPreempt(procedure)
+        except Exception:
             log.error(self.__class__.__name__, traceback.format_exc())
-            procedure._setProgress("Error on start: {}".format(traceback.format_exc()), -404)
+            procedure._setProgress("Error on preemption: {}. Blackboard data: {}".format(traceback.format_exc(), self._params.printState()), -406)
             procedure._setState(State.Failure)
-            state = State.Failure
         self.memorizeProgress(procedure)
 
     def processingStart(self, procedure):
-        #self._wm.lock()
         self.reset_memory()
-        self.syncParams()
         return True
 
     def processingDone(self, procedure):
-        #self._wm.unlock()
         return True
 
     def memorizeProgress(self, procedure):
         if procedure.progress_msg:
-            self.memorize(procedure.id, {"type":procedure.type,
-                                        "label":procedure.label,
-                                        "parent":procedure.parent.label if procedure.parent is not None else "",
-                                        "state":procedure.state,
-                                        "msg":procedure.progress_msg,
-                                        "code":procedure.progress_code,
-                                        "time": procedure.progress_time})
+            self.memorize(procedure.id, {"type": procedure.type,
+                                         "label": procedure.label,
+                                         "parent_id": procedure.parent.id if procedure.parent is not None else -1,
+                                         "parent_label": procedure.parent.label if procedure.parent is not None else "",
+                                         "state": procedure.state,
+                                         "msg": procedure.progress_msg,
+                                         "code": procedure.progress_code,
+                                         "time": procedure.progress_time})
+
 
 class VisitorReversibleSimulator(VisitorInterface, NodePrinter, NodeReversibleSimulator):
     """
     Simulate the procedure execution and revert the simulation
     """
+
     def __init__(self, wmi, instanciator):
-        #Execution
+        # Execution
         VisitorInterface.__init__(self)
         NodePrinter.__init__(self)
-        NodeReversibleSimulator.__init__(self,  wmi, instanciator)
+        NodeReversibleSimulator.__init__(self, wmi, instanciator)
 
     def setVerbose(self, verbose):
-        self._verbose=verbose
+        self._verbose = verbose
 
     def processNode(self, procedure):
         state = self.execute(procedure)
@@ -211,38 +220,3 @@ class VisitorReversibleSimulator(VisitorInterface, NodePrinter, NodeReversibleSi
             return False
         self.back.printMemory()
         return True
-
-
-class VisitorProgress(VisitorInterface, NodeMemorizer):
-    """
-    Expands and flattens the whole procedure tree
-    """
-    def __init__(self):
-        #Execution
-        VisitorInterface.__init__(self)
-        NodeMemorizer.__init__(self, 'VisitorProgress')
-        self._verbose = False
-        self._processor = Serial()
-
-    def processNode(self, procedure):
-        if procedure.progress_msg:
-            self.memorize(procedure.id, {"type":procedure.type,
-                                        "label":procedure.label,
-                                        "state":procedure.state,
-                                        "msg":procedure.progress_msg,
-                                        "code":procedure.progress_code,
-                                        "time": procedure.progress_time})
-        return State.Running
-
-    def postProcessNode(self, procedure):
-        return State.Success
-
-    def processChildren(self, procedure):
-        """ Use serial processor always """
-        return self._processor.processChildren(procedure._children, self)
-
-    def processingDone(self, procedure):
-        return True
-
-    def getProgress(self):
-        return self._tree

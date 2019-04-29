@@ -1,33 +1,3 @@
-#################################################################################
-# Software License Agreement (BSD License)
-#
-# Copyright (c) 2016, Francesco Rovida
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-#
-# * Redistributions of source code must retain the above copyright
-#   notice, this list of conditions and the following disclaimer.
-# * Redistributions in binary form must reproduce the above copyright
-#   notice, this list of conditions and the following disclaimer in the
-#   documentation and/or other materials provided with the distribution.
-# * Neither the name of the copyright holder nor the
-#   names of its contributors may be used to endorse or promote products
-#   derived from this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
-# ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#################################################################################
-
 import rospy
 import skiros2_msgs.msg as msgs
 import skiros2_msgs.srv as srvs
@@ -45,8 +15,10 @@ from skiros2_common.tools.plugin_loader import *
 from multiprocessing.dummy import Process
 import skiros2_skill.core.visitors as visitors
 from skiros2_common.tools.time_keeper import TimeKeeper
+from std_msgs.msg import Empty
 
 log.setLevel(log.INFO)
+
 
 def skill2msg(skill):
     msg = msgs.ResourceDescription()
@@ -54,6 +26,7 @@ def skill2msg(skill):
     msg.name = skill._label
     msg.params = utils.serializeParamMap(skill._description._params.getParamMap())
     return msg
+
 
 class BtTicker:
     """
@@ -71,6 +44,7 @@ class BtTicker:
     _id_gen = IdGen()
 
     _progress_cb = None
+    _tick_cb = None
 
     _finished_skill_ids = dict()
 
@@ -79,36 +53,46 @@ class BtTicker:
         @brief Tick tasks at 25hz
         """
         BtTicker._finished_skill_ids = dict()
-        visitor = BtTicker._visitor
-        result = State.Running
         rate = rospy.Rate(25)
         log.info("[BtTicker]", "Execution starts.")
+        for uid in list(BtTicker._tasks.keys()):
+            t = BtTicker._tasks[uid]
+            printer = visitors.VisitorPrint(BtTicker._visitor._wm, BtTicker._visitor._instanciator)
+            printer.traverse(t)
+            self.publish_progress(uid, printer)
         while BtTicker._tasks:
-            for uid in list(BtTicker._tasks.keys()):
-                if uid in BtTicker._tasks_to_preempt:
-                    BtTicker._tasks_to_preempt.remove(uid)
-                    visitor.preempt()
-                t = BtTicker._tasks[uid]
-                result = visitor.traverse(t)
-                self.publish_progress(uid, visitor, result)
-                if result != State.Running and result != State.Idle:
-                    print "===Final state==="
-                    printer = visitors.VisitorPrint(BtTicker._visitor._wm, BtTicker._visitor._instanciator)
-                    printer.traverse(t)
-                    self.remove_task(uid)
-            #log.info("", "Remaining: {}".format(rate.remaining().to_sec()))#TODO: decrease the loop time.Optimize operations
+            self._tick()
             rate.sleep()
+            self._tick_cb()
         log.info("[BtTicker]", "Execution stops.")
+
+    def _tick(self):
+        visitor = BtTicker._visitor
+        for uid in list(BtTicker._tasks.keys()):
+            if uid in BtTicker._tasks_to_preempt:
+                BtTicker._tasks_to_preempt.remove(uid)
+                visitor.preempt()
+            t = BtTicker._tasks[uid]
+            result = visitor.traverse(t)
+            self.publish_progress(uid, visitor)
+            if result != State.Running and result != State.Idle:
+                self.remove_task(uid)
+
+    def kill(self):
+        if not BtTicker._process is None:
+            del BtTicker._process
+            BtTicker._process = None
+            self._tick()
 
     def is_running(self):
         if BtTicker._process is None:
             return False
         return BtTicker._process.is_alive()
 
-    def publish_progress(self, uid, visitor, result):
+    def publish_progress(self, uid, visitor):
         finished_skill_ids = BtTicker._finished_skill_ids
-        for (id,desc) in visitor.snapshot():
-            if finished_skill_ids.has_key(id):
+        for (id, desc) in visitor.snapshot():
+            if id in finished_skill_ids:
                 if finished_skill_ids[id]['state'] == desc['state'] and finished_skill_ids[id]['msg'] == desc['msg']:
                     continue
             finished_skill_ids[id] = desc
@@ -117,6 +101,8 @@ class BtTicker:
     def observe_progress(self, func):
         self._progress_cb = func
 
+    def observe_tick(self, func):
+        self._tick_cb = func
 
     def clear(self):
         if BtTicker._visitor:
@@ -147,7 +133,15 @@ class BtTicker:
         BtTicker._process.join()
 
     def preempt(self, uid):
+        log.info("preempt", "Ending task {}...".format(uid))
         BtTicker._tasks_to_preempt.append(uid)
+        starttime = rospy.Time.now()
+        timeout = rospy.Duration(5.0)
+        while(self.is_running() and rospy.Time.now() - starttime < timeout):
+            rospy.sleep(0.1)
+        if self.is_running():
+            log.info("preempt", "Task {} is not answering. Killing process.".format(uid))
+            self.kill()
         log.info("preempt", "Task {} preempted.".format(uid))
 
 
@@ -155,12 +149,12 @@ class SkillManager:
     """
     The skill manager manage a sub-system of the robot
     """
+
     def __init__(self, prefix, agent_name, verbose=True):
         self._agent_name = agent_name
         self._wmi = wmi.WorldModelInterface(agent_name, make_cache=True)
         self._wmi.set_default_prefix(prefix)
         self._local_wm = self._wmi
-        #self._local_wm._verbose = False
         self._plug_loader = PluginLoader()
         self._instanciator = SkillInstanciator(self._local_wm)
         self._ticker = BtTicker()
@@ -168,10 +162,13 @@ class SkillManager:
         self._ticker._verbose = verbose
         self._registerAgent(agent_name)
         self._skills = []
-        #self._wmi.unlock() #Ensures the world model's mutex is unlocked
+        # self._wmi.unlock() #Ensures the world model's mutex is unlocked
 
     def observeTaskProgress(self, func):
         self._ticker.observe_progress(func)
+
+    def observeTick(self, func):
+        self._ticker.observe_tick(func)
 
     def _registerAgent(self, agent_name):
         res = self._wmi.resolve_element(Element("cora:Robot", agent_name))
@@ -187,15 +184,15 @@ class SkillManager:
             if startLocUri:
                 start_location = self._wmi.instanciate(startLocUri[0]["dst"], False, [])
                 self._wmi.set_relation(self._robot._id, "skiros:at", start_location._id)
+                self._robot = self._wmi.get_element(self._robot.id)
         log.info("[{}]".format(self.__class__.__name__), "Registered robot {}".format(self._robot))
-        self._robot.setProperty("skiros:SkillMgr", self._agent_name[self._agent_name.rfind(":")+1:])
+        self._robot.setProperty("skiros:SkillMgr", self._agent_name[self._agent_name.rfind(":") + 1:])
         self._wmi.update_element(self._robot)
-
 
     def shutdown(self):
         for s in self._skills:
             self._wmi.remove_element(s)
-        self._wmi.unlock() #Ensures the world model's mutex gets unlocked
+        self._wmi.unlock()  # Ensures the world model's mutex gets unlocked
 
     def loadSkills(self, package):
         """
@@ -224,13 +221,13 @@ class SkillManager:
         """
         self.addSkill(name)
 
-    def add_task(self, task, desired_id=-1):
+    def add_task(self, task):
         root = skill.Root("root", self._local_wm)
         for i in task:
-            print i.manager+":"+i.type+":"+i.name+i.ph.printState()
+            log.info("[SkillManager]", "Add task {}:{} \n {}".format(i.type, i.name, i.ph.printState()))
             root.addChild(skill.SkillWrapper(i.type, i.name, self._instanciator))
             root.last().specifyParamsDefault(i.ph)
-        return self._ticker.add_task(root, desired_id)
+        return self._ticker.add_task(root, root.id)
 
     def preemptTask(self, uid):
         self._ticker.preempt(uid)
@@ -240,7 +237,7 @@ class SkillManager:
         self.visitor.setVerbose(self._verbose)
         return self._ticker.start(self.visitor)
 
-    def executeTask(self, uid, sim=False, track_params=list()):#[("MotionChange",)]
+    def executeTask(self, uid, sim=False, track_params=list()):  # [("MotionChange",)]
         self.visitor = visitors.VisitorExecutor(self._local_wm, self._instanciator)
         self.visitor.setSimulate(sim)
         for t in track_params:
@@ -252,26 +249,26 @@ class SkillManager:
         self._ticker.clear()
 
     def executeOptimal(self):
-        #Optimize Procedure
+        # Optimize Procedure
         self.optimizeTask()
         self.printTask()
-        #Execute
+        # Execute
         return self.executeTask(False)
 
     def simulateTask(self, uid):
         self.visitor = visitors.VisitorReversibleSimulator(self._local_wm, self._instanciator)
         self.visitor.setVerbose(self._verbose)
-        #self.visitor.trackParam("Initial")
-        #self.visitor.trackParam("Gripper")
+        # self.visitor.trackParam("Initial")
+        # self.visitor.trackParam("Gripper")
         if self.visitor.traverse(self._tasks[uid]):
             self._task = self.visitor.getExecutionRoot()
 
     def optimizeTask(self):
         self.visitor = optimizer.VisitorOptimizer(self._local_wm, self._instanciator)
-        #self.visitor.setVerbose(True)
-        #self.visitor.trackParam("PlacingCell")
-        #self.visitor.trackParam("Object")
-        #rospy.sleep(1.)
+        # self.visitor.setVerbose(True)
+        # self.visitor.trackParam("PlacingCell")
+        # self.visitor.trackParam("Object")
+        # rospy.sleep(1.)
         self.publish("Optimization", 1, "Start.")
         try:
             if self.visitor.traverse(self._task):
@@ -286,6 +283,7 @@ class SkillManager:
             self.printTask()
             raise e
 
+
 class SkillManagerNode(DiscoverableNode):
     """
     At boot:
@@ -298,41 +296,48 @@ class SkillManagerNode(DiscoverableNode):
         -currently available visitors: print, execute, simulate, optimize
         -publish feedback on topic /monitor (TODO)
     """
+
     def __init__(self):
         rospy.init_node("skill_mgr", anonymous=False)
         robot_name = rospy.get_name()
         prefix = ""
-        full_name = rospy.get_param('~prefix', prefix) + ':' + robot_name[robot_name.rfind("/")+1:]
+        full_name = rospy.get_param('~prefix', prefix) + ':' + robot_name[robot_name.rfind("/") + 1:]
         self._sm = SkillManager(rospy.get_param('~prefix', prefix), full_name, verbose=rospy.get_param('~verbose', True))
         self._sm.observeTaskProgress(self._onProgressUpdate)
-        #Init skills
+        self._sm.observeTick(self._onTick)
+        # Init skills
         self._initialized = False
         self._getskills = rospy.Service('~get_skills', srvs.ResourceGetDescriptions, self._getDescriptionsCb)
         self._initSkills()
         #self._sm._wmi.instanciate("skiros:large_box_test_starter", relations=[])
         rospy.sleep(0.5)
         self._initialized = True
-        #self._sm._local_wm.sync()
-        #self._sm._local_wm.printModel()
-        #Start communications
+        # self._sm._local_wm.sync()
+        # self._sm._local_wm.printModel()
+        # Start communications
         self._command = rospy.Service('~command', srvs.SkillCommand, self._commandCb)
         self._monitor = rospy.Publisher("~monitor", msgs.SkillProgress, queue_size=20)
+        self._tick_rate = rospy.Publisher("~tick_rate", Empty, queue_size=20)
         rospy.on_shutdown(self.shutdown)
         self.init_discovery("skill_managers", robot_name)
+        log.info("[{}]".format(rospy.get_name()), "Skill manager ready.")
 
     def _initSkills(self):
         """
         @brief Initialize the robot with a set of skills
         """
         for r in rospy.get_param('~libraries_list', []):
+            log.info("[LoadLibrary]", str(r))
             self._sm.loadSkills(r)
-        #Instanciate local primitives
+        # Instanciate local primitives
         for r in rospy.get_param('~primitive_list', []):
+            log.info("[LoadPrimitive]", str(r))
             self._sm.addLocalPrimitive(r)
         sl = rospy.get_param('~skill_list', [])
         if not sl:
-            pass #TODO: load all defined skills
+            pass  # TODO: load all defined skills
         for r in sl:
+            log.info("[LoadSkill]", str(r))
             self._sm.addSkill(r)
 
     def _makeTask(self, msg):
@@ -343,8 +348,8 @@ class SkillManagerNode(DiscoverableNode):
 
     def _commandCb(self, msg):
         if msg.action == msg.START:
-            task_id = self._sm.add_task(self._makeTask(msg.skills), msg.execution_id)
-            #self._sm.printTask(task_id)
+            task_id = self._sm.add_task(self._makeTask(msg.skills))
+            # self._sm.printTask(task_id)
             self._sm.executeTask(task_id)
         elif msg.action == msg.PREEMPT:
             task_id = self._sm.preemptTask(msg.execution_id)
@@ -359,6 +364,9 @@ class SkillManagerNode(DiscoverableNode):
             return srvs.SkillCommandResponse(False, -1)
         return srvs.SkillCommandResponse(True, task_id)
 
+    def _onTick(self):
+        self._tick_rate.publish(Empty())
+
     def _onProgressUpdate(self, *args, **kwargs):
         log.debug("[{}]".format(self.__class__.__name__), "{}:Task[{task_id}]{type}:{label}[{id}]: Message[{code}]: {msg} ({state})".format(self._sm._agent_name[1:], **kwargs))
         msg = msgs.SkillProgress()
@@ -368,23 +376,12 @@ class SkillManagerNode(DiscoverableNode):
         msg.type = kwargs['type']
         msg.label = kwargs['label']
         msg.state = kwargs['state']
-        msg.parent_id = kwargs['parent']
+        msg.parent_label = kwargs['parent_label']
+        msg.parent_id = kwargs['parent_id']
         msg.progress_code = kwargs['code']
         msg.progress_time = kwargs['time']
         msg.progress_message = kwargs['msg']
         self._monitor.publish(msg)
-
-    # def _publishMonitor(self, action, code, description, seconds=0.0):
-    #     #start = rospy.Time.now()
-    #     #self.publish("Optimization", 1, "Success.", (rospy.Time.now()-start).to_sec())
-    #     #self._opt_time = (rospy.Time.now()-start).to_sec()
-    #     msg = msgs.ResourceMonitor()
-    #     msg.author = "skirospy"
-    #     msg.action = action
-    #     msg.progress_code = code
-    #     msg.progress_description = description
-    #     msg.progress_seconds = seconds
-    #     self._monitor.publish(msg)
 
     def _getDescriptionsCb(self, msg):
         """

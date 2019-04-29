@@ -1,40 +1,12 @@
-#################################################################################
-# Software License Agreement (BSD License)
-#
-# Copyright (c) 2016, Francesco Rovida
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-#
-# * Redistributions of source code must retain the above copyright
-#   notice, this list of conditions and the following disclaimer.
-# * Redistributions in binary form must reproduce the above copyright
-#   notice, this list of conditions and the following disclaimer in the
-#   documentation and/or other materials provided with the distribution.
-# * Neither the name of the copyright holder nor the
-#   names of its contributors may be used to endorse or promote products
-#   derived from this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
-# ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#################################################################################
-
 import rospy
 import skiros2_msgs.msg as msgs
 import skiros2_msgs.srv as srvs
+from std_msgs.msg import Empty
 import skiros2_common.ros.utils as utils
 from skiros2_skill.ros.utils import SkillHolder
 import skiros2_common.tools.logger as log
 from multiprocessing import Lock, Event
+import rostopic
 
 
 class SkillManagerInterface:
@@ -49,6 +21,8 @@ class SkillManagerInterface:
         self._skill_exe_client = rospy.ServiceProxy(self._skill_mgr_name + '/command', srvs.SkillCommand)
         self._get_skills = rospy.ServiceProxy(self._skill_mgr_name + '/get_skills', srvs.ResourceGetDescriptions)
         self._monitor_sub = rospy.Subscriber(self._skill_mgr_name + '/monitor', msgs.SkillProgress, self._progress_cb)
+        self._tick_rate = rostopic.ROSTopicHz(50)
+        self._tick_rate_sub = rospy.Subscriber(self._skill_mgr_name + '/tick_rate', Empty, self._tick_rate.callback_hz)
         self._monitor_cb = None
         self.get_skill_list(True)
 
@@ -92,8 +66,8 @@ class SkillManagerInterface:
 
     def execute(self, skill_list, author):
         msg = srvs.SkillCommandRequest()
-        msg.action = msg.START;
-        msg.author = author;
+        msg.action = msg.START
+        msg.author = author
         for s in skill_list:
             msg.skills.append(s.toMsg())
         res = self.call(self._skill_exe_client, msg)
@@ -107,8 +81,8 @@ class SkillManagerInterface:
 
     def preempt(self, author, execution_id=None):
         msg = srvs.SkillCommandRequest()
-        msg.action = msg.PREEMPT;
-        msg.author = author;
+        msg.action = msg.PREEMPT
+        msg.author = author
         if not self.active_tasks:
             return False
         if execution_id is None:
@@ -120,13 +94,12 @@ class SkillManagerInterface:
         elif not res.ok:
             log.error("Can t stop task " + execution_id)
             return False
-        self._active_tasks.remove(execution_id)
         return True
 
     def preempt_all(self, author):
         msg = srvs.SkillCommandRequest()
-        msg.action = msg.PREEMPT;
-        msg.author = author;
+        msg.action = msg.PREEMPT
+        msg.author = author
         msg.execution_id = -1
         res = self.call(self._skill_exe_client, msg)
         if res is None:
@@ -143,8 +116,23 @@ class SkillManagerInterface:
         """
         self._monitor_cb = cb
 
+    def get_tick_rate(self):
+        """
+        @brief Get the skill manager tick rate
+        """
+        rate_info = self._tick_rate.get_hz()
+        if rate_info is None:
+            return 0
+        return rate_info[0]
+
+    def reset_tick_rate(self):
+        """
+        @brief Reset the tick rate information
+        """
+        pass  # self._tick_rate.set_msg_t0(rospy.get_rostime().to_sec())
+
     def _progress_cb(self, msg):
-        if msg.label.find("task")>=0 and msg.progress_message=="End" and msg.state!=msg.IDLE:
+        if msg.type.find("Root") >= 0 and abs(msg.progress_code) == 1:
             try:
                 self._active_tasks.remove(int(msg.task_id))
             except Exception:

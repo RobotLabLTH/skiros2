@@ -7,7 +7,8 @@ int16 IDLE=4
 string robot
 int16 task_id
 int16 id
-string parent_id
+string parent_label
+int16 parent_id
 string type
 string label
 int16 state

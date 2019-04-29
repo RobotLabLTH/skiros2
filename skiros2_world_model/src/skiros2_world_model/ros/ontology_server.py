@@ -1,33 +1,3 @@
-#################################################################################
-# Software License Agreement (BSD License)
-#
-# Copyright (c) 2016, Francesco Rovida
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-#
-# * Redistributions of source code must retain the above copyright
-#   notice, this list of conditions and the following disclaimer.
-# * Redistributions in binary form must reproduce the above copyright
-#   notice, this list of conditions and the following disclaimer in the
-#   documentation and/or other materials provided with the distribution.
-# * Neither the name of the copyright holder nor the
-#   names of its contributors may be used to endorse or promote products
-#   derived from this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
-# ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#################################################################################
-
 import rospy
 import skiros2_common.tools.logger as log
 import skiros2_msgs.srv as srvs
@@ -38,11 +8,12 @@ import skiros2_common.ros.utils as utils
 from threading import Lock
 from pyparsing import ParseException
 
+
 class OntologyServer(object):
     def __init__(self, anonymous=False):
         rospy.init_node("ontology", anonymous=anonymous)
         self._verbose = rospy.get_param('~verbose', False)
-        self._ontology =  Ontology()
+        self._ontology = Ontology()
         self.init_ontology_services()
 
     def init_ontology_services(self):
@@ -61,11 +32,11 @@ class OntologyServer(object):
         else:
             try:
                 self._mutex.release()
-            except:
+            except BaseException:
                 return SetBoolResponse(False, "Mutex already unlocked.")
         return SetBoolResponse(True, "Ok")
 
-    def _wo_query_cb(self, msg, trial=0):
+    def _wo_query_cb(self, msg):
         to_ret = srvs.WoQueryResponse()
         try:
             log.assertInfo(self._verbose, "[WoQuery]", "Query: {}. Context: {}".format(msg.query_string, msg.context))
@@ -79,17 +50,14 @@ class OntologyServer(object):
                             temp += self._ontology.uri2lightstring(r)
                         else:
                             temp += r.n3()
-                        if len(s)>1:
+                        if len(s) > 1:
                             temp += " "
                     to_ret.answer.append(temp)
             log.assertInfo(self._verbose, "[WoQuery]", "Answer: {}. Time: {:0.3f} sec".format(to_ret.answer, self._times.getLast()))
         except (AttributeError, ParseException) as e:
-            #TODO: Understand what is going wrong here. For now just retry the query a couple of times seems to cover the bug
-            log.error("[WoQuery]", "Parse error with following query: {}. Error: {}".format(msg.query_string, e))
-            if trial<2:
-                trial += 1
-                log.info("[WoQuery]", "Retring query {}.".format(trial))
-                return self._wo_query_cb(msg, trial)
+            # TODO: test if the bug is fixed, and remove the exception handling
+            log.error("[WoQuery]", "Parse error with following query: {}.".format(msg.query_string))
+            raise e
         return to_ret
 
     def _wo_modify_cb(self, msg):
@@ -104,6 +72,7 @@ class OntologyServer(object):
 
     def run(self):
         rospy.spin()
+
 
 if __name__ == '__main__':
     node = OntologyServer()
