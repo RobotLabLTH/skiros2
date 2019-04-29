@@ -2,7 +2,7 @@ SkiROS2 - Skill-based platform for ROS v2
 
 Software License Agreement (L-GPL License)
 
-Copyright (C) 2018 Aalborg University
+Copyright (C) 2018 RiACT IVS
 
 Authors: Francesco Rovida, Bjarne Grossmann
 
