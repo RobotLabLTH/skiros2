@@ -24,7 +24,8 @@ class PrimitiveBase(SkillCore):
 #            if self._progress_msg!="":
 #                log.info("[{}]".format(self.printState()), self._progress_msg)
             if self.hasState(State.Success) or self.hasState(State.Failure):
-                self.onEnd()
+                if not self.onEnd():
+                    self._setState(State.Failure)
             return self._state
 
     def init(self, wmi, _=None):
@@ -55,6 +56,3 @@ class PrimitiveBase(SkillCore):
         """Called once when loading the primitive. If return False, the primitive is not loaded"""
         return True
 
-    def onEnd(self):
-        """Called just after last execute"""
-        pass

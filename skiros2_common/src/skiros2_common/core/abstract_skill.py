@@ -339,6 +339,8 @@ class SkillCore(SkillDescription):
     def preempt(self):
         if self.hasState(State.Running):
             self._setState(self.onPreempt())
+        if not self.onEnd():
+            self._setState(State.Failure)
         return self._state
 
     def getState(self):
@@ -480,17 +482,32 @@ class SkillCore(SkillDescription):
         pass
 
     def onReset(self):
-        """ Called when resetting. """
+        """
+        @brief Called when resetting.
+        """
+        pass
 
     def onStart(self):
-        """Called just before 1st execute"""
+        """
+        @brief Called just before 1st execute
+        """
         return True
 
     def onPreempt(self):
-        """ Called when skill is requested to stop. """
+        """
+        @brief Called when skill is requested to stop.
+        """
         self._setProgress("Preempted", -1)
         return State.Failure
 
     def execute(self):
-        """ Main execution function """
+        """
+        @brief Main execution function
+        """
         raise NotImplementedError("Not implemented in abstract class")
+        
+    def onEnd(self):
+        """
+        @brief Called just after last execute
+        """
+        return True
