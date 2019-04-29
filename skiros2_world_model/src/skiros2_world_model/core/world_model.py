@@ -91,7 +91,8 @@ class IndividualsDataset(Ontology):
             else:
                 log.error("[get_individual]", "Ignoring {}-{}-{}. Predicate is not defined in the ontology.".format(name, self.uri2lightstring(predicate), self.uri2lightstring(obj)))
         for subj, predicate in self.ontology(context_id).subject_predicates(subject):
-            e.addRelation(self.uri2lightstring(subj), self.uri2lightstring(predicate), "-1")
+            if (self.uri2lightstring(predicate)!="skiros:hasTemplate"):
+                e.addRelation(self.uri2lightstring(subj), self.uri2lightstring(predicate), "-1")
         self._add_reasoners_prop(e)
         return e
 
