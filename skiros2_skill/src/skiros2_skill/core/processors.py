@@ -23,9 +23,14 @@ class Serial():
         for c in children:
             state = c.visit(visitor)
             if state != State.Success:
+                self.stopAll(children, visitor, children.index(c)+1)
                 return state
         return State.Success
-
+    
+    def stopAll(self, children, visitor, index):
+        for c in children[index:]:
+            if c.state==State.Running:
+                c.visitPreempt(visitor)
 
 class Sequential():
     """
