@@ -1,4 +1,5 @@
 from skiros2_common.core.world_element import Element
+from skiros2_world_model.core.world_model_abstract_interface import WmException
 import skiros2_common.core.params as params
 from skiros2_skill.core.processors import Serial, ParallelFf, State
 import skiros2_common.tools.logger as log
@@ -52,10 +53,16 @@ class NodeExecutor():
         for k, p in params.iteritems():
             vs = p.values
             if p.dataTypeIs(Element):
-                for i, e in enumerate(vs):
-                    if e.getIdNumber() >= 0:
-                        vs[i] = self._wm.get_element(e.id)
+                for i in reversed(range(0, len(vs))):
+                    if vs[i].getIdNumber() >= 0:
+                        try:
+                            vs[i] = self._wm.get_element(vs[i].id)
+                        except WmException:
+                            log.info("[syncParams]", "{} was deleted, removing from parameters".format(vs[i].id))
+                            vs.pop(i)
                 p.values = vs
+                if p.value is None:
+                    p.setDefault()
 
     def trackParam(self, key, prop="", relation="", print_all=False):
         """

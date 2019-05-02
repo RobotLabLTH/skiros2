@@ -5,8 +5,7 @@ import skiros2_common.ros.utils as utils
 import skiros2_common.tools.logger as log
 from std_srvs.srv import SetBool, SetBoolRequest
 from skiros2_common.core.world_element import Element
-from skiros2_world_model.core.world_model_abstract_interface import OntologyAbstractInterface
-
+from skiros2_world_model.core.world_model_abstract_interface import OntologyAbstractInterface, WmException
 
 class OntologyInterface(OntologyAbstractInterface):
     """
@@ -228,4 +227,4 @@ class OntologyInterface(OntologyAbstractInterface):
             return resp1
         except rospy.ServiceException as e:
             print "Service call failed: %s" % e
-            raise Exception("Service call failed: %s" % e)
+            raise WmException("Service call failed: %s" % e)
