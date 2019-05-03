@@ -304,9 +304,9 @@ class SkillInterface(SkillCore):
 #        print "{} {}".format(self, res)
         if res is not None:
             self._setState(res)
-        if self.hasState(State.Success) or self.hasState(State.Failure):
-            if not self.onEnd():
-                self._setState(State.Failure)
+        if not self.onEnd():
+            self._setState(State.Failure)
+            res = State.Failure
         return res
 
     #--------User functions--------

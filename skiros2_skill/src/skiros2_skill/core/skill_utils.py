@@ -61,8 +61,6 @@ class NodeExecutor():
                             log.info("[syncParams]", "{} was deleted, removing from parameters".format(vs[i].id))
                             vs.pop(i)
                 p.values = vs
-                if p.value is None:
-                    p.setDefault()
 
     def trackParam(self, key, prop="", relation="", print_all=False):
         """
