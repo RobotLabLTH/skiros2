@@ -291,17 +291,24 @@ class NodeExecutor():
         skill.specifyParams(self._params)#Re-apply parameters.... Important!
         self.syncParams(skill.params)
         self._printTracked(skill._params, "[{}Params] ".format(skill._type))
+        state = self._postExecute(skill)
+        if self._verbose:
+            log.info("[VisitorExecute]", "{}".format(skill.printState(self._verbose)))
+        self.mergeParams(skill)  # Update params
+        return state
+
+    def checkHold(self, skill):
+        """
+        @brief Check hold conditions
+        """
         if skill.checkHoldCond(self._verbose):
             if self._verbose:
                 log.info("[ground]", "Hold-conditions fail for skill {}".format(skill.printInfo()))
             self.processPreempt(skill)
             skill.checkHoldCond()#This ensure the skill ends printing the failed conditions
             return skill.state
-        state = self._postExecute(skill)
-        if self._verbose:
-            log.info("[VisitorExecute]", "{}".format(skill.printState(self._verbose)))
-        self.mergeParams(skill)  # Update params
-        return state
+        else:
+            return State.Running
 
     def processPreempt(self, skill):
         """

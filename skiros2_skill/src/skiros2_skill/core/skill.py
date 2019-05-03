@@ -376,7 +376,6 @@ class SkillInterface(SkillCore):
         TODO: this function has to be removed and embedded into the tick
         """
         self._setState(self._children_processor.processChildren(self._children, visitor))
-#        print "{} {}".format(self, self._state)
         return self._state
 
     def setProcessor(self, processor_type):
