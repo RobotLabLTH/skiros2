@@ -323,8 +323,6 @@ class SkillCore(SkillDescription):
                 if verbose:
                     log.error("HoldConditionCheck failed", c.getDescription())
                 to_ret += c.getKeys()
-            else:
-                log.warn("HoldConditionCheck ok", c.getDescription())
         self._setProgress(err_msg, -2)
         return list(set(to_ret))
 
