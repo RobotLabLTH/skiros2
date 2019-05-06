@@ -26,7 +26,7 @@ class Serial():
                 self.stopAll(children, visitor, children.index(c)+1)
                 return state
         return State.Success
-    
+
     def stopAll(self, children, visitor, index):
         for c in children[index:]:
             if c.state==State.Running:
@@ -120,19 +120,20 @@ class SelectorStar():
         return '?*'
 
     def reset(self):
-        pass
+        self.index = 0
 
     def processChildren(self, children, visitor):
         """
         Serial processor - return on first running/success, or return failure
         """
-        for c in children:
-            if c.state == State.Failure:
-                continue
+        for i in range(self.index, len(children)):
+            c = children[i]
             state = c.visit(visitor)
             if state==State.Success or state==State.Running:
                 self.stopAll(children, visitor, children.index(c)+1)
                 return state
+            self.index += 1
+        self.index = 0
         return State.Failure
 
     def stopAll(self, children, visitor, index):
