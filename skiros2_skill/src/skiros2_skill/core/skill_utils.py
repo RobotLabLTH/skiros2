@@ -48,6 +48,7 @@ class NodeExecutor():
         self._tracked_params = []
         self._params = params.ParamHandler()
         self._instanciator = instanciator
+        self._last_print = ""
 
     def syncParams(self, params):
         for k, p in params.iteritems():
@@ -69,7 +70,7 @@ class NodeExecutor():
         self._tracked_params.append((key, prop, relation, print_all))
 
     def _printTracked(self, params, prefix):
-        to_print = prefix
+        to_print = ""
         for key, prop, relation, print_all in self._tracked_params:
             if params.hasParam(key):
                 es = params.getParamValues(key)
@@ -84,8 +85,9 @@ class NodeExecutor():
                         to_print += "{} {} ".format(key, e)
             else:
                 to_print += key + ' not available. '
-        if to_print != prefix:
-            print to_print
+        if to_print and to_print != self._last_print:
+            self._last_print = to_print
+            print prefix + to_print
 
     def setSimulate(self, sim=True):
         self._simulate = sim
@@ -96,7 +98,7 @@ class NodeExecutor():
 
     def mergeParams(self, skill):
         self._params.reset(self._params.merge(skill._params))
-        self._printTracked(self._params, "[mergeParams] ")
+        self._printTracked(self._params, "[{}:mergeParams] ".format(skill.type))
         #print "Merge: {}".format(self._params.printState())
 
     def inferUnvalidParams(self, skill):
@@ -290,7 +292,7 @@ class NodeExecutor():
         """
         skill.specifyParams(self._params)#Re-apply parameters.... Important!
         self.syncParams(skill.params)
-        self._printTracked(skill._params, "[{}Params] ".format(skill._type))
+        self._printTracked(skill._params, "[{}:SetParams] ".format(skill.type))
         state = self._postExecute(skill)
         if self._verbose:
             log.info("[VisitorExecute]", "{}".format(skill.printState(self._verbose)))
@@ -319,7 +321,8 @@ class NodeExecutor():
             log.info("[Preempt]", "{}".format(skill.printState(self._verbose)))
         #Preempt children
         for c in skill._children:
-            c.visitPreempt(self)
+            if c.hasState(State.Running):
+                c.visitPreempt(self)
         #Preempt skill
         skill.preempt()
         self.mergeParams(skill)

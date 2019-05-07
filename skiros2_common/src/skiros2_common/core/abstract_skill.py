@@ -346,8 +346,8 @@ class SkillCore(SkillDescription):
     def preempt(self):
         if self.hasState(State.Running):
             self._setState(self.onPreempt())
-        if not self.onEnd():
-            self._setState(State.Failure)
+            if not self.onEnd():
+                self._setState(State.Failure)
         return self._state
 
     def getState(self):
