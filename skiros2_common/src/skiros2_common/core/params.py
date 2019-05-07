@@ -54,7 +54,7 @@ class Param(Property):
     def __copy__(self):
         result = self.__class__.__new__(self.__class__)
         for k in self.__slots__:
-            setattr(result, k, getattr(self, k))
+            setattr(result, k, copy(getattr(self, k)))
         return result
 
     def __deepcopy__(self, memo):
