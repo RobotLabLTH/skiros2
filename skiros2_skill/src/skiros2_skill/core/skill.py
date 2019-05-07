@@ -501,7 +501,11 @@ class SkillWrapper(SkillInterface):
         self._progress_code = 0
         self._progress_time = 0.0
         self._progress_msg = ""
-        return self._instance.start(self.getParamsNoRemaps()) == State.Running
+        state = self._instance.start(self.getParamsNoRemaps())
+        self._progress_msg = self._instance.progress_msg
+        self._progress_time = self._instance.progress_time
+        self._progress_code = self._instance.progress_code
+        return state == State.Running
 
     def execute(self):
         #print '{}:{}'.format(self._label, self._instance)
