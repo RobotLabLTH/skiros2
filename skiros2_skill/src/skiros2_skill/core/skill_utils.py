@@ -316,16 +316,17 @@ class NodeExecutor():
         """
         @brief Stop a skill execution. Visit recursively all children
         """
-        skill.specifyParams(self._params)
-        if self._verbose:
-            log.info("[Preempt]", "{}".format(skill.printState(self._verbose)))
-        #Preempt children
-        for c in skill._children:
-            if c.hasState(State.Running):
+        if skill.hasState(State.Running):
+            skill.specifyParams(self._params)
+            self.syncParams(skill.params)
+            if self._verbose:
+                log.info("[Preempt]", "{}".format(skill.printState(self._verbose)))
+            #Preempt children
+            for c in skill._children:
                 c.visitPreempt(self)
-        #Preempt skill
-        skill.preempt()
-        self.mergeParams(skill)
+            #Preempt skill
+            skill.preempt()
+            self.mergeParams(skill)
 
 
 class NodeMemorizer:
