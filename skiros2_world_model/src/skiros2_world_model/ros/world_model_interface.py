@@ -30,7 +30,11 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         """
         @brief Retrives the function caller file and line
         """
-        caller = getframeinfo(stack()[2][0])
+        i=2
+        caller = getframeinfo(stack()[i][0])
+        while "world_model_interface" in caller.filename:
+            i+=1
+            caller = getframeinfo(stack()[i][0])
         return "%s:%d" % (caller.filename[caller.filename.rfind("/"):], caller.lineno)
         
     def _monitor_cb(self, msg):
