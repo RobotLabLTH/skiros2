@@ -2,6 +2,18 @@
 Changelog for package skiros2_skill
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Better debug output in world model and sync parameters when preempting.
+* Fixed bug in skill preemption
+* Minor fix for output
+* Fixed SelectorStar processor
+* Fix in hold conditions (now checked before ticking childrens)
+* Better output of conditions and reverted 2 changes causing problems.
+* Serial processor preempting when switching. Skill call onEnd function when stopping.
+* Avoiding crash when an object in the BB is removed from the world model
+* Contributors: Bjarne Grossmann, RvmiLab, francesco
+
 1.0.0 (2019-04-30)
 ------------------
 * Merge pull request `#11 <https://github.com/RVMI/skiros2/issues/11>`_ from matthiashh/matthias-devel-pycodestyle
