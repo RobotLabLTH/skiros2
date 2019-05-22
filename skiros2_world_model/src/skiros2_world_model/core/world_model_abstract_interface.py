@@ -1,3 +1,6 @@
+class WmException(Exception):
+    pass
+
 class OntologyAbstractInterface:
     def lock(self):
         """ Not implemented in abstract class. """

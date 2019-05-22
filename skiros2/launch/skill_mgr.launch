@@ -13,7 +13,7 @@
   <arg name="primitive_list" default="[]"/>
   <arg name="skill_list" default="[]"/>
 
-  <node launch-prefix="$(arg prefix)" name="$(arg robot_name)" pkg="skiros2_skill" type="skill_manager_node" respawn="true">
+  <node launch-prefix="$(arg prefix)" name="$(arg robot_name)" pkg="skiros2_skill" type="skill_manager_node" respawn="true" output="screen">
     <param name="prefix" value="$(arg robot_ontology_prefix)" />
     <param name="verbose" value="$(arg verbose)" />
     <rosparam param = "libraries_list" subst_value="True">$(arg libraries_list)</rosparam>

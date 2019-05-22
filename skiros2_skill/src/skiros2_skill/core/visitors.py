@@ -160,6 +160,13 @@ class VisitorExecutor(VisitorInterface, NodeExecutor, NodeMemorizer):
             state = State.Failure
         self.memorizeProgress(procedure)
         return state
+    
+    def processChildren(self, procedure):
+        """
+        @brief Check hold conditions before ticking childrens
+        """
+        state = self.checkHold(procedure)
+        return state if state!=State.Running else super(VisitorExecutor, self).processChildren(procedure)
 
     def processPreempt(self, procedure):
         try:

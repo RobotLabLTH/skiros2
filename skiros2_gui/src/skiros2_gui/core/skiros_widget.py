@@ -812,7 +812,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         self.skill_params_table.setItem(row, 0, key)
         if param.dataTypeIs(bool):
             cbox = QCheckBox()
-            if param.isSpecified():
+            if param.hasSpecifiedDefault():
                 cbox.setChecked(param.default)
             self.skill_params_table.setCellWidget(row, 1, cbox)
         elif param.dataTypeIs(Element):

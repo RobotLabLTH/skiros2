@@ -2,6 +2,13 @@
 Changelog for package skiros2_world_model
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Better debug output2
+* Better debug output in world model and sync parameters when preempting.
+* Avoiding crash when an object in the BB is removed from the world model
+* Contributors: RvmiLab, francesco
+
 1.0.0 (2019-04-30)
 ------------------
 * Ignoring skiros:hasTemplate relations in get_individual

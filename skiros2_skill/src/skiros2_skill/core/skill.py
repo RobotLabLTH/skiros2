@@ -304,6 +304,9 @@ class SkillInterface(SkillCore):
 #        print "{} {}".format(self, res)
         if res is not None:
             self._setState(res)
+        if not self.onEnd():
+            self._setState(State.Failure)
+            res = State.Failure
         return res
 
     #--------User functions--------
@@ -373,7 +376,6 @@ class SkillInterface(SkillCore):
         TODO: this function has to be removed and embedded into the tick
         """
         self._setState(self._children_processor.processChildren(self._children, visitor))
-#        print "{} {}".format(self, self._state)
         return self._state
 
     def setProcessor(self, processor_type):
@@ -499,7 +501,11 @@ class SkillWrapper(SkillInterface):
         self._progress_code = 0
         self._progress_time = 0.0
         self._progress_msg = ""
-        return self._instance.start(self.getParamsNoRemaps()) == State.Running
+        state = self._instance.start(self.getParamsNoRemaps())
+        self._progress_msg = self._instance.progress_msg
+        self._progress_time = self._instance.progress_time
+        self._progress_code = self._instance.progress_code
+        return state == State.Running
 
     def execute(self):
         #print '{}:{}'.format(self._label, self._instance)

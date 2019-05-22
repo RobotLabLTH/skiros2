@@ -387,6 +387,33 @@
     </owl:DatatypeProperty>
 
 
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#Velocity -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#VelocityX">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Velocity"/>
+    </owl:DatatypeProperty>
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#VelocityX -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#VelocityX">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Velocity"/>
+    </owl:DatatypeProperty>
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#VelocityY -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#VelocityY">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Velocity"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#VelocityZ -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#VelocityZ">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Velocity"/>
+    </owl:DatatypeProperty>
+
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#PublishTf -->
 

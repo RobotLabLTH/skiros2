@@ -174,12 +174,19 @@ class SkillDescription(object):
         return s
 
     def printConditions(self):
-        s = "PreConditions:\n"
-        for c in self._pre_conditions:
-            s += '{}\n'.format(c._description)
-        s += "PostConditions:\n"
-        for c in self._post_conditions:
-            s += '{}\n'.format(c._description)
+        s=""
+        if self._pre_conditions:
+            s += "PreConditions:\n"
+            for c in self._pre_conditions:
+                s += '{}\n'.format(c._description)
+        if self._hold_conditions:
+            s = "HoldConditions:\n"
+            for c in self._hold_conditions:
+                s += '{}\n'.format(c._description)
+        if self._post_conditions:
+            s += "PostConditions:\n"
+            for c in self._post_conditions:
+                s += '{}\n'.format(c._description)
         return s
 
     def toElement(self):
@@ -314,7 +321,7 @@ class SkillCore(SkillDescription):
             if not c.evaluate(self._params, self._wmi):
                 err_msg += "{} Check failed. \n".format(c.getDescription())
                 if verbose:
-                    log.error(c.getDescription(), "ConditionCheck failed")
+                    log.error("HoldConditionCheck failed", c.getDescription())
                 to_ret += c.getKeys()
         self._setProgress(err_msg, -2)
         return list(set(to_ret))
@@ -339,8 +346,8 @@ class SkillCore(SkillDescription):
     def preempt(self):
         if self.hasState(State.Running):
             self._setState(self.onPreempt())
-        if not self.onEnd():
-            self._setState(State.Failure)
+            if not self.onEnd():
+                self._setState(State.Failure)
         return self._state
 
     def getState(self):

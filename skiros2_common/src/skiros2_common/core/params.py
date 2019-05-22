@@ -122,9 +122,11 @@ class Param(Property):
         """
         @brief Check if the current parameter has default values specified
         """
-        return len(self._default) > 0
+        return bool(self._default)
 
     def getDefaultValue(self, index=0):
+        if not self._default:
+            return None
         return self._default[index]
 
     def getDefaultValues(self):

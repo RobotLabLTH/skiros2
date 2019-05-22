@@ -5,6 +5,8 @@ import skiros2_common.tools.logger as log
 from skiros2_world_model.core.world_model_abstract_interface import WorldModelAbstractInterface
 import copy
 import numpy as np
+from inspect import getframeinfo, stack
+
 
 
 class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
@@ -23,7 +25,18 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         self._make_cache = make_cache
         self._external_monitor_cb = None
         self._monitor = rospy.Subscriber("wm/monitor", msgs.WmMonitor, self._monitor_cb, queue_size=100)
-
+    
+    def _debug_info(self):
+        """
+        @brief Retrives the function caller file and line
+        """
+        i=2
+        caller = getframeinfo(stack()[i][0])
+        while "world_model_interface" in caller.filename:
+            i+=1
+            caller = getframeinfo(stack()[i][0])
+        return "%s:%d" % (caller.filename[caller.filename.rfind("/"):], caller.lineno)
+        
     def _monitor_cb(self, msg):
         if self._make_cache:
             if self._last_snapshot_id != msg.prev_snapshot_id or msg.action == 'reset':
@@ -74,7 +87,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
 
     def set_relation(self, subj, pred, obj, value=True):
         msg = srvs.WmSetRelationRequest()
-        msg.author = self._author_name
+        msg.author = self._author_name + self._debug_info()
         msg.relation = utils.relation2msg(utils.makeRelation(subj, pred, obj))
         msg.value = value
         res = self._call(self._set_relations, msg)
@@ -97,7 +110,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
     def add_elements(self, es, context_id='scene'):
         msg = srvs.WmModifyRequest()
         msg.context = context_id
-        msg.author = self._author_name
+        msg.author = self._author_name + self._debug_info()
         for e in es:
             msg.elements.append(utils.element2msg(e))
         msg.action = msg.ADD
@@ -126,7 +139,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         """
         msg = srvs.WmModifyRequest()
         msg.context = context_id
-        msg.author = self._author_name
+        msg.author = self._author_name + self._debug_info()
         msg.elements.append(utils.element2msg(e))
         msg.action = msg.UPDATE
         res = self._call(self._modify, msg)
@@ -140,7 +153,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         """
         msg = srvs.WmModifyRequest()
         msg.context = context_id
-        msg.author = self._author_name
+        msg.author = self._author_name + self._debug_info()
         msg.elements.append(utils.element2msg(e))
         msg.action = msg.UPDATE_PROPERTIES
         msg.type_filter = reasoner
@@ -156,7 +169,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         #print "{}".format(eid)
         msg = srvs.WmModifyRequest()
         msg.context = context_id
-        msg.author = self._author_name
+        msg.author = self._author_name + self._debug_info()
         msg.type_filter = type_filter
         msg.relation_filter = rel_filter
         if isinstance(e, Element):

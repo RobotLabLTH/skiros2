@@ -199,16 +199,13 @@ class ConditionProperty(ConditionBase):
         return False
 
     def _setDescription(self):
-        self._description = "[{}] {}-{}-{} ({})".format(self._label,
-                                                        self._subject_key,
-                                                        self._owl_label,
-                                                        self._value,
-                                                        self._desired_state)
+        self._description = "[{}] {}-{}-{}{} ({})".format(self._label, self._subject_key, self._owl_label, self._operator, self._value, self._desired_state)
 
     def evaluate(self, ph, wmi):
         self._params = ph
         self._wm = wmi
         subj = self._params.getParamValue(self._subject_key)
+        self._description = "[{}] {}-{}-{}{} ({})".format(self._label, subj, self._owl_label, self._operator, self._value, self._desired_state)
         if self._operator == "=":
             return subj.hasProperty(self._owl_label, self._value) == self._desired_state
         else:
@@ -327,6 +324,7 @@ class ConditionRelation(ConditionBase):
             v = self._wm.get_relations(subj, self._owl_label, obj)
         else:
             v = self._wm.query_ontology("SELECT * WHERE {" + "{} {} {}".format(subj, self._owl_label, obj) + additional + ".}")
+        self._description = "[{}] {}({})-{}-{}({}) ({})".format(self._label, self._subject_key, subj, self._owl_label, self._object_key, obj, self._desired_state)
         #print "{} {} {} {}".format(subj, self._owl_label, obj, v)
         if v:
             return self._desired_state
@@ -437,6 +435,7 @@ class AbstractConditionRelation(ConditionBase):
             obj = obj.id
         v = self._wm.get_triples(subj, self._owl_label)
         #print "{} {} {} {}".format(subj, self._owl_label, obj, v)
+        self._description = "[{}] {}-{}-{} ({})".format(self._label, subj, self._owl_label, obj, self._desired_state)
         if obj in v:
             return self._desired_state
         else:

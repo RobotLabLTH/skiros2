@@ -2,6 +2,9 @@
 Changelog for package skiros2_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.0.0 (2019-04-30)
 ------------------
 * Merged 'develop' into 'pycodestyle'.

@@ -34,7 +34,7 @@ class Property(object):
         """
         @brief Return true if the property has at least one value specified
         """
-        return len(self._values) > 0
+        return bool(self._values)
 
     def isList(self):
         """

@@ -2,6 +2,15 @@
 Changelog for package skiros2_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fixed bug in skill preemption
+* Removed debug msg
+* Fix in hold conditions (now checked before ticking childrens)
+* Better output of conditions and reverted 2 changes causing problems.
+* Bug-fix in gui with bool parameters
+* Contributors: RvmiLab
+
 1.0.0 (2019-04-30)
 ------------------
 * onEnd is now called when a skill is preempted, not only when it ends by itself

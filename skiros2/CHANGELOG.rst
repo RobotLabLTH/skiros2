@@ -2,6 +2,12 @@
 Changelog for package skiros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Added Velocity data property to ontology
+* Added output screen in launch
+* Contributors: RvmiLab
+
 1.0.0 (2019-04-30)
 ------------------
 * Planner uses hold conditions

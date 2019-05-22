@@ -2,6 +2,11 @@
 Changelog for package skiros2_gui
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Bug-fix in gui with bool parameters
+* Contributors: RvmiLab
+
 1.0.0 (2019-04-30)
 ------------------
 * Merge pull request `#11 <https://github.com/RVMI/skiros2/issues/11>`_ from matthiashh/matthias-devel-pycodestyle
