@@ -2,8 +2,8 @@
 Changelog for package skiros2_skill
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.1 (2019-05-22)
+------------------
 * Better debug output in world model and sync parameters when preempting.
 * Fixed bug in skill preemption
 * Minor fix for output

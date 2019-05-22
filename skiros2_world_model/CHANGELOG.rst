@@ -2,8 +2,8 @@
 Changelog for package skiros2_world_model
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.1 (2019-05-22)
+------------------
 * Better debug output2
 * Better debug output in world model and sync parameters when preempting.
 * Avoiding crash when an object in the BB is removed from the world model

@@ -2,8 +2,8 @@
 Changelog for package skiros2_gui
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.1 (2019-05-22)
+------------------
 * Bug-fix in gui with bool parameters
 * Contributors: RvmiLab
 

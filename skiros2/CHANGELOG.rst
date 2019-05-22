@@ -2,8 +2,8 @@
 Changelog for package skiros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.1 (2019-05-22)
+------------------
 * Added Velocity data property to ontology
 * Added output screen in launch
 * Contributors: RvmiLab
