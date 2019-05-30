@@ -56,9 +56,9 @@ class SkillManagerInterface:
             self._skill_list = dict()
             if not res:
                 log.error("[{}]".format(self.__class__.__name__), "Can t retrieve skills.")
-                return -1
-            for c in res.list:
-                self._skill_list[c.name] = SkillHolder("", c.type, c.name, utils.deserializeParamMap(c.params))
+            else:
+                for c in res.list:
+                    self._skill_list[c.name] = SkillHolder(self.name, c.type, c.name, utils.deserializeParamMap(c.params))
         return self._skill_list
 
     def get_skill(self, name):
