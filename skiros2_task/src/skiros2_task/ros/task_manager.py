@@ -224,18 +224,15 @@ class TaskManagerNode(PrettyObject):
                 else:
                     xtype = p.params[0]["valueType"]
                     ytype = p.params[1]["valueType"]
-                    subx = self._pddl_interface.getSubTypes(xtype)
-                    suby = self._pddl_interface.getSubTypes(ytype)
+                    subx = [xtype] if self._pddl_interface.getSubTypes(xtype) is None else self._pddl_interface.getSubTypes(xtype)
+                    suby = [ytype] if self._pddl_interface.getSubTypes(ytype) is None else self._pddl_interface.getSubTypes(ytype)
                     if p.abstracts:
                         query_str_template = """
                             SELECT ?x ?y WHERE {{
-                            {{ ?x {relation} ?y. ?x rdf:type/rdfs:subClassOf* {xtype}. ?y rdf:type/rdfs:subClassOf* {ytype}.}}
-                            UNION
-                            {{?t {relation} ?z. ?t rdf:type/rdfs:subClassOf* {xtype}. ?z rdf:type/rdfs:subClassOf* {ytype}. ?x skiros:hasTemplate ?t. ?y skiros:hasTemplate ?z.}}
-                            UNION
-                            {{?t {relation} ?y. ?t rdf:type/rdfs:subClassOf* {xtype}. ?y rdf:type/rdfs:subClassOf* {ytype}. ?x skiros:hasTemplate ?t.}}
-                            UNION
-                            {{?x {relation} ?z. ?x rdf:type/rdfs:subClassOf* {xtype}. ?z rdf:type/rdfs:subClassOf* {ytype}. ?y skiros:hasTemplate ?z.}}
+                                    {{ ?xtypes rdfs:subClassOf* {xtype}. }} UNION {{ {xtype} rdfs:subClassOf* ?xtypes. }}
+                                    {{ ?ytypes rdfs:subClassOf* {ytype}. }} UNION {{ {ytype} rdfs:subClassOf* ?ytypes. }}
+                                    ?xtypes rdfs:subClassOf ?restriction . ?restriction owl:onProperty {relation}. ?restriction ?quantity ?ytypes.
+                                    ?x rdf:type/rdfs:subClassOf* ?xtypes. ?y rdf:type/rdfs:subClassOf* ?ytypes.
                             }}"""
                     else:
                         query_str_template = """
@@ -248,10 +245,6 @@ class TaskManagerNode(PrettyObject):
                             UNION
                             {{?x {relation} ?z. ?x rdf:type/rdfs:subClassOf* {xtype}. ?z rdf:type/rdfs:subClassOf* {ytype}. ?z skiros:hasTemplate ?y.}}
                             }}"""
-                    if subx is None:
-                        subx = [xtype]
-                    if suby is None:
-                        suby = [ytype]
                     for x in subx:
                         for y in suby:
                             query_str = query_str_template.format(relation=p.name, xtype=x, ytype=y)

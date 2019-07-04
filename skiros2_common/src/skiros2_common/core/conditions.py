@@ -423,20 +423,18 @@ class AbstractConditionRelation(ConditionBase):
     def evaluate(self, ph, wmi):
         self._params = ph
         self._wm = wmi
-        subj = self._params.getParamValue(self._subject_key)
-        obj = self._params.getParamValue(self._object_key)
-        if subj.hasProperty("skiros:Template"):
-            subj = subj.getProperty("skiros:Template").value
-        else:
-            subj = subj.id
-        if obj.hasProperty("skiros:Template"):
-            obj = obj.getProperty("skiros:Template").value
-        else:
-            obj = obj.id
-        v = self._wm.get_triples(subj, self._owl_label)
-        #print "{} {} {} {}".format(subj, self._owl_label, obj, v)
+        subj = self._params.getParamValue(self._subject_key).type
+        obj = self._params.getParamValue(self._object_key).type
+        v = wmi.query_ontology("""
+                               SELECT ?ytypes WHERE {{
+                                       {{ ?xtypes rdfs:subClassOf* {subj}. }} UNION {{ {subj} rdfs:subClassOf* ?xtypes. }}
+                                       {{ ?ytypes rdfs:subClassOf* {obj}. }} UNION {{ {obj} rdfs:subClassOf* ?ytypes. }}
+                                       ?xtypes rdfs:subClassOf ?restriction . ?restriction owl:onProperty {relation}. ?restriction ?quantity ?ytypes.
+                                    }}
+                               """.format(subj=subj, relation=self._owl_label, obj=obj))
+        #print "{} {} {}".format(subj, self._owl_label, v)
         self._description = "[{}] {}-{}-{} ({})".format(self._label, subj, self._owl_label, obj, self._desired_state)
-        if obj in v:
+        if v:
             return self._desired_state
         else:
             return not self._desired_state
