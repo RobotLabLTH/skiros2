@@ -4,7 +4,7 @@ import sys
 import inspect
 
 import re
-
+import skiros2_common.tools.logger as log
 
 class PluginLoader(object):
 
@@ -22,7 +22,11 @@ class PluginLoader(object):
                 continue
 
             if modname not in sys.modules:
-                importlib.import_module(modname)
+                try:
+                    importlib.import_module(modname)
+                except ImportError, e:
+                    log.warn("[ImportError]", "Module {} not loaded, some dependencies are missing: {}".format(modname, e))
+                    continue
 
             module = sys.modules[modname]
 
@@ -66,12 +70,12 @@ class PluginLoader(object):
     @classmethod
     def instance(self, plugin, args_dict):
         names, req, opt = self.signature(plugin)
-        print("Instantiating " + str(plugin) + " with arguments " + str(args_dict) + "  || REQUIRED: " + str(req) + " OPTIONAL: " + str(opt.keys()))
+        log.info(self.__class__.__name__, "Instantiating " + str(plugin) + " with arguments " + str(args_dict) + "  || REQUIRED: " + str(req) + " OPTIONAL: " + str(opt.keys()))
         p = None
         try:
             p = plugin(**args_dict)
         except Exception as e:
-            print("  ERROR while instantiating: " + str(e))
+            log.error(self.__class__.__name__,"  ERROR while instantiating: " + str(e))
         return p
 
     def __init__(self):
@@ -93,10 +97,10 @@ class PluginLoader(object):
         self._plugins += self.__import_plugins(folder, base_class)
         if self.size() == 0:
             raise Exception("No " + str(base_class) + " found!")
-        else:
-            print("Loaded " + str(self.size()) + " " + str(base_class) + " plugins:")
-            self.list()
-            print("------")
+        #else:
+            #print("Loaded " + str(self.size()) + " " + str(base_class) + " plugins:")
+            #self.list()
+            #print("------")
 
     def size(self):
         return len(self._plugins)
@@ -119,7 +123,7 @@ class PluginLoader(object):
         if len(p) == 0:
             raise Exception("No plugin with name " + str(name) + " found!")
         elif len(p) > 1:
-            print("WARNING: Multiple plugins with name " + str(name) + " found!\n" + str(p))
+            log.warn(self.__class__.__name__, "WARNING: Multiple plugins with name " + str(name) + " found!\n" + str(p))
         return p[0]
 
     def list(self):

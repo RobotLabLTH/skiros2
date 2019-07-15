@@ -20,7 +20,8 @@ For detailed info refer to the [wiki](https://github.com/RVMI/skiros2/wiki)
 
 ### Dependencies
 
-> pip install flufl.enum rdflib wrapt semanticnet
+> roscd skiros2/..
+> pip install -r requirements.txt
 
 ### Task planning
 
