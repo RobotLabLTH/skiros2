@@ -764,8 +764,9 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         # Update task tree
         with self._task_mutex:
             items = self.task_tree_widget.findItems(str(msg.id), Qt.MatchRecursive | Qt.MatchFixedString, 1)
+            #int(msg.progress_period*1000)
             if items:
-                items[0].setData(0, 0, "{}({})".format(msg.label, State(msg.state).name))
+                items[0].setData(0, 0, "{}({}) {}".format(msg.label, State(msg.state).name, "! SLOW !" if msg.progress_period>0.04 else ""))
             else:
                 parents = self.task_tree_widget.findItems(str(msg.parent_id), Qt.MatchRecursive | Qt.MatchFixedString, 1)
                 if not parents:

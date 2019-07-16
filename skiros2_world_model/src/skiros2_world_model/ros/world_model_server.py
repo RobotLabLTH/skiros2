@@ -124,7 +124,7 @@ class WorldModelServer(OntologyServer):
             else:
                 return srvs.WoLoadAndSaveResponse(False)
         if self._verbose:
-            log.info("[wmLoadAndSave]", "{} {} to file {}. Time: {:0.3f} secs".format(msg.action, msg.context, self._get_context(msg.context).filename, self._times.getLast()))
+            log.info("[wmLoadAndSave]", "{} {} to file {}. Time: {:0.3f} secs".format(msg.action, msg.context, self._get_context(msg.context).filename, self._times.get_last()))
         return srvs.WoLoadAndSaveResponse(True)
 
     def _wm_query_rel_cb(self, msg):
@@ -133,7 +133,7 @@ class WorldModelServer(OntologyServer):
         with self._times:
             to_ret.matches = [utils.relation2msg(x) for x in self._ontology.get_relations(utils.msg2relation(msg.relation))]
         if self._verbose:
-            log.info("[wmQueryRelation]", "Query: {} Answer: {}. Time: {:0.3f} secs".format(msg.relation, to_ret.matches, self._times.getLast()))
+            log.info("[wmQueryRelation]", "Query: {} Answer: {}. Time: {:0.3f} secs".format(msg.relation, to_ret.matches, self._times.get_last()))
         return to_ret
 
     def _wm_get_cb(self, msg):
@@ -154,7 +154,7 @@ class WorldModelServer(OntologyServer):
         for e in to_ret.elements:
             output += "{} ".format(e.id)
         if self._verbose:
-            log.info("[WmGet]", "Done {} [{}]. Answer: {}. Time: {:0.3f} secs".format(msg.action, einput, output, self._times.getLast()))
+            log.info("[WmGet]", "Done {} [{}]. Answer: {}. Time: {:0.3f} secs".format(msg.action, einput, output, self._times.get_last()))
         to_ret.snapshot_id = self._curr_snapshot.hex
         return to_ret
 
@@ -169,7 +169,7 @@ class WorldModelServer(OntologyServer):
                 self._ontology.remove_relation(utils.msg2relation(msg.relation), msg.author, is_relation=True)
                 self._publish_change(msg.author, "remove", relation=msg.relation)
         if self._verbose:
-            log.info("[wmSetRelCb]", "[{}] {} Time: {:0.3f} secs".format(temp, msg.relation, self._times.getLast()))
+            log.info("[wmSetRelCb]", "[{}] {} Time: {:0.3f} secs".format(temp, msg.relation, self._times.get_last()))
         return srvs.WmSetRelationResponse(True)
 
     def _wm_modify_cb(self, msg):
@@ -203,7 +203,7 @@ class WorldModelServer(OntologyServer):
                 to_ret.elements = msg.elements
                 self._publish_change(msg.author, "remove_recursive", elements=msg.elements, context_id=msg.context)
         if self._verbose:
-            log.info("[WmModify]", "{} {} {}. Time: {:0.3f} secs".format(msg.author, msg.action, [e.id for e in to_ret.elements], self._times.getLast()))
+            log.info("[WmModify]", "{} {} {}. Time: {:0.3f} secs".format(msg.author, msg.action, [e.id for e in to_ret.elements], self._times.get_last()))
         return to_ret
 
     def run(self):

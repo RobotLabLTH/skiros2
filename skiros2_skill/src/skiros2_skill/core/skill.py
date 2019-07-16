@@ -482,39 +482,35 @@ class SkillWrapper(SkillInterface):
                     k = self._remaps[k]
                 self._params.specify(self._remaps[k], p.getValues())
 
+    def _mirrorInstance(self):
+        self._copyInstanceParams()
+        self._progress_msg = self._instance.progress_msg
+        self._progress_period = self._instance.progress_period
+        self._progress_time = self._instance.progress_time
+        self._progress_code = self._instance.progress_code
+
     def onReset(self):
         return self._instance.reset()
 
     def onPreempt(self):
         self._instance.specifyParams(self.getParamsNoRemaps(), False)
         res = self._instance.preempt()
-        self._copyInstanceParams()
-        self._progress_msg = self._instance.progress_msg
-        self._progress_time = self._instance.progress_time
-        self._progress_code = self._instance.progress_code
+        self._mirrorInstance()
         if res is not None:
             return res
         else:
             return self._state
 
     def onStart(self):
-        self._progress_code = 0
-        self._progress_time = 0.0
-        self._progress_msg = ""
         state = self._instance.start(self.getParamsNoRemaps())
-        self._progress_msg = self._instance.progress_msg
-        self._progress_time = self._instance.progress_time
-        self._progress_code = self._instance.progress_code
+        self._mirrorInstance()
         return state == State.Running
 
     def execute(self):
         #print '{}:{}'.format(self._label, self._instance)
         self._instance.specifyParams(self.getParamsNoRemaps(), False)
         res = self._instance.tick()
-        self._copyInstanceParams()
-        self._progress_msg = self._instance.progress_msg
-        self._progress_time = self._instance.progress_time
-        self._progress_code = self._instance.progress_code
+        self._mirrorInstance()
         if res is not None:
             return res
         else:

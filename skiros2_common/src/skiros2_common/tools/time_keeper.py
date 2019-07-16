@@ -47,12 +47,12 @@ Usage
 
 class TimeKeeper():
     def __init__(self):
-        self._list = []
         self.reset()
 
     def reset(self):
         self._start_time = now()
         self._time = self._start_time
+        self._list = []
 
     def time_from_start(self):
         return now() - self._start_time
@@ -74,10 +74,14 @@ class TimeKeeper():
             self._list.pop(0)
         self._list.append(time.time() - self._start_time)
 
-    def getAvgTime(self):
+    def get_avg_time(self):
+        if not self._list:
+            return None
         return sum(self._list) / float(len(self._list))
 
-    def getLast(self):
+    def get_last(self):
+        if not self._list:
+            return None
         return self._list[-1]
 
 

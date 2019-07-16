@@ -92,6 +92,7 @@ class BtTicker:
     def publish_progress(self, uid, visitor):
         finished_skill_ids = BtTicker._finished_skill_ids
         for (id, desc) in visitor.snapshot():
+            #TODO: check timings when removing the filtering
             if id in finished_skill_ids:
                 if finished_skill_ids[id]['state'] == desc['state'] and finished_skill_ids[id]['msg'] == desc['msg']:
                     continue
@@ -375,10 +376,11 @@ class SkillManagerNode(DiscoverableNode):
         msg.id = kwargs['id']
         msg.type = kwargs['type']
         msg.label = kwargs['label']
-        msg.state = kwargs['state']
+        msg.state = int(kwargs['state'])
         msg.parent_label = kwargs['parent_label']
         msg.parent_id = kwargs['parent_id']
         msg.progress_code = kwargs['code']
+        msg.progress_period = kwargs['period']
         msg.progress_time = kwargs['time']
         msg.progress_message = kwargs['msg']
         self._monitor.publish(msg)
