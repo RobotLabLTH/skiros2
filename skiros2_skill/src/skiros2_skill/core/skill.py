@@ -416,7 +416,7 @@ class SkillWrapper(SkillInterface):
         self._progress_code = 0
         self._progress_msg = ""
         if instanciator:
-            instanciator.assignDescription(self)
+            instanciator.assign_description(self)
 
     # HACK for accessing progress member variable due to shitty implementation -.-
     @property

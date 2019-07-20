@@ -41,6 +41,13 @@ class SkillManagerInterface:
         """
         return self.get_skill_list(update=False)
 
+    def shutdown(self):
+        """
+        @brief Unregister subscribers (note: deleting the instance without calling shutdown will leave callbacks active)
+        """
+        self._monitor_sub.unregister()
+        self._tick_rate_sub.unregister()
+
     def print_state(self):
         temp = "Skills: { "
         for c in self.get_skill_list():

@@ -97,10 +97,6 @@ class PluginLoader(object):
         self._plugins += self.__import_plugins(folder, base_class)
         if self.size() == 0:
             raise Exception("No " + str(base_class) + " found!")
-        #else:
-            #print("Loaded " + str(self.size()) + " " + str(base_class) + " plugins:")
-            #self.list()
-            #print("------")
 
     def size(self):
         return len(self._plugins)
@@ -110,7 +106,7 @@ class PluginLoader(object):
         for p in self._plugins:
             names, req, opt = self.signature(p)
             args = opt.copy()
-            args.update({k: args_dict[k] for k in req if k in args_dict.keys()})
+            args.update( { k:args_dict[k] for k in req if k in args_dict.keys()} )
 
             instance = self.instance(p, args)
             if instance is not None:
@@ -130,3 +126,4 @@ class PluginLoader(object):
         for p in self._plugins:
             print(self.split(p))
         return [p.__name__ for p in self._plugins]
+

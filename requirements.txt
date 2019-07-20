@@ -1,3 +1,4 @@
 flufl.enum
 rdflib
 wrapt
+inflection

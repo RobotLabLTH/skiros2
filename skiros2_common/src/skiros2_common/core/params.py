@@ -8,8 +8,9 @@ from datetime import datetime, timedelta
 """
 Required: parameters that must be specified
 Optional: optional parameters
+Inferred: a required parameter that is auto-parameterized by pre-conditions
 """
-ParamTypes = Enum('ParamTypes', 'Required Optional')
+ParamTypes = Enum('ParamTypes', 'Required Optional Inferred')
 
 
 class Param(Property):

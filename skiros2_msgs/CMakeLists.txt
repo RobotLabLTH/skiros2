@@ -18,7 +18,6 @@ add_message_files(
   Param.msg
   Property.msg
   Relation.msg
-  ManagerDescription.msg
   Statement.msg
   Condition.msg
   RobotDescription.msg

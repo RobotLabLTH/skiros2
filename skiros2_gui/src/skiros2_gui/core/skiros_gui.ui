@@ -208,13 +208,16 @@
           <item>
            <widget class="QTreeWidget" name="skill_tree_widget">
             <property name="sizePolicy">
-             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
-              <horstretch>0</horstretch>
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <horstretch>3</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
             <property name="toolTip">
              <string>List of available skills</string>
+            </property>
+            <property name="indentation">
+             <number>10</number>
             </property>
             <column>
              <property name="text">
@@ -236,6 +239,9 @@
               <number>2</number>
              </property>
              <property name="rightMargin">
+              <number>2</number>
+             </property>
+             <property name="bottomMargin">
               <number>2</number>
              </property>
              <item>
@@ -263,7 +269,7 @@
              <item>
               <widget class="QTableWidget" name="skill_params_table">
                <property name="sizePolicy">
-                <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
+                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                  <horstretch>0</horstretch>
                  <verstretch>0</verstretch>
                 </sizepolicy>
@@ -280,11 +286,26 @@
                <property name="autoFillBackground">
                 <bool>true</bool>
                </property>
+               <property name="frameShape">
+                <enum>QFrame::NoFrame</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Sunken</enum>
+               </property>
+               <property name="sizeAdjustPolicy">
+                <enum>QAbstractScrollArea::AdjustIgnored</enum>
+               </property>
                <property name="alternatingRowColors">
                 <bool>true</bool>
                </property>
+               <property name="selectionMode">
+                <enum>QAbstractItemView::NoSelection</enum>
+               </property>
                <property name="showGrid">
                 <bool>true</bool>
+               </property>
+               <property name="gridStyle">
+                <enum>Qt::SolidLine</enum>
                </property>
                <property name="cornerButtonEnabled">
                 <bool>false</bool>
@@ -305,7 +326,7 @@
                 <bool>true</bool>
                </attribute>
                <attribute name="verticalHeaderStretchLastSection">
-                <bool>true</bool>
+                <bool>false</bool>
                </attribute>
                <row/>
                <row/>
@@ -320,19 +341,6 @@
                 </property>
                </column>
               </widget>
-             </item>
-             <item>
-              <spacer name="verticalSpacer">
-               <property name="orientation">
-                <enum>Qt::Vertical</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>20</width>
-                 <height>80</height>
-                </size>
-               </property>
-              </spacer>
              </item>
             </layout>
            </widget>
@@ -489,7 +497,7 @@
              <bool>true</bool>
             </property>
             <property name="selectionMode">
-             <enum>QAbstractItemView::SingleSelection</enum>
+             <enum>QAbstractItemView::NoSelection</enum>
             </property>
             <property name="selectionBehavior">
              <enum>QAbstractItemView::SelectRows</enum>

@@ -2,7 +2,7 @@
 
 [RVMI webpage](http://www.rvmi.aau.dk/)
 
-**Compatibility**: Has been tested with Ubuntu 16.04, ROS Kinetic and python 2.7.
+**Compatibility**: Has been tested with Ubuntu 16.04/ROS Kinetic and Ubuntu 18.04/ROS Melodic, with python 2.7.
 
 The Skill-based platform for ROS V2 (SkiROS2) is a software designed to support programming of complex coordination schemes on robots equipped with several sensing and actuation functionalities.
 
@@ -31,7 +31,7 @@ To run the task planning you should install the fast downward planner:
 > cd scripts
 > ./install_fd_task_planner.sh
 
-When asked for the install folder, you can insert the location you prefer or leave the default.
+When asked for the install folder, you can insert a location of your preference or just leave the default.
 
 ### Explore ontology
 
@@ -43,9 +43,9 @@ All the OWL files found in the specified path are loaded from the system at boot
 
 ### Launching the system
 
-See the skiros2_template_lib for a minimal example on how to launch the system (also useful to create a new library from scratch).
+See the *skiros2_template_lib* for a minimal example on how to launch the system (also useful to create a new library from scratch).
 
-See the skiros2_test_lib for more elaborated examples.
+See the *skiros2_test_lib* for more elaborated examples.
 
 ### Doxygen documentation
 

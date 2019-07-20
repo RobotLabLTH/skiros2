@@ -98,7 +98,7 @@ class SkillDescription(object):
         Some default params are added automatically
         """
         if not self._params.hasParam('Robot'):
-            self._params.addParam("Robot", Element("sumo:Agent"), params.ParamTypes.Required)
+            self._params.addParam("Robot", Element("sumo:Agent"), params.ParamTypes.Inferred)
         # if not self._params.hasParam('Skill'):
         #    self._params.addParam("Skill", self.toElement(), params.ParamTypes.Required)
 
