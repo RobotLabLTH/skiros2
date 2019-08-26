@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>skiros2_gui</name>
-  <version>1.0.1</version>
+  <version>1.0.2</version>
   <description>SkiROS GUI</description>
 
   <maintainer email="francesco@m-tech.aau.dk">Francesco Rovida</maintainer>

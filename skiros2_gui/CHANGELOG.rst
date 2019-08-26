@@ -2,8 +2,8 @@
 Changelog for package skiros2_gui
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.2 (2019-08-26)
+------------------
 * Merge branch 'master' into develop
 * Finish gui-improved-visualization
 * Printing SLOW tag to primitives running with a period above 40msec.

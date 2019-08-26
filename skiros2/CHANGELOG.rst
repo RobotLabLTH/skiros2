@@ -2,8 +2,8 @@
 Changelog for package skiros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.2 (2019-08-26)
+------------------
 * Merge branch 'master' into develop
 * Added launch file for complete skiros system.
 * Added TFTimeStamp to ontology
