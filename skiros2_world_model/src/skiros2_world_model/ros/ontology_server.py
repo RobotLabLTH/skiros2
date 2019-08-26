@@ -53,7 +53,7 @@ class OntologyServer(object):
                         if len(s) > 1:
                             temp += " "
                     to_ret.answer.append(temp)
-            log.assertInfo(self._verbose, "[WoQuery]", "Answer: {}. Time: {:0.3f} sec".format(to_ret.answer, self._times.getLast()))
+            log.assertInfo(self._verbose, "[WoQuery]", "Answer: {}. Time: {:0.3f} sec".format(to_ret.answer, self._times.get_last()))
         except (AttributeError, ParseException) as e:
             # TODO: test if the bug is fixed, and remove the exception handling
             log.error("[WoQuery]", "Parse error with following query: {}.".format(msg.query_string))
@@ -67,7 +67,7 @@ class OntologyServer(object):
                     self._ontology.add_relation(utils.msg2relation(s.relation), msg.context, msg.author)
                 else:
                     self._ontology.remove_relation(utils.msg2relation(s.relation), msg.context, msg.author)
-        log.assertInfo(self._verbose, "[WoModify]", "Done in {} sec".format(self._times.getLast()))
+        log.assertInfo(self._verbose, "[WoModify]", "Done in {} sec".format(self._times.get_last()))
         return srvs.WoModifyResponse(True)
 
     def run(self):

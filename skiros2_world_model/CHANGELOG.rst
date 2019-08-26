@@ -2,6 +2,13 @@
 Changelog for package skiros2_world_model
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.2 (2019-08-26)
+------------------
+* Merge branch 'master' into develop
+* Printing SLOW tag to primitives running with a period above 40msec.
+* Updated changelog
+* Contributors: RvmiLab, francesco
+
 1.0.1 (2019-05-22)
 ------------------
 * Better debug output2

@@ -267,10 +267,16 @@
 
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#LinkedToFrameId">
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#TransformationProperty"/>
-        <rdfs:comment>Another equivalent transformation</rdfs:comment>
+        <rdfs:comment>An equivalent transformation name </rdfs:comment>
     </owl:DatatypeProperty>
 
 
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#PushToFrameId -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#PushToFrameId">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#TransformationProperty"/>
+        <rdfs:comment>An equivalent transformation name</rdfs:comment>
+    </owl:DatatypeProperty>
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#MotionExe -->
 
@@ -422,6 +428,13 @@
         <rdfs:comment>If true, the orientation and position info will be used to publish the object transformation on tf.</rdfs:comment>
     </owl:DatatypeProperty>
 
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#TfTimeStamp -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#TfTimeStamp">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#TransformationProperty"/>
+        <rdfs:comment>The time stamp of a pose or transformation.</rdfs:comment>
+    </owl:DatatypeProperty>
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#RgbTopic -->

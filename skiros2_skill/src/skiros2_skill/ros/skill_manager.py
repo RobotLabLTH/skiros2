@@ -11,11 +11,11 @@ from discovery_interface import DiscoverableNode
 import skiros2_common.tools.logger as log
 from skiros2_common.core.world_element import Element
 from skiros2_common.tools.id_generator import IdGen
-from skiros2_common.tools.plugin_loader import *
 from multiprocessing.dummy import Process
 import skiros2_skill.core.visitors as visitors
 from skiros2_common.tools.time_keeper import TimeKeeper
 from std_msgs.msg import Empty
+import inflection #For camel-snake case conversion
 
 log.setLevel(log.INFO)
 
@@ -92,6 +92,7 @@ class BtTicker:
     def publish_progress(self, uid, visitor):
         finished_skill_ids = BtTicker._finished_skill_ids
         for (id, desc) in visitor.snapshot():
+            #TODO: check timings when removing the filtering
             if id in finished_skill_ids:
                 if finished_skill_ids[id]['state'] == desc['state'] and finished_skill_ids[id]['msg'] == desc['msg']:
                     continue
@@ -147,30 +148,32 @@ class BtTicker:
 
 class SkillManager:
     """
-    The skill manager manage a sub-system of the robot
+    @brief The skill manager manage a sub-system of the robot
     """
-
     def __init__(self, prefix, agent_name, verbose=True):
         self._agent_name = agent_name
         self._wmi = wmi.WorldModelInterface(agent_name, make_cache=True)
         self._wmi.set_default_prefix(prefix)
         self._local_wm = self._wmi
-        self._plug_loader = PluginLoader()
         self._instanciator = SkillInstanciator(self._local_wm)
         self._ticker = BtTicker()
         self._verbose = verbose
         self._ticker._verbose = verbose
-        self._registerAgent(agent_name)
+        self._register_agent(agent_name)
         self._skills = []
         # self._wmi.unlock() #Ensures the world model's mutex is unlocked
 
-    def observeTaskProgress(self, func):
+    @property
+    def skills(self):
+        return self._skills
+
+    def observe_task_progress(self, func):
         self._ticker.observe_progress(func)
 
-    def observeTick(self, func):
+    def observe_tick(self, func):
         self._ticker.observe_tick(func)
 
-    def _registerAgent(self, agent_name):
+    def _register_agent(self, agent_name):
         res = self._wmi.resolve_element(Element("cora:Robot", agent_name))
         if res:
             log.info("[{}]".format(self.__class__.__name__), "Found robot {}, skipping registration.".format(res))
@@ -190,36 +193,41 @@ class SkillManager:
         self._wmi.update_element(self._robot)
 
     def shutdown(self):
-        for s in self._skills:
+        for s in self.skills:
             self._wmi.remove_element(s)
         self._wmi.unlock()  # Ensures the world model's mutex gets unlocked
 
-    def loadSkills(self, package):
+    def load_skills(self, package):
         """
         Load definitions from a package
         """
-        self._plug_loader.load(package, skill.SkillDescription)
+        self._instanciator.load_library(package)
 
-    def addSkill(self, name):
+    def add_skill(self, name, subclass="skiros:CompoundSkill"):
         """
         @brief Add a skill to the available skill set
         """
-        skill = self._plug_loader.getPluginByName(name)()
-        self._instanciator.addInstance(skill)
+        skill = self._instanciator.add_instance(name)
         e = skill.toElement()
         e.addRelation(self._robot._id, "skiros:hasSkill", "-1")
         #print skill.printInfo(True)
-        if not self._wmi.get_type(e.type):
-            self._wmi.add_class(e.type, "skiros:Skill")
+        hierarchy = skill.__module__.split(".") + [e.type]
+        for c1, c2 in zip([None] + hierarchy[:-1], hierarchy):
+            if c1 is None:
+                c1 = "skiros:Skill"
+            c1 = c1 if c1.find(":") > 0 else "skiros:{}".format(inflection.camelize(c1))
+            c2 = c2 if c2.find(":") > 0 else "skiros:{}".format(inflection.camelize(c2))
+            if not self._wmi.get_type(c2):
+                self._wmi.add_class(c2, c1)
         self._wmi.add_element(e)
-        self._skills.append(e)
+        self._skills.append(skill)
         return SkillHolder(self._agent_name, skill.type, skill.label, skill.params.getCopy())
 
-    def addLocalPrimitive(self, name):
+    def add_primitive(self, name):
         """
         @brief Add a local primitive
         """
-        self.addSkill(name)
+        self.add_skill(name, "skiros:PrimitiveSkill")
 
     def add_task(self, task):
         root = skill.Root("root", self._local_wm)
@@ -229,15 +237,15 @@ class SkillManager:
             root.last().specifyParamsDefault(i.ph)
         return self._ticker.add_task(root, root.id)
 
-    def preemptTask(self, uid):
+    def preempt_task(self, uid):
         self._ticker.preempt(uid)
 
-    def printTask(self, uid):
+    def print_task(self, uid):
         self.visitor = visitors.VisitorPrint(self._local_wm, self._instanciator)
         self.visitor.setVerbose(self._verbose)
         return self._ticker.start(self.visitor)
 
-    def executeTask(self, uid, sim=False, track_params=list()):  # [("MotionChange",)]
+    def execute_task(self, uid, sim=False, track_params=list()):  # [("MotionChange",)]
         self.visitor = visitors.VisitorExecutor(self._local_wm, self._instanciator)
         self.visitor.setSimulate(sim)
         for t in track_params:
@@ -248,14 +256,14 @@ class SkillManager:
     def clear_tasks(self):
         self._ticker.clear()
 
-    def executeOptimal(self):
+    def execute_optimal(self):
         # Optimize Procedure
         self.optimizeTask()
-        self.printTask()
+        self.print_task()
         # Execute
-        return self.executeTask(False)
+        return self.execute_task(False)
 
-    def simulateTask(self, uid):
+    def simulate_task(self, uid):
         self.visitor = visitors.VisitorReversibleSimulator(self._local_wm, self._instanciator)
         self.visitor.setVerbose(self._verbose)
         # self.visitor.trackParam("Initial")
@@ -263,7 +271,7 @@ class SkillManager:
         if self.visitor.traverse(self._tasks[uid]):
             self._task = self.visitor.getExecutionRoot()
 
-    def optimizeTask(self):
+    def optimize_task(self):
         self.visitor = optimizer.VisitorOptimizer(self._local_wm, self._instanciator)
         # self.visitor.setVerbose(True)
         # self.visitor.trackParam("PlacingCell")
@@ -280,7 +288,7 @@ class SkillManager:
         except KeyError, e:
             self._task = self.visitor.getExecutionRoot()
             print "Exe: {}".format(self.visitor._execution_branch)
-            self.printTask()
+            self.print_task()
             raise e
 
 
@@ -294,7 +302,7 @@ class SkillManagerNode(DiscoverableNode):
     Main roles:
         -receive tasks (sequences of skills) and process them with visitors
         -currently available visitors: print, execute, simulate, optimize
-        -publish feedback on topic /monitor (TODO)
+        -publish feedback on topic /monitor
     """
 
     def __init__(self):
@@ -302,57 +310,57 @@ class SkillManagerNode(DiscoverableNode):
         robot_name = rospy.get_name()
         prefix = ""
         full_name = rospy.get_param('~prefix', prefix) + ':' + robot_name[robot_name.rfind("/") + 1:]
-        self._sm = SkillManager(rospy.get_param('~prefix', prefix), full_name, verbose=rospy.get_param('~verbose', True))
-        self._sm.observeTaskProgress(self._onProgressUpdate)
-        self._sm.observeTick(self._onTick)
+        self.sm = SkillManager(rospy.get_param('~prefix', prefix), full_name, verbose=rospy.get_param('~verbose', True))
+        self.sm.observe_task_progress(self._on_progress_update)
+        self.sm.observe_tick(self._on_tick)
+
         # Init skills
         self._initialized = False
-        self._getskills = rospy.Service('~get_skills', srvs.ResourceGetDescriptions, self._getDescriptionsCb)
-        self._initSkills()
-        #self._sm._wmi.instanciate("skiros:large_box_test_starter", relations=[])
+        self._getskills = rospy.Service('~get_skills', srvs.ResourceGetDescriptions, self._get_descriptions_cb)
+        self._init_skills()
         rospy.sleep(0.5)
         self._initialized = True
-        # self._sm._local_wm.sync()
-        # self._sm._local_wm.printModel()
+
         # Start communications
-        self._command = rospy.Service('~command', srvs.SkillCommand, self._commandCb)
+        self._command = rospy.Service('~command', srvs.SkillCommand, self._command_cb)
         self._monitor = rospy.Publisher("~monitor", msgs.SkillProgress, queue_size=20)
         self._tick_rate = rospy.Publisher("~tick_rate", Empty, queue_size=20)
         rospy.on_shutdown(self.shutdown)
         self.init_discovery("skill_managers", robot_name)
         log.info("[{}]".format(rospy.get_name()), "Skill manager ready.")
 
-    def _initSkills(self):
+    def _init_skills(self):
         """
         @brief Initialize the robot with a set of skills
         """
         for r in rospy.get_param('~libraries_list', []):
             log.info("[LoadLibrary]", str(r))
-            self._sm.loadSkills(r)
-        # Instanciate local primitives
+            self.sm.load_skills(r)
+
         for r in rospy.get_param('~primitive_list', []):
             log.info("[LoadPrimitive]", str(r))
-            self._sm.addLocalPrimitive(r)
+            self.sm.add_primitive(r)
+
         sl = rospy.get_param('~skill_list', [])
-        if not sl:
-            pass  # TODO: load all defined skills
         for r in sl:
             log.info("[LoadSkill]", str(r))
-            self._sm.addSkill(r)
+            self.sm.add_skill(r)
 
-    def _makeTask(self, msg):
+    def _make_task(self, msg):
         task = []
         for s in msg:
             task.append(SkillHolder("", s.type, s.name, utils.deserializeParamMap(s.params)))
         return task
 
-    def _commandCb(self, msg):
+    def _command_cb(self, msg):
+        """
+        @brief Commands execution of skills
+        """
         if msg.action == msg.START:
-            task_id = self._sm.add_task(self._makeTask(msg.skills))
-            # self._sm.printTask(task_id)
-            self._sm.executeTask(task_id)
+            task_id = self.sm.add_task(self._make_task(msg.skills))
+            self.sm.execute_task(task_id)
         elif msg.action == msg.PREEMPT:
-            task_id = self._sm.preemptTask(msg.execution_id)
+            task_id = self.sm.preempt_task(msg.execution_id)
         elif msg.action == msg.PAUSE:
             log.error("[{}]".format(self.__class__.__name__), "TODO")
             return srvs.SkillCommandResponse(False, -1)
@@ -364,40 +372,46 @@ class SkillManagerNode(DiscoverableNode):
             return srvs.SkillCommandResponse(False, -1)
         return srvs.SkillCommandResponse(True, task_id)
 
-    def _onTick(self):
+    def _on_tick(self):
+        """
+        @brief To measure the tick rate externally
+        """
         self._tick_rate.publish(Empty())
 
-    def _onProgressUpdate(self, *args, **kwargs):
-        log.debug("[{}]".format(self.__class__.__name__), "{}:Task[{task_id}]{type}:{label}[{id}]: Message[{code}]: {msg} ({state})".format(self._sm._agent_name[1:], **kwargs))
+    def _on_progress_update(self, *args, **kwargs):
+        """
+        @brief Publish skill progress
+        """
+        log.debug("[{}]".format(self.__class__.__name__), "{}:Task[{task_id}]{type}:{label}[{id}]: Message[{code}]: {msg} ({state})".format(self.sm._agent_name[1:], **kwargs))
         msg = msgs.SkillProgress()
         msg.robot = rospy.get_name()
         msg.task_id = kwargs['task_id']
         msg.id = kwargs['id']
         msg.type = kwargs['type']
         msg.label = kwargs['label']
-        msg.state = kwargs['state']
+        msg.state = int(kwargs['state'])
         msg.parent_label = kwargs['parent_label']
         msg.parent_id = kwargs['parent_id']
         msg.progress_code = kwargs['code']
+        msg.progress_period = kwargs['period']
         msg.progress_time = kwargs['time']
         msg.progress_message = kwargs['msg']
         self._monitor.publish(msg)
 
-    def _getDescriptionsCb(self, msg):
+    def _get_descriptions_cb(self, msg):
         """
-        Called when receiving a command on ~/get_descriptions
+        @brief Returns available skills. Called when receiving a command on ~/get_descriptions
         """
         while not self._initialized:
             rospy.sleep(0.1)
         to_ret = srvs.ResourceGetDescriptionsResponse()
-        for k, r in self._sm._instanciator._available_instances.iteritems():
-            for s in r:
-                to_ret.list.append(skill2msg(s))
+        for s in self.sm.skills:
+            to_ret.list.append(skill2msg(s))
         return to_ret
 
     def shutdown(self):
         self.shutdown_discovery()
-        self._sm.shutdown()
+        self.sm.shutdown()
 
     def run(self):
         rospy.spin()

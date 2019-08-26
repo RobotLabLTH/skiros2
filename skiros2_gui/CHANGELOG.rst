@@ -2,6 +2,14 @@
 Changelog for package skiros2_gui
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.2 (2019-08-26)
+------------------
+* Merge branch 'master' into develop
+* Finish gui-improved-visualization
+* Printing SLOW tag to primitives running with a period above 40msec.
+* Updated changelog
+* Contributors: RvmiLab, francesco
+
 1.0.1 (2019-05-22)
 ------------------
 * Bug-fix in gui with bool parameters

@@ -19,8 +19,9 @@ class PrimitiveBase(SkillCore):
             return State.Failure
         else:
             start_time = datetime.now()
-            self._setState(self.execute())
-            self._updateRoutine(start_time)
+            with self._time_keeper:
+                self._setState(self.execute())
+                self._updateRoutine(start_time)
 #            if self._progress_msg!="":
 #                log.info("[{}]".format(self.printState()), self._progress_msg)
             if self.hasState(State.Success) or self.hasState(State.Failure):

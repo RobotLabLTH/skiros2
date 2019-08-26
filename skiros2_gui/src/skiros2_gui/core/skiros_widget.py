@@ -332,8 +332,11 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         self.log_file = None
 
     def shutdown_plugin(self):
-        # TODO unregister all publishers here
-        pass
+        with self._wm_mutex and self._task_mutex:
+            self._wmi.set_monitor_cb(None)
+            self._sli.set_monitor_cb(None)
+            del self._sli
+            del self._wmi
 
     def save_settings(self, plugin_settings, instance_settings):
         # TODO save intrinsic configuration, usually using:
@@ -372,30 +375,50 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         """
         Keeps ui updated
         """
-        # Update robot BT rate
-        if self._sli.agents:
-            robot_txt = ""
-            for name, manager in self._sli.agents.iteritems():
-                robot_txt += "{}: {:0.1f}hz ".format(name.replace("/", ""), manager.get_tick_rate())
-            self.robot_rate_info.setText(robot_txt)
         # Update skill list
         if self._sli.has_changes:
+            self.skill_tree_widget.setSortingEnabled(False)
+            self.skill_tree_widget.sortByColumn(0, Qt.AscendingOrder)
             self.skill_tree_widget.clear()
             self.skill_tree_widget.setColumnCount(3)
             self.skill_tree_widget.hideColumn(2)
             self.skill_tree_widget.hideColumn(1)
             fu = QTreeWidgetItem(self.skill_tree_widget, ["Frequently used", "fu"])
             fu.setExpanded(True)
-            QTreeWidgetItem(self.skill_tree_widget, ["All", "All"])
+            root = QTreeWidgetItem(self.skill_tree_widget, ["All", "All"])
+            root.setExpanded(True)
             for ak, e in self._sli._agents.iteritems():
                 for s in e._skill_list.values():
                     s.manager = ak
                     self._add_available_skill(s)
+            # simplifies hierarchy
+            self.simplify_tree_hierarchy(root)
+            self.skill_tree_widget.setSortingEnabled(True)
             # select last skill
             s = self.skill_tree_widget.findItems(self.last_executed_skill, Qt.MatchRecursive | Qt.MatchFixedString, 1)
+            self.skill_params_table.setRowCount(0)
             if s:
                 self.skill_tree_widget.setCurrentItem(s[0])
+        # Update robot BT rate
+        if self._sli.agents:
+            robot_txt = ""
+            for name, manager in self._sli.agents.iteritems():
+                robot_txt += "{}: {:0.1f}hz ".format(name.replace("/", ""), manager.get_tick_rate())
+            self.robot_rate_info.setText(robot_txt)
+        else:
+            self.robot_rate_info.setText("No robot connected.")
 
+
+    def simplify_tree_hierarchy(self, root):
+        i = 0
+        while i < root.childCount():
+            c = root.child(i)
+            if c.childCount()==1:
+                root.addChildren(c.takeChildren())
+                root.removeChild(c)
+            else:
+                self.simplify_tree_hierarchy(c)
+                i+=1
 
 #==============================================================================
 #  World model tab
@@ -476,34 +499,12 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
                 if data.action == 'update' or data.action == 'update_properties':
                     for elem in data.elements:
                         elem = rosutils.msg2element(elem)
-
-                        # check if element is already in tree
-                        items = self.wm_tree_widget.findItems(elem.id, Qt.MatchRecursive | Qt.MatchFixedString, 1)
-                        if not items:
-                            continue
-
-                        # check if updated item is selected
-                        if elem.id == cur_item_id:
-                            # update properties table if selected item has changed
-                            self.wm_properties_widget.blockSignals(True)
-                            self.fill_properties_table(elem)
-                            self.wm_properties_widget.blockSignals(False)
-
-                        # get parent node in tree
-                        parent = items[0].parent()
-                        if not parent:
-                            continue
-
-                        # check if the old parent is still parent of the updated element
-                        has_child = elem.getRelations(subj=parent.text(1), pred=self._wmi.get_sub_properties('skiros:spatiallyRelated'), obj='-1')
-                        if not has_child:
-                            # elem moved spatially
-                            self._remove_wm_node(elem)
-                            self._add_wm_node(elem)
+                        self._update_wm_node(elem, cur_item_id)
                 elif data.action == 'add':
                     for elem in data.elements:
                         elem = rosutils.msg2element(elem)
-                        self._add_wm_node(elem)
+                        if not self._add_wm_node(elem):
+                            self._snapshot_id = ""
                 elif data.action == 'remove' or data.action == 'remove_recursive':
                     for elem in data.elements:
                         elem = rosutils.msg2element(elem)
@@ -600,6 +601,37 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
             item = items[0]
             item.parent().removeChild(item)
 
+    def _update_wm_node(self, elem, cur_item_id):
+        # check if element is already in tree
+        items = self.wm_tree_widget.findItems(elem.id, Qt.MatchRecursive | Qt.MatchFixedString, 1)
+        if not items:
+            return
+        item = items[0]
+        # check if updated item is selected
+        if elem.id == cur_item_id:
+            # update properties table if selected item has changed
+            self.wm_properties_widget.blockSignals(True)
+            self.fill_properties_table(elem)
+            self.wm_properties_widget.blockSignals(False)
+
+        # get parent node in tree
+        parent = item.parent()
+        if not parent:
+            return
+
+        # check if the old parent is still parent of the updated element
+        parent_rel = elem.getRelation(pred=self._wmi.get_sub_properties('skiros:spatiallyRelated'), obj='-1')
+        if not parent.text(1) in parent_rel['src']:
+            # elem moved spatially
+            item.parent().removeChild(item)
+            parents = self.wm_tree_widget.findItems(parent_rel['src'], Qt.MatchRecursive | Qt.MatchFixedString, 1)
+            if not parents:
+                log.warn("[update_wm_node]", "No parent found for {}".format(elem.id))
+                return
+            item.setText(0, utils.ontology_type2name(elem.id) if not elem.label else utils.ontology_type2name(elem.label))
+            item.setText(1, elem.id)
+            parents[0].addChild(item)
+
     def _add_wm_node(self, elem):
         #print "Adding {}".format(elem.id)
         parent_rel = elem.getRelation(pred=self._wmi.get_sub_properties('skiros:spatiallyRelated'), obj='-1')
@@ -611,8 +643,8 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
             to_expand = False
             parent_rel = elem.getRelation(pred='skiros:hasSkill', obj='-1')
             if not parent_rel:
-                log.error("[add_wm_node]", "Can't add {}".format(elem.id))
-                return
+                log.warn("[add_wm_node]", "Skipping element without declared parent: {}".format(elem.id))
+                return True
             parent_id = '{}_skills'.format(parent_rel['src'])
             item = self.wm_tree_widget.findItems(parent_id, Qt.MatchRecursive | Qt.MatchFixedString, 1)
             if not item:  # In case it is still not existing i create the "support" skill node
@@ -621,10 +653,15 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
             else:
                 item = item[0]
         else:
-            item = self.wm_tree_widget.findItems(parent_rel['src'], Qt.MatchRecursive | Qt.MatchFixedString, 1)[0]
+            items = self.wm_tree_widget.findItems(parent_rel['src'], Qt.MatchRecursive | Qt.MatchFixedString, 1)
+            if not items:
+                log.warn("[add_wm_node]", "Parent {} of node {} is not in the known tree.".format(parent_rel['src'], elem.id))
+                return False
+            item = items[0]
         name = utils.ontology_type2name(elem.id) if not elem.label else utils.ontology_type2name(elem.label)
         item = QTreeWidgetItem(item, [name, elem.id])
         item.setExpanded(to_expand)
+        return True
 
     def _create_wm_tree(self, item, scene, elem):
         name = utils.ontology_type2name(elem.id) if not elem.label else utils.ontology_type2name(elem.label)
@@ -632,19 +669,22 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
 
         spatialRel = sorted(elem.getRelations(subj='-1', pred=self._wmi.get_sub_properties('skiros:spatiallyRelated')), key=lambda r: r['dst'])
         for rel in spatialRel:
-            self._create_wm_tree(item, scene, scene[rel['dst']])
-            item.setExpanded(True)
+            if rel['dst'] in scene:
+                self._create_wm_tree(item, scene, scene[rel['dst']])
+                item.setExpanded(True)
 
         skillRel = sorted(elem.getRelations(subj='-1', pred='skiros:hasSkill'), key=lambda r: r['dst'])
         if skillRel:
             skillItem = QTreeWidgetItem(item, ['Skills', '{}_skills'.format(elem.id)])
             for rel in skillRel:
-                self._create_wm_tree(skillItem, scene, scene[rel['dst']])
-                skillItem.setExpanded(True)
+                if rel['dst'] in scene:
+                    self._create_wm_tree(skillItem, scene, scene[rel['dst']])
+                    skillItem.setExpanded(True)
 
         skillPropRel = sorted(elem.getRelations(subj='-1', pred=self._wmi.get_sub_properties('skiros:skillProperty')), key=lambda r: r['dst'])
         for rel in skillPropRel:
-            self._create_wm_tree(item, scene, scene[rel['dst']])
+            if rel['dst'] in scene:
+                self._create_wm_tree(item, scene, scene[rel['dst']])
 
     def fill_properties_table(self, elem):
         self.wm_properties_widget.setRowCount(0)
@@ -764,8 +804,9 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         # Update task tree
         with self._task_mutex:
             items = self.task_tree_widget.findItems(str(msg.id), Qt.MatchRecursive | Qt.MatchFixedString, 1)
+            #int(msg.progress_period*1000)
             if items:
-                items[0].setData(0, 0, "{}({})".format(msg.label, State(msg.state).name))
+                items[0].setData(0, 0, "{}({}) {}".format(msg.label, State(msg.state).name, "! SLOW !" if msg.progress_period>0.04 else ""))
             else:
                 parents = self.task_tree_widget.findItems(str(msg.parent_id), Qt.MatchRecursive | Qt.MatchFixedString, 1)
                 if not parents:
@@ -831,13 +872,21 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
 
     def _add_available_skill(self, s):
         stype = self.skill_tree_widget.findItems(s.type, Qt.MatchRecursive | Qt.MatchFixedString, 1)
-        if not stype:
-            stype = self.skill_tree_widget.findItems("All", Qt.MatchRecursive | Qt.MatchFixedString, 1)
-            stype = QTreeWidgetItem(stype[0], [s.type.replace("skiros:", ""), s.type])
-            stype.setExpanded(True)
+        if not stype: #If it is the first of its type, add the parents hierarchy to the tree
+            hierarchy = self._wmi.query_ontology('SELECT ?x {{ {} rdfs:subClassOf*  ?x }}'.format(s.type))
+            hierarchy = hierarchy[:hierarchy.index("skiros:Skill")]
+            hierarchy.reverse()
+            parent = self.skill_tree_widget.findItems("All", Qt.MatchRecursive | Qt.MatchFixedString, 1)[0]
+            for c in hierarchy:
+                child = self.skill_tree_widget.findItems(c, Qt.MatchRecursive | Qt.MatchFixedString, 1)
+                if child:
+                    parent = child[0]
+                else:
+                    parent = QTreeWidgetItem(parent, [c.replace("skiros:", ""), c])
+                    parent.setExpanded(True)
         else:
-            stype = stype[0]
-        skill = QTreeWidgetItem(stype, [s.name, s.name])
+            parent = stype[0]
+        skill = QTreeWidgetItem(parent, [s.name, s.name])
         skill.setData(2, 0, s)
 
     def _add_frequently_used_skill(self, s):
@@ -875,7 +924,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
             # Add params
             self.skill_name_label.setText(skill.name)
             for p in skill.ph.values():
-                if self.modality_checkBox.isChecked() or not p.paramTypeIs(ParamTypes.Optional):
+                if not p.paramTypeIs(ParamTypes.Inferred) and (self.modality_checkBox.isChecked() or p.paramTypeIs(ParamTypes.Required)):
                     self._add_parameter(p)
             self.skill_params_table.resizeRowsToContents()
 

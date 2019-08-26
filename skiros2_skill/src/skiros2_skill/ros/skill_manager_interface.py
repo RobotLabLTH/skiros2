@@ -41,6 +41,13 @@ class SkillManagerInterface:
         """
         return self.get_skill_list(update=False)
 
+    def shutdown(self):
+        """
+        @brief Unregister subscribers (note: deleting the instance without calling shutdown will leave callbacks active)
+        """
+        self._monitor_sub.unregister()
+        self._tick_rate_sub.unregister()
+
     def print_state(self):
         temp = "Skills: { "
         for c in self.get_skill_list():
@@ -56,9 +63,9 @@ class SkillManagerInterface:
             self._skill_list = dict()
             if not res:
                 log.error("[{}]".format(self.__class__.__name__), "Can t retrieve skills.")
-                return -1
-            for c in res.list:
-                self._skill_list[c.name] = SkillHolder("", c.type, c.name, utils.deserializeParamMap(c.params))
+            else:
+                for c in res.list:
+                    self._skill_list[c.name] = SkillHolder(self.name, c.type, c.name, utils.deserializeParamMap(c.params))
         return self._skill_list
 
     def get_skill(self, name):

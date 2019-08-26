@@ -241,7 +241,7 @@ class NodeExecutor():
         if skill.label != "":
             return False
         ignore_list = [skill._instance.label]
-        while self._instanciator.assignInstance(skill, ignore_list):
+        while self._instanciator.assign_instance(skill, ignore_list):
             log.info("tryOther", "Trying skill {}".format(skill._instance.label))
             ignore_list.append(skill._instance.label)
             if self._ground(skill):
@@ -261,7 +261,7 @@ class NodeExecutor():
         """
         if not skill.hasInstance() or skill._instance.hasState(State.Running):
             skill.specifyParams(self._params)
-            if not self._instanciator.assignInstance(skill):
+            if not self._instanciator.assign_instance(skill):
                 raise Exception("Skill {} is not available.".format(skill.type))
 
     def execute(self, skill):

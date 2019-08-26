@@ -10,7 +10,7 @@ class SkillLayerInterface(DiscoveryInterface):
         self._new_changes = False
         self._active_sm = list()
         self.set_monitor_cb(None)
-        self.init_discovery("skill_managers", self._discovery_cb)
+        self.init_discovery("skill_managers", self._on_active, self._on_inactive)
 
     def get_agent(self, agent):
         if isinstance(agent, str):
@@ -72,17 +72,17 @@ class SkillLayerInterface(DiscoveryInterface):
         """
         self._monitor_cb = cb
 
-    def _discovery_cb(self, msg):
-        # TODO: make a call for changes
-        if msg.state == msg.ACTIVE and msg.name not in self._agents:
-            log.info("[SkillLayerInterface]", "New skill manager detected: {}".format(msg.name))
-            self._agents[msg.name] = SkillManagerInterface(msg.name)
-            self._agents[msg.name].set_monitor_cb(self._progress_cb)
-            self._new_changes = True
-        elif msg.state == msg.INACTIVE and msg.name in self._agents:
-            log.info("[SkillLayerInterface]", "Skill manager {} went down.".format(msg.name))
-            del self._agents[msg.name]
-            self._new_changes = True
+    def _on_active(self, name):
+        log.info("[SkillLayerInterface]", "New skill manager detected: {}".format(name))
+        self._agents[name] = SkillManagerInterface(name)
+        self._agents[name].set_monitor_cb(self._progress_cb)
+        self._new_changes = True
+
+    def _on_inactive(self, name):
+        log.info("[SkillLayerInterface]", "Skill manager {} went down.".format(name))
+        self._agents[name].shutdown()
+        del self._agents[name]
+        self._new_changes = True
 
     def _progress_cb(self, msg):
         if msg.type.find("Root") >= 0 and abs(msg.progress_code) == 1:

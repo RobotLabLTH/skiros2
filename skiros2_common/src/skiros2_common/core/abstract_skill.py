@@ -98,7 +98,7 @@ class SkillDescription(object):
         Some default params are added automatically
         """
         if not self._params.hasParam('Robot'):
-            self._params.addParam("Robot", Element("sumo:Agent"), params.ParamTypes.Required)
+            self._params.addParam("Robot", Element("sumo:Agent"), params.ParamTypes.Inferred)
         # if not self._params.hasParam('Skill'):
         #    self._params.addParam("Skill", self.toElement(), params.ParamTypes.Required)
 
@@ -233,6 +233,7 @@ class SkillCore(SkillDescription):
         self._state = State.Uninitialized
         self._time_keeper = TimeKeeper()
         self._progress_code = 0
+        self._progress_period = 0.0
         self._progress_time = 0.0
         self._progress_msg = ""
         self._expand_on_start = False
@@ -252,6 +253,7 @@ class SkillCore(SkillDescription):
         if code is None:
             code = self._progress_code + 1
         self._progress_code = code
+        self._progress_period = self._time_keeper.get_avg_time()
         self._progress_time = self._time_keeper.time_from_start()
         self._progress_msg = str(msg)
 
@@ -262,6 +264,10 @@ class SkillCore(SkillDescription):
     @property
     def progress_code(self):
         return self._progress_code
+
+    @property
+    def progress_period(self):
+        return self._progress_period
 
     @property
     def progress_time(self):
@@ -512,7 +518,7 @@ class SkillCore(SkillDescription):
         @brief Main execution function
         """
         raise NotImplementedError("Not implemented in abstract class")
-        
+
     def onEnd(self):
         """
         @brief Called just after last execute

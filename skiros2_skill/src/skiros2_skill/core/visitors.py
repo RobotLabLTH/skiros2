@@ -53,7 +53,7 @@ class VisitorInterface(object):
                 return state
         # Post-process node
         return self.postProcessNode(procedure)
-      
+
     def processNode(self, procedure):
         """ Not implemented in abstract class. """
         raise NotImplementedError("Not implemented in abstract class")
@@ -117,6 +117,7 @@ class VisitorPrint(VisitorInterface, NodePrinter, NodeExecutor, NodeMemorizer):
                                      "state": procedure.state,
                                      "msg": procedure.progress_msg,
                                      "code": procedure.progress_code,
+                                     "period": 0.0,
                                      "time": procedure.progress_time})
 
 
@@ -160,7 +161,7 @@ class VisitorExecutor(VisitorInterface, NodeExecutor, NodeMemorizer):
             state = State.Failure
         self.memorizeProgress(procedure)
         return state
-    
+
     def processChildren(self, procedure):
         """
         @brief Check hold conditions before ticking childrens
@@ -193,6 +194,7 @@ class VisitorExecutor(VisitorInterface, NodeExecutor, NodeMemorizer):
                                          "state": procedure.state,
                                          "msg": procedure.progress_msg,
                                          "code": procedure.progress_code,
+                                         "period": procedure.progress_period if procedure.progress_period is not None else 0.0,
                                          "time": procedure.progress_time})
 
 
