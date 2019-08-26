@@ -2,8 +2,8 @@
 Changelog for package skiros2_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.1 (2019-05-22)
+------------------
 * Fixed bug in skill preemption
 * Removed debug msg
 * Fix in hold conditions (now checked before ticking childrens)
