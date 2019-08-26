@@ -2,6 +2,13 @@
 Changelog for package skiros2_task
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge branch 'master' into develop
+* Changed way to evaluate abstract conditions (now based on class).
+* Updated changelog
+* Contributors: Francesco
+
 1.0.1 (2019-05-22)
 ------------------
 

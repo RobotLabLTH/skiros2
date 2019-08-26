@@ -2,6 +2,16 @@
 Changelog for package skiros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge branch 'master' into develop
+* Added launch file for complete skiros system.
+* Added TFTimeStamp to ontology
+* Added datatype property PushToFrameId.
+* Added transformation templates and fix in skill interface
+* Updated changelog
+* Contributors: Bjarne Grossmann, Francesco, RvmiLab
+
 1.0.1 (2019-05-22)
 ------------------
 * Added Velocity data property to ontology

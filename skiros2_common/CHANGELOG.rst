@@ -2,6 +2,18 @@
 Changelog for package skiros2_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge branch 'master' into develop
+* Finish gui-improved-visualization
+* Printing SLOW tag to primitives running with a period above 40msec.
+* Added requirements, updated readme and catching ImportError when loading skill plugins.
+* Changed way to evaluate abstract conditions (now based on class).
+* Updated changelog
+* Revert "Bug fix in parameters copying"
+  This reverts commit d2b7d2f99c57ab8a3f0da529758aa9b264c3c103.
+* Contributors: Francesco, RvmiLab
+
 1.0.1 (2019-05-22)
 ------------------
 * Fixed bug in skill preemption

@@ -2,6 +2,15 @@
 Changelog for package skiros2_skill
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge branch 'master' into develop
+* Finish gui-improved-visualization
+* Printing SLOW tag to primitives running with a period above 40msec.
+* Added transformation templates and fix in skill interface
+* Updated changelog
+* Contributors: Bjarne Grossmann, RvmiLab, francesco
+
 1.0.1 (2019-05-22)
 ------------------
 * Better debug output in world model and sync parameters when preempting.
