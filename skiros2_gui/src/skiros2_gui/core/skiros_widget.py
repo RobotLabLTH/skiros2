@@ -520,9 +520,10 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
 
     def on_marker_feedback(self, feedback):
         if feedback.event_type == InteractiveMarkerFeedback.POSE_UPDATE:
-            elem = self._wmi.get_element(feedback.marker_name)
-            elem.setData(":PoseStampedMsg", feedback)
-            self._wmi.update_element_properties(elem)
+            with self._wm_mutex:
+                elem = self._wmi.get_element(feedback.marker_name)
+                elem.setData(":PoseStampedMsg", feedback)
+                self._wmi.update_element_properties(elem)
 
     @Slot()
     def on_wm_tree_widget_item_selection_changed(self, item):
@@ -568,7 +569,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
             setattr(elem, key, type(attr)(value))
             log.debug(self.__class__.__name__, '<{}> attribute {} to {}'.format(item.text(1), key, value))
         else:
-            log.error(self.__class__.__name__, 'Changing <{}> property {} to {} failed'.format(item.text(1), key, val))
+            log.error(self.__class__.__name__, 'Changing <{}> property {} to {} failed'.format(item.text(1), key, value))
 
         self._wmi.update_element_properties(elem)
         name = utils.ontology_type2name(elem.id) if not elem.label else utils.ontology_type2name(elem.label)
@@ -582,7 +583,12 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
             self.wm_relations_widget.setColumnWidth(i, float(width) / cols)
 
     def create_wm_tree(self):
-        scene_tuple = self._wmi.get_scene()
+        scene_tuple = None
+        while scene_tuple is None:
+            try:
+                scene_tuple = self._wmi.get_scene()
+            except wmi.WmException:
+                log.warn("[create_wm_tree]", "Failed to retrive scene, will try again.")
         #print "GOT SCENE {}".format([e.id for e in scene_tuple[0]])
         self._snapshot_id = scene_tuple[1]
         self._snapshot_stamp = rospy.Time.now()
