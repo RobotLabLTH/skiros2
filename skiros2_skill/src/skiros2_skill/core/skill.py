@@ -460,6 +460,7 @@ class SkillWrapper(SkillInterface):
             self.resetDescription()
         self._description.setDescription(*self.getDescription())
         self._instance = instance
+        self._children_processor = self._instance._children_processor if hasattr(self._instance, '_children_processor') else NoProcessor()
         self._has_instance = True
         self._wmi = instance._wmi
         # self._setState(self._instance.getState())

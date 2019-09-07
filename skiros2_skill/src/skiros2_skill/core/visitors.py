@@ -112,6 +112,7 @@ class VisitorPrint(VisitorInterface, NodePrinter, NodeExecutor, NodeMemorizer):
     def memorizeProcedure(self, procedure):
         self.memorize(procedure.id, {"type": procedure.type,
                                      "label": procedure.label,
+                                     "processor": procedure._children_processor.printType(),
                                      "parent_id": procedure.parent.id if procedure.parent is not None else -1,
                                      "parent_label": procedure.parent.label if procedure.parent is not None else "",
                                      "state": procedure.state,
@@ -189,6 +190,7 @@ class VisitorExecutor(VisitorInterface, NodeExecutor, NodeMemorizer):
         if procedure.progress_msg:
             self.memorize(procedure.id, {"type": procedure.type,
                                          "label": procedure.label,
+                                         "processor": procedure._children_processor.printType(),
                                          "parent_id": procedure.parent.id if procedure.parent is not None else -1,
                                          "parent_label": procedure.parent.label if procedure.parent is not None else "",
                                          "state": procedure.state,

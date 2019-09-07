@@ -390,6 +390,7 @@ class SkillManagerNode(DiscoverableNode):
         msg.type = kwargs['type']
         msg.label = kwargs['label']
         msg.state = int(kwargs['state'])
+        msg.processor = kwargs['processor']
         msg.parent_label = kwargs['parent_label']
         msg.parent_id = kwargs['parent_id']
         msg.progress_code = kwargs['code']

@@ -5,6 +5,21 @@ Collection of processor, defining how a skill visits its children
 """
 
 
+class NoProcessor():
+    """
+    @brief Primitives have no processor
+    """
+
+    def printType(self):
+        return ''
+
+    def reset(self):
+        pass
+
+    def processChildren(self, children, visitor):
+        return State.Success
+
+
 class Serial():
     """
     @brief Process children serially. Also succeded one are re-executed
