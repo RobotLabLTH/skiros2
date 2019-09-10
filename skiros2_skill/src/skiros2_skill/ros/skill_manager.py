@@ -93,10 +93,10 @@ class BtTicker:
         finished_skill_ids = BtTicker._finished_skill_ids
         for (id, desc) in visitor.snapshot():
             #TODO: check timings when removing the filtering
-            if id in finished_skill_ids:
-                if finished_skill_ids[id]['state'] == desc['state'] and finished_skill_ids[id]['msg'] == desc['msg']:
-                    continue
-            finished_skill_ids[id] = desc
+            # if id in finished_skill_ids:
+            #     if finished_skill_ids[id]['state'] == desc['state'] and finished_skill_ids[id]['msg'] == desc['msg']:
+            #         continue
+            # finished_skill_ids[id] = desc
             self._progress_cb(task_id=uid, id=id, **desc)
 
     def observe_progress(self, func):
