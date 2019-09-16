@@ -5,12 +5,17 @@ tfd='tfd-src-0.4'
 echo "Installing planner..."
 
 #Navigate to install folder
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-echo "Select install folder or leave blank for default [default: $DIR]:"
+default="~/utils"
+echo "Select install folder or leave blank for default [default: $default]:"
 read folder
-folder=${folder/"~"/$HOME}
-cd ${folder}
-DIR=$( pwd )
+if [[ $folder == "" ]]; then
+    folder=${default/"~"/$HOME}
+else
+    folder=${folder/"~"/$HOME}
+fi
+mkdir -p $folder
+cd $folder
+echo $folder
 
 #Install
 wget "http://gki.informatik.uni-freiburg.de/tools/tfd/downloads/version-0.4/${tfd}.tgz"

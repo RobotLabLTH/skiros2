@@ -21,6 +21,7 @@ import skiros2_world_model.ros.world_model_interface as wmi
 import skiros2_skill.ros.skill_layer_interface as sli
 from skiros2_common.core.abstract_skill import State
 from copy import deepcopy
+from std_msgs.msg import String
 
 from interactive_markers.interactive_marker_server import InteractiveMarkerServer
 from visualization_msgs.msg import InteractiveMarker, InteractiveMarkerControl, Marker, InteractiveMarkerFeedback
@@ -313,6 +314,9 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         self.refresh_timer = QTimer()
         self.refresh_timer.timeout.connect(self.refresh_timer_cb)
         self.refresh_timer.start(500)
+        self.robot_sub = rospy.Subscriber('/robot_output', String, self.robot_output_cb)
+        self.robot_text = ""
+
 
         # World model tab
         self._wmi.set_monitor_cb(lambda d: self.wm_update_signal.emit(d))
@@ -330,6 +334,8 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         # self.space_shortcut.setContext(QtCore.Qt.WidgetWithChildrenShortcut)
         # Log tab
         self.log_file = None
+        self.icons = dict()
+
 
     def shutdown_plugin(self):
         with self._wm_mutex and self._task_mutex:
@@ -371,6 +377,9 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
 #  General
 #==============================================================================
 
+    def robot_output_cb(self, msg):
+        self.robot_text = msg.data
+
     def refresh_timer_cb(self):
         """
         Keeps ui updated
@@ -401,12 +410,14 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
                 self.skill_tree_widget.setCurrentItem(s[0])
         # Update robot BT rate
         if self._sli.agents:
-            robot_txt = ""
+            robot_info = ""
             for name, manager in self._sli.agents.iteritems():
-                robot_txt += "{}: {:0.1f}hz ".format(name.replace("/", ""), manager.get_tick_rate())
-            self.robot_rate_info.setText(robot_txt)
+                robot_info += "{}: {:0.1f}hz ".format(name.replace("/", ""), manager.get_tick_rate())
+            self.robot_rate_info.setText(robot_info)
+            self.robot_output.setText(self.robot_text)
         else:
             self.robot_rate_info.setText("No robot connected.")
+            self.robot_output.setText("")
 
 
     def simplify_tree_hierarchy(self, root):
@@ -520,9 +531,10 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
 
     def on_marker_feedback(self, feedback):
         if feedback.event_type == InteractiveMarkerFeedback.POSE_UPDATE:
-            elem = self._wmi.get_element(feedback.marker_name)
-            elem.setData(":PoseStampedMsg", feedback)
-            self._wmi.update_element_properties(elem)
+            with self._wm_mutex:
+                elem = self._wmi.get_element(feedback.marker_name)
+                elem.setData(":PoseStampedMsg", feedback)
+                self._wmi.update_element_properties(elem)
 
     @Slot()
     def on_wm_tree_widget_item_selection_changed(self, item):
@@ -568,7 +580,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
             setattr(elem, key, type(attr)(value))
             log.debug(self.__class__.__name__, '<{}> attribute {} to {}'.format(item.text(1), key, value))
         else:
-            log.error(self.__class__.__name__, 'Changing <{}> property {} to {} failed'.format(item.text(1), key, val))
+            log.error(self.__class__.__name__, 'Changing <{}> property {} to {} failed'.format(item.text(1), key, value))
 
         self._wmi.update_element_properties(elem)
         name = utils.ontology_type2name(elem.id) if not elem.label else utils.ontology_type2name(elem.label)
@@ -582,7 +594,12 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
             self.wm_relations_widget.setColumnWidth(i, float(width) / cols)
 
     def create_wm_tree(self):
-        scene_tuple = self._wmi.get_scene()
+        scene_tuple = None
+        while scene_tuple is None:
+            try:
+                scene_tuple = self._wmi.get_scene()
+            except wmi.WmException:
+                log.warn("[create_wm_tree]", "Failed to retrive scene, will try again.")
         #print "GOT SCENE {}".format([e.id for e in scene_tuple[0]])
         self._snapshot_id = scene_tuple[1]
         self._snapshot_stamp = rospy.Time.now()
@@ -795,7 +812,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         # Update buttons
         if msg.type.find("Root") >= 0:
             if not self.skill_stop_button.isEnabled():
-                self.create_task_tree(msg.id)
+                self.create_task_tree(msg.id, msg.processor)
                 self._toggle_task_active()
                 for manager in self._sli.agents.values():
                     manager.reset_tick_rate()
@@ -813,9 +830,16 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
                     log.error("No parent found. Debug: {}".format(msg))
                     return
                 item = QTreeWidgetItem(parents[0], ["{}({})".format(msg.label, State(msg.state).name), str(msg.id)])
+                item.setIcon(0, self.get_icon(msg.processor))
                 item.setExpanded(True)
 
-    def create_task_tree(self, task_id):
+    def get_icon(self, skill_type):
+        if not skill_type in self.icons:
+            file_name = os.path.join(rospkg.RosPack().get_path("skiros2_gui"), "src/skiros2_gui/core/imgs/", "{}.png".format(skill_type if skill_type else "skill"))
+            self.icons[skill_type] = QtGui.QIcon(file_name)
+        return self.icons[skill_type]
+
+    def create_task_tree(self, task_id, processor):
         self.task_tree_widget.clear()
         self.task_tree_widget.setColumnCount(2)
         self.task_tree_widget.hideColumn(1)

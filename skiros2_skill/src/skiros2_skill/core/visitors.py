@@ -112,6 +112,7 @@ class VisitorPrint(VisitorInterface, NodePrinter, NodeExecutor, NodeMemorizer):
     def memorizeProcedure(self, procedure):
         self.memorize(procedure.id, {"type": procedure.type,
                                      "label": procedure.label,
+                                     "processor": procedure._children_processor.printType(),
                                      "parent_id": procedure.parent.id if procedure.parent is not None else -1,
                                      "parent_label": procedure.parent.label if procedure.parent is not None else "",
                                      "state": procedure.state,
@@ -143,6 +144,7 @@ class VisitorExecutor(VisitorInterface, NodeExecutor, NodeMemorizer):
                 state = self.execute(procedure)
             except Exception:
                 log.error(self.__class__.__name__, traceback.format_exc())
+                procedure._instance.onEnd()
                 procedure._setProgress("Error on start: {}. Blackboard data: {}".format(traceback.format_exc(), self._params.printState()), -404)
                 procedure._setState(State.Failure)
                 state = State.Failure
@@ -156,6 +158,7 @@ class VisitorExecutor(VisitorInterface, NodeExecutor, NodeMemorizer):
             state = self.postExecute(procedure)
         except Exception:
             log.error(self.__class__.__name__, traceback.format_exc())
+            procedure._instance.onEnd()
             procedure._setProgress("Error on execution: {}. Blackboard data: {}".format(traceback.format_exc(), self._params.printState()), -405)
             procedure._setState(State.Failure)
             state = State.Failure
@@ -174,6 +177,7 @@ class VisitorExecutor(VisitorInterface, NodeExecutor, NodeMemorizer):
             super(VisitorExecutor, self).processPreempt(procedure)
         except Exception:
             log.error(self.__class__.__name__, traceback.format_exc())
+            procedure._instance.onEnd()
             procedure._setProgress("Error on preemption: {}. Blackboard data: {}".format(traceback.format_exc(), self._params.printState()), -406)
             procedure._setState(State.Failure)
         self.memorizeProgress(procedure)
@@ -189,6 +193,7 @@ class VisitorExecutor(VisitorInterface, NodeExecutor, NodeMemorizer):
         if procedure.progress_msg:
             self.memorize(procedure.id, {"type": procedure.type,
                                          "label": procedure.label,
+                                         "processor": procedure._children_processor.printType(),
                                          "parent_id": procedure.parent.id if procedure.parent is not None else -1,
                                          "parent_label": procedure.parent.label if procedure.parent is not None else "",
                                          "state": procedure.state,

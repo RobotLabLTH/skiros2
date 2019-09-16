@@ -11,6 +11,7 @@ string parent_label
 int16 parent_id
 string type
 string label
+string processor
 int16 state
 int16 progress_code
 float32 progress_period

@@ -716,6 +716,7 @@
     <owl:Class rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#Scene">
         <owl:equivalentClass rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/coraX.owl#PhysicalEnvironment"/>
         <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Abstract"/>
+        <rdfs:subClassOf rdf:resource="http://www.inf.ufrgs.br/phi-group/ontologies/sumo.owl#Object"/>
     </owl:Class>
 
 

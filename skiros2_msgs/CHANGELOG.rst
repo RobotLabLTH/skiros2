@@ -2,6 +2,11 @@
 Changelog for package skiros2_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.3 (2019-09-16)
+------------------
+* Sending processor in skill progress
+* Contributors: francesco
+
 1.0.2 (2019-08-26)
 ------------------
 * Merge branch 'master' into develop
