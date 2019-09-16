@@ -2,6 +2,19 @@
 Changelog for package skiros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Corrected script for install planner.
+* Made scene subclass of Object
+* Merge remote-tracking branch 'scalable/master'
+* Merge pull request `#7 <https://github.com/RVMI/skiros2/issues/7>`_ from ScalABLE40/catkin_linted
+  Catkin linted
+* linted packages.xml and CMakeLists.txt
+  * install install bash scripts
+  * makes everything exec_depend
+* removed owl files executable
+* Contributors: Francesco Rovida, Ludovic Delval, francesco
+
 1.0.2 (2019-08-26)
 ------------------
 * Merge branch 'master' into develop
