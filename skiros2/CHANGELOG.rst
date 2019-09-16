@@ -2,8 +2,8 @@
 Changelog for package skiros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.3 (2019-09-16)
+------------------
 * Corrected script for install planner.
 * Made scene subclass of Object
 * Merge remote-tracking branch 'scalable/master'

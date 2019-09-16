@@ -2,8 +2,8 @@
 Changelog for package skiros2_gui
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.3 (2019-09-16)
+------------------
 * Finish gui-improved-visualization
 * Added guards to avoid gui crash.
 * Contributors: francesco

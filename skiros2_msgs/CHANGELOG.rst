@@ -2,8 +2,8 @@
 Changelog for package skiros2_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.3 (2019-09-16)
+------------------
 * Sending processor in skill progress
 * Contributors: francesco
 

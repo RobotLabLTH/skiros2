@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>skiros2</name>
-  <version>1.0.2</version>
+  <version>1.0.3</version>
   <description>
       Skill-based platform for ROS
   </description>

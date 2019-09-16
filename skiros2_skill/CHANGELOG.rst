@@ -2,8 +2,8 @@
 Changelog for package skiros2_skill
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.3 (2019-09-16)
+------------------
 * Calling onEnd function also when skill crashes. Removed filter to skills progress output in skill manager.
 * Sending processor in skill progress
 * Contributors: francesco
