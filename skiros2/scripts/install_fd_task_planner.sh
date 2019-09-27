@@ -5,13 +5,16 @@ tfd='tfd-src-0.4'
 echo "Installing planner..."
 
 #Navigate to install folder
-default="~/utils"
+default="~/Software"
 echo "Select install folder or leave blank for default [default: $default]:"
 read folder
 if [[ $folder == "" ]]; then
     folder=${default/"~"/$HOME}
 else
     folder=${folder/"~"/$HOME}
+fi
+if [ -d "$folder" ]; then
+	echo "Folder already exists. Quitting."
 fi
 mkdir -p $folder
 cd $folder
