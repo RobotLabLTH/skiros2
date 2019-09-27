@@ -15,6 +15,7 @@ else
 fi
 if [ -d "$folder" ]; then
 	echo "Folder already exists. Quitting."
+	exit 0
 fi
 mkdir -p $folder
 cd $folder
