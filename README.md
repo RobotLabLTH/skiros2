@@ -16,7 +16,7 @@ In a nutshell, SkiROS provides:
 
 The development process consist of two steps: specify the domain knowledge in a OWL ontology and develop the plug-ins.
 
-For detailed info refer to the [wiki](https://github.com/RVMI/skiros2/wiki)
+For detailed info refer to the [wiki](https://git.cs.lth.se/robotlab/rvmi/skiros2/wikis/home)
 
 ### Dependencies
 
