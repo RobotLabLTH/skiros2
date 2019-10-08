@@ -4,6 +4,8 @@
                                       ]"/>
   <arg name="skill_list" default="[
                                   ]"/>
+  <arg name="memory_contexts" default="[
+                                        ]"/>
 
   <arg name="robot_ontology_prefix" default="skiros" />
   <arg name="robot_name" default="test_robot" />
@@ -23,7 +25,7 @@
       <arg name="verbose" value="$(arg verbose)"/>
       <arg name="gui" value="$(arg gui)"/>
       <arg name="reasoners_pkgs" value="[skiros2_std_reasoners]"/>
-      <arg name="load_contexts" value="[motion memory/motion.turtle]"/>
+      <arg name="load_contexts" value="$(arg memory_contexts)"/>
       <arg name="workspace_dir" value="$(arg workspace_dir)"/>
       <arg name="debug" value="$(arg debug)"/>
       <arg name="deploy" value="$(arg deploy)"/>
