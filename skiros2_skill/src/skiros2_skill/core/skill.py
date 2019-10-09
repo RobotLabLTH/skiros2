@@ -310,9 +310,6 @@ class SkillInterface(SkillCore):
         return res
 
     #--------User functions--------
-    def setChildrenProcessor(self, processor):
-        self._children_processor = processor
-
     def resetDescription(self, other=None):
         if other:
             self._params.reset(self._description._params.merge(other._params))
