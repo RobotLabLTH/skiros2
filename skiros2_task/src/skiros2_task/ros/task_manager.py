@@ -95,6 +95,9 @@ class TaskManagerNode(PrettyObject):
             self._result = msgs.AssignTaskResult(3, task.toJson())
             self._assign_task_action.set_succeeded(self._result)
             return
+        except OSError, e:
+            self._result = msgs.AssignTaskResult(1, "FD task planner not found. Maybe is not installed?")
+            self._assign_task_action.set_aborted(self._result)
         except Exception, e:
             self._result = msgs.AssignTaskResult(1, str(e))
             self._assign_task_action.set_aborted(self._result)
