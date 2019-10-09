@@ -22,6 +22,14 @@ if [ ! -d "$folder/${tfd}" ]; then
     echo $folder
 
     #Install
+    dpkg -s g++ &> /dev/null
+    gpp_installed=$?
+    dpkg -s make &> /dev/null
+    make_installed=$?
+    if [ $gpp_installed -ne 0 ] || [ $make_installed -ne 0 ]; then
+        echo "Installing g++ and make"
+        sudo apt install -y g++ make
+    fi
     wget "http://gki.informatik.uni-freiburg.de/tools/tfd/downloads/version-0.4/${tfd}.tgz"
     tar xzf "${tfd}.tgz"
     cd "${tfd}"
