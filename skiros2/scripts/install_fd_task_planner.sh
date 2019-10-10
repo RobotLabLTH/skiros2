@@ -50,7 +50,7 @@ string="export TFD_HOME=${folder}"
 string2="export PATH=$""TFD_HOME/${tfd}/downward:$""TFD_HOME/${tfd}/downward/translate:$""TFD_HOME/${tfd}/downward/preprocess:$""TFD_HOME/${tfd}/downward/search:""$""PATH"
 temp=$(cat ~/.bashrc | grep "$string")
 if [ -z "$temp" ]; then
-    echo "TDF Planner for SkiROS" >> ~/.bashrc
+    echo "# TDF Planner for SkiROS" >> ~/.bashrc
 	echo $string >> ~/.bashrc
 	echo $string2 >> ~/.bashrc
 	echo "Printing string in .bashrc: $string"
