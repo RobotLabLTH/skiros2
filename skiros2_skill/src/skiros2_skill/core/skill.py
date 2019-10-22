@@ -405,7 +405,7 @@ class SkillWrapper(SkillInterface):
     """
 
     def __init__(self, ptype, plabel, instanciator=None):
-        super(SkillWrapper, self).__init__()
+        super(SkillWrapper, self).__init__(NoProcessor())
         # Description
         self._type = ptype
         self._label = plabel
@@ -457,7 +457,8 @@ class SkillWrapper(SkillInterface):
             self.resetDescription()
         self._description.setDescription(*self.getDescription())
         self._instance = instance
-        self._children_processor = self._instance._children_processor if hasattr(self._instance, '_children_processor') else NoProcessor()
+        if isinstance(self._children_processor, NoProcessor) and hasattr(self._instance, '_children_processor'):
+            self._children_processor = self._instance._children_processor
         self._has_instance = True
         self._wmi = instance._wmi
         # self._setState(self._instance.getState())
@@ -512,14 +513,13 @@ class SkillWrapper(SkillInterface):
         if res is not None:
             return res
         else:
+            self._instance._setState(self._state)
             return self._state
-
 
 class SkillBase(SkillInterface, object):
     """
     @brief Base class for user's skills
     """
-
     def _parse_type(self, ptype):
         if ptype.find("skiros:") >= 0:
             return ptype
