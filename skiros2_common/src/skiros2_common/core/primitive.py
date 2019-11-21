@@ -19,7 +19,7 @@ class PrimitiveBase(SkillCore):
             return State.Failure
         else:
             start_time = datetime.now()
-            with self._time_keeper:
+            with self._avg_time_keeper:
                 self._setState(self.execute())
                 self._updateRoutine(start_time)
 #            if self._progress_msg!="":

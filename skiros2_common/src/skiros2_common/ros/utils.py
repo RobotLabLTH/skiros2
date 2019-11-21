@@ -70,8 +70,10 @@ class ParamsEncoder(json.JSONEncoder):
         name = obj.__class__.__name__
         if name in complex_types_names:
             return complex_types_encoders[complex_types_names.index(name)](self, obj)
-        # Let the base class default method raise the TypeError
-        return json.JSONEncoder.default(self, obj)
+        try:
+            return json.JSONEncoder.default(self, obj)
+        except TypeError:
+            return "NotSerializable"
 
 
 class UnicodeDecoder(json.JSONDecoder):
@@ -231,7 +233,7 @@ def serializeParamMap(param_map):
       \\", \\"key\\": \\"MyString\\"}"]
     """
     s_param_map = []
-    for _, p in param_map.iteritems():
+    for p in param_map.values():
         msg = msgs.Param()
         msg.param = str(json.dumps(p, cls=ParamsEncoder))
         s_param_map.append(msg)

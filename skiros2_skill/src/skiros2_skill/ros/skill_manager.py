@@ -13,8 +13,7 @@ from skiros2_common.core.world_element import Element
 from skiros2_common.tools.id_generator import IdGen
 from multiprocessing.dummy import Process
 import skiros2_skill.core.visitors as visitors
-from skiros2_common.tools.time_keeper import TimeKeeper
-from std_msgs.msg import Empty
+from std_msgs.msg import Empty, Bool
 import inflection #For camel-snake case conversion
 
 log.setLevel(log.INFO)
@@ -22,8 +21,8 @@ log.setLevel(log.INFO)
 
 def skill2msg(skill):
     msg = msgs.ResourceDescription()
-    msg.type = skill._type
-    msg.name = skill._label
+    msg.type = skill.type
+    msg.name = skill.label
     msg.params = utils.serializeParamMap(skill._description._params.getParamMap())
     return msg
 
@@ -38,6 +37,7 @@ class BtTicker:
     """
     _verbose = True
     _tasks_to_preempt = list()
+    _tasks_to_pause = dict()
     _tasks = {}
     _process = None
     _visitor = None
@@ -72,6 +72,11 @@ class BtTicker:
             if uid in BtTicker._tasks_to_preempt:
                 BtTicker._tasks_to_preempt.remove(uid)
                 visitor.preempt()
+            if uid in BtTicker._tasks_to_pause.keys():
+                if BtTicker._tasks_to_pause[uid]>0:
+                    BtTicker._tasks_to_pause[uid]-=1
+                else:
+                    continue
             t = BtTicker._tasks[uid]
             result = visitor.traverse(t)
             self.publish_progress(uid, visitor)
@@ -123,7 +128,12 @@ class BtTicker:
         BtTicker._tasks.pop(uid)
         BtTicker._id_gen.removeId(uid)
 
-    def start(self, visitor):
+    def start(self, visitor, uid):
+        if uid in BtTicker._tasks_to_pause:
+            log.info("[start]", "Resuming task {}.".format(uid))
+            del BtTicker._tasks_to_pause[uid]
+        else:
+            log.info("[start]", "Starting task {}.".format(uid))
         if not self.is_running():
             BtTicker._visitor = visitor
             BtTicker._process = Process(target=BtTicker._run, args=(self, True))
@@ -133,18 +143,39 @@ class BtTicker:
     def join(self):
         BtTicker._process.join()
 
+    def pause(self, uid):
+        log.info("[pause]", "Pausing task {}.".format(uid))
+        BtTicker._tasks_to_pause[uid] = 0
+
+    def tick_once(self, uid):
+        log.info("[tick_once]", "Tick once task {}.".format(uid))
+        BtTicker._tasks_to_pause[uid] = 1
+
     def preempt(self, uid):
-        log.info("preempt", "Ending task {}...".format(uid))
+        log.info("[preempt]", "Stopping task {}...".format(uid))
+        if uid in BtTicker._tasks_to_pause:
+            del BtTicker._tasks_to_pause[uid]
         BtTicker._tasks_to_preempt.append(uid)
         starttime = rospy.Time.now()
         timeout = rospy.Duration(5.0)
         while(self.is_running() and rospy.Time.now() - starttime < timeout):
-            rospy.sleep(0.1)
+            rospy.sleep(0.01)
         if self.is_running():
             log.info("preempt", "Task {} is not answering. Killing process.".format(uid))
             self.kill()
         log.info("preempt", "Task {} preempted.".format(uid))
 
+    def preempt_all(self):
+        for uid in list(BtTicker._tasks.keys()):
+            self.preempt(uid)
+
+    def pause_all(self):
+        for uid in list(BtTicker._tasks.keys()):
+            self.pause(uid)
+
+    def tick_once_all(self):
+        for uid in list(BtTicker._tasks.keys()):
+            self.tick_once(uid)
 
 class SkillManager:
     """
@@ -230,6 +261,9 @@ class SkillManager:
         self.add_skill(name, "skiros:PrimitiveSkill")
 
     def add_task(self, task):
+        """
+        @brief Add a new task to the list
+        """
         root = skill.Root("root", self._local_wm)
         for i in task:
             log.info("[SkillManager]", "Add task {}:{} \n {}".format(i.type, i.name, i.ph.printState()))
@@ -238,20 +272,47 @@ class SkillManager:
         return self._ticker.add_task(root, root.id)
 
     def preempt_task(self, uid):
-        self._ticker.preempt(uid)
+        """
+        @brief Preempt a task
+        """
+        if uid==-1:
+            self._ticker.preempt_all()
+        else:
+            self._ticker.preempt(uid)
+
+    def pause(self, uid):
+        """
+        @brief Stop ticking a task, but do not preempt it
+        """
+        if uid==-1:
+            self._ticker.pause_all()
+        else:
+            self._ticker.pause(uid)
+
+    def tick_once(self, uid):
+        """
+        @brief Set a task to go in pause state after 1 tick
+        """
+        if uid==-1:
+            self._ticker.tick_once_all()
+        else:
+            self._ticker.tick_once(uid)
 
     def print_task(self, uid):
         self.visitor = visitors.VisitorPrint(self._local_wm, self._instanciator)
         self.visitor.setVerbose(self._verbose)
-        return self._ticker.start(self.visitor)
+        return self._ticker.start(self.visitor, uid)
 
     def execute_task(self, uid, sim=False, track_params=list()):  # [("MotionChange",)]
+        """
+        @brief Start or continue a task execution
+        """
         self.visitor = visitors.VisitorExecutor(self._local_wm, self._instanciator)
         self.visitor.setSimulate(sim)
         for t in track_params:
             self.visitor.trackParam(*t)
         self.visitor.setVerbose(self._verbose)
-        return self._ticker.start(self.visitor)
+        return self._ticker.start(self.visitor, uid)
 
     def clear_tasks(self):
         self._ticker.clear()
@@ -307,6 +368,7 @@ class SkillManagerNode(DiscoverableNode):
 
     def __init__(self):
         rospy.init_node("skill_mgr", anonymous=False)
+        self.publish_runtime_parameters = False
         robot_name = rospy.get_name()
         prefix = ""
         full_name = rospy.get_param('~prefix', prefix) + ':' + robot_name[robot_name.rfind("/") + 1:]
@@ -325,9 +387,13 @@ class SkillManagerNode(DiscoverableNode):
         self._command = rospy.Service('~command', srvs.SkillCommand, self._command_cb)
         self._monitor = rospy.Publisher("~monitor", msgs.SkillProgress, queue_size=20)
         self._tick_rate = rospy.Publisher("~tick_rate", Empty, queue_size=20)
+        self._set_debug = rospy.Subscriber('~set_debug', Bool, self._set_debug_cb)
         rospy.on_shutdown(self.shutdown)
         self.init_discovery("skill_managers", robot_name)
         log.info("[{}]".format(rospy.get_name()), "Skill manager ready.")
+
+    def _set_debug_cb(self, msg):
+        self.publish_runtime_parameters = msg.data
 
     def _init_skills(self):
         """
@@ -356,17 +422,20 @@ class SkillManagerNode(DiscoverableNode):
         """
         @brief Commands execution of skills
         """
+        task_id = msg.execution_id
         if msg.action == msg.START:
-            task_id = self.sm.add_task(self._make_task(msg.skills))
+            if task_id==-1:
+                task_id = self.sm.add_task(self._make_task(msg.skills))
             self.sm.execute_task(task_id)
         elif msg.action == msg.PREEMPT:
             task_id = self.sm.preempt_task(msg.execution_id)
         elif msg.action == msg.PAUSE:
-            log.error("[{}]".format(self.__class__.__name__), "TODO")
-            return srvs.SkillCommandResponse(False, -1)
-        elif msg.action == msg.KILL:
-            log.error("[{}]".format(self.__class__.__name__), "TODO")
-            return srvs.SkillCommandResponse(False, -1)
+            task_id = self.sm.pause(msg.execution_id)
+        elif msg.action == msg.TICK_ONCE:
+            if task_id==-1:
+                task_id = self.sm.add_task(self._make_task(msg.skills))
+                self.sm.execute_task(task_id)
+            self.sm.tick_once(task_id)
         else:
             log.error("[{}]".format(self.__class__.__name__), "Unrecognized command.")
             return srvs.SkillCommandResponse(False, -1)
@@ -389,6 +458,8 @@ class SkillManagerNode(DiscoverableNode):
         msg.id = kwargs['id']
         msg.type = kwargs['type']
         msg.label = kwargs['label']
+        if self.publish_runtime_parameters:
+            msg.params = utils.serializeParamMap(kwargs['params'])
         msg.state = int(kwargs['state'])
         msg.processor = kwargs['processor']
         msg.parent_label = kwargs['parent_label']

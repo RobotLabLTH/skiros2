@@ -121,6 +121,18 @@ class Element(object):
             raise KeyError("No reasoner associated to data {}. Debug: {}".format(get_code, Element._property_reasoner_map))
         return Element._property_reasoner_map[get_code]
 
+    def getAssociatedReasonerId(self, key):
+        """
+        @brief Returns the reasoner associated to a property, or an empty string otherwise
+        """
+        if not isinstance(Element._plug_loader, PluginLoader):
+            self._initPluginLoader()
+        for plugin in Element._plug_loader:
+            r = plugin()
+            if key in r.getAssociatedData():
+                return r.__class__.__name__
+        return ""
+
     def getIdNumber(self):
         """
         @brief Return the element id number as integer

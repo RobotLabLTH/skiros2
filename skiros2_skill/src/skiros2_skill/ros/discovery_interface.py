@@ -49,6 +49,6 @@ class DiscoveryInterface(object):
                 self.on_inactive(n) #Node inactive
 
     def _description_cb(self, msg):
-        if not msg.data in self._active_nodes:
+        if msg.data not in self._active_nodes:
             self.on_active(msg.data) #Node active
         self._active_nodes[msg.data] = rospy.Time.now()

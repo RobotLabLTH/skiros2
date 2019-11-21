@@ -25,7 +25,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         self._make_cache = make_cache
         self._external_monitor_cb = None
         self._monitor = rospy.Subscriber("wm/monitor", msgs.WmMonitor, self._monitor_cb, queue_size=100)
-    
+
     def _debug_info(self):
         """
         @brief Retrives the function caller file and line
@@ -36,7 +36,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
             i+=1
             caller = getframeinfo(stack()[i][0])
         return "%s:%d" % (caller.filename[caller.filename.rfind("/"):], caller.lineno)
-        
+
     def _monitor_cb(self, msg):
         if self._make_cache:
             if self._last_snapshot_id != msg.prev_snapshot_id or msg.action == 'reset':
@@ -277,7 +277,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
                 return [{"src": subj.id, "type": pred, "dst": obj.id}]
             else:
                 return list()
-    
+
     def get_reasoner(self, pred):
         """
         @brief Returns the reasoner associated with the predicate, or None

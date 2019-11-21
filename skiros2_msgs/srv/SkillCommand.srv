@@ -2,7 +2,7 @@
 string START=start
 string PAUSE=pause
 string PREEMPT=preempt
-string KILL=forceKill
+string TICK_ONCE=tick_once
 
 string author 			            #Author of the action
 string action				            #Action to perform
