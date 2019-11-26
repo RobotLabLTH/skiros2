@@ -2,6 +2,9 @@ from multiprocessing.dummy import Process
 
 
 class DiscreteReasoner(object):
+    def __repr__(self):
+        return self.__class__.__name__
+
     def init(self, wmi):
         """
         Set an interface to the world model

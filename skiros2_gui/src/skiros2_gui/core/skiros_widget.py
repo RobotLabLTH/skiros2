@@ -791,15 +791,20 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         item_key = self.wm_properties_widget.item(row, 0)
         item_val = self.wm_properties_widget.item(row, 1)
         key = item_key.id
-        value = item_val.text()
         elem = self._wmi.get_element(item.text(1))
 
         if elem.hasProperty(key):
             prop = elem.getProperty(key)
-            if value == '':
-                value = None
             if prop.dataTypeIs(bool):
                 value = item_val.checkState() == Qt.Checked
+            else:
+                if item_val.text() == '':
+                    value = None
+                else:
+                    value = str(item_val.text())
+                    if value[0]=="[":
+                        value = value.replace("[", "").replace("]", "").replace('\'', '')
+                    value = [v.strip() for v in value.split(",")]
             try:
                 elem.setProperty(prop.key, value, force_convertion=value is not None)
                 log.debug(self.__class__.__name__, '<{}> property {} to {}'.format(item.text(1), prop.key, value))

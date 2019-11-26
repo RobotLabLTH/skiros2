@@ -312,7 +312,11 @@ class Element(object):
         else:
             if self.hasProperty(key):
                 if force_convertion:
-                    value = self._properties[key].dataType()(value)
+                    if isinstance(value, list):
+                        for v in value:
+                            v = self._properties[key].dataType()(v)
+                    else:
+                        value = self._properties[key].dataType()(value)
                 self._properties[key].setValues(value)
             else:
                 if isinstance(value, unicode):
