@@ -801,7 +801,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
             if prop.dataTypeIs(bool):
                 value = item_val.checkState() == Qt.Checked
             try:
-                elem.setProperty(prop.key, value, is_list=prop.isList(), force_convertion=value is not None)
+                elem.setProperty(prop.key, value, force_convertion=value is not None)
                 log.debug(self.__class__.__name__, '<{}> property {} to {}'.format(item.text(1), prop.key, value))
             except ValueError:
                 log.error(self.__class__.__name__, 'Changing <{}> property {} to {} failed'.format(item.text(1), prop.key, value))

@@ -10,15 +10,14 @@ class Property(object):
 
     Data type is set during initialization
     """
-    __slots__ = ['_key', '_values', '_data_type', '_is_list']
+    __slots__ = ['_key', '_values', '_data_type']
 
-    def __init__(self, key, value, is_list=False):
+    def __init__(self, key, value):
         """
         Value can be any value or list of values
 
         Value can also be a type, in such a case the _data_type is set and the value list is left empty
         """
-        self._is_list = is_list
         self._key = key
         if isinstance(value, list):
             self._values = value
@@ -38,9 +37,9 @@ class Property(object):
 
     def isList(self):
         """
-        @brief Return true if the property can have more than one value
+        @brief Return true if the property has more than one specified value
         """
-        return self._is_list
+        return len(self._values) > 1
 
     @property
     def key(self):
@@ -122,7 +121,8 @@ class Property(object):
             if isinstance(value[0], self._data_type):
                 self._values = value
             else:
-                log.error("setValuesList", "{}: Input {} != {} Debug: {}. Input: {}.".format(self.key, type(value[0]), self._data_type, self.printState(), value))
+                log.error("setValuesList", "{}: Input {} != {} Debug: {}. Input: {}.".format(
+                    self.key, type(value[0]), self._data_type, self.printState(), value))
         elif isinstance(value, self._data_type):
             self._values = [value]
         elif value is None:
