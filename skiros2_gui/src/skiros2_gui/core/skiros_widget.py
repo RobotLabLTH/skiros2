@@ -455,6 +455,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         self.space_shortcut.activated.connect(self.skill_start_stop)
         self.task_tree_widget.setColumnWidth(0, 480)
         self.task_tree_widget.setColumnWidth(1, 60)
+        self.skill_item = dict()
         # self.space_shortcut.setContext(QtCore.Qt.WidgetWithChildrenShortcut)
         # Log tab
         self.log_file = None
