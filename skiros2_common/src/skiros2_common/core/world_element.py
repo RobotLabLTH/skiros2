@@ -313,8 +313,7 @@ class Element(object):
             if self.hasProperty(key):
                 if force_convertion:
                     if isinstance(value, list):
-                        for v in value:
-                            v = self._properties[key].dataType()(v)
+                        value = [self._properties[key].dataType()(v) for v in value]
                     else:
                         value = self._properties[key].dataType()(value)
                 self._properties[key].setValues(value)
