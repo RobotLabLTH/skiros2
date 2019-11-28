@@ -478,6 +478,38 @@
 
 
 
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#Force -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#Force">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#PhysicalObjectProperty"/>
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#TransformationProperty"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#ForceX -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#ForceX">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Force"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#ForceY -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#ForceY">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Force"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#ForceZ -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#ForceZ">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Force"/>
+    </owl:DatatypeProperty>
+
+
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#SkillMgr -->
 
     <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#SkillMgr">
