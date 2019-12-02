@@ -813,6 +813,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
                 log.error(self.__class__.__name__, 'Changing <{}> property {} to {} failed'.format(item.text(1), prop.key, value))
                 item_val.setText(str(prop.value))
         elif hasattr(elem, key.lower()):
+            value = None if item_val.text() == '' else str(item_val.text())
             key = key.lower()
             attr = getattr(elem, key)
             setattr(elem, key, type(attr)(value))
