@@ -2,6 +2,9 @@ from multiprocessing.dummy import Process
 
 
 class DiscreteReasoner(object):
+    def __repr__(self):
+        return self.__class__.__name__
+
     def init(self, wmi):
         """
         Set an interface to the world model
@@ -11,17 +14,18 @@ class DiscreteReasoner(object):
         self._wmi = wmi
 
     def parse(self, element, action):
-        """ Parse the action (add, remove,update) [element] """
+        """ Parse the action (add, remove, update) [element] """
         raise NotImplementedError("Not implemented in abstract class")
 
     @property
     def stopRequested(self):
+        """ Returns True if stop execution flag has been raised and set the flag back to False """
         to_ret = self._stop_requested
         self._stop_requested = False
         return to_ret
 
     def stop(self):
-        """ Request to stop the reasoner """
+        """ Raise the stop flag for the running reasoner """
         self._stop_requested = True
 
     def execute(self):
@@ -33,8 +37,9 @@ class DiscreteReasoner(object):
         raise NotImplementedError("Not implemented in abstract class")
 
     def addProperties(self, element):
+        """ Tag element with discrete reasoner id, then call onAddProperties """
         if not element.hasProperty("skiros:DiscreteReasoner", self.__class__.__name__):
-            element.setProperty("skiros:DiscreteReasoner", self.__class__.__name__, is_list=True)
+            element.setProperty("skiros:DiscreteReasoner", self.__class__.__name__)
         self.onAddProperties(element)
 
     def onAddProperties(self, element):

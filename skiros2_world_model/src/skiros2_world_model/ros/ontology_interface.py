@@ -7,6 +7,7 @@ from std_srvs.srv import SetBool, SetBoolRequest
 from skiros2_common.core.world_element import Element
 from skiros2_world_model.core.world_model_abstract_interface import OntologyAbstractInterface, WmException
 
+
 class OntologyInterface(OntologyAbstractInterface):
     """
     Interface for ontology services on a world model node
@@ -164,7 +165,16 @@ class OntologyInterface(OntologyAbstractInterface):
             return self.query_ontology("SELECT ?x where {?x rdf:type+ " + self.add_prefix(parent_class) + "}")
 
     def get_type(self, uri):
+        """
+        @brief Return the type of an individual/class.
+        """
         return self.query_ontology("SELECT ?x where {" + self.add_prefix(uri) + " rdf:type ?x}")
+
+    def get_types(self, uri):
+        """
+        @brief Return all types of a class
+        """
+        return self.query_ontology("SELECT ?x where {{ ?x rdf:type {} }}".format(self.add_prefix(uri)))
 
     def get_triples(self, subj=None, pred=None, obj=None):
         """
@@ -220,6 +230,13 @@ class OntologyInterface(OntologyAbstractInterface):
             to_ret = self.query_ontology("SELECT ?x WHERE { ?x rdfs:subPropertyOf " + self.add_prefix(parent_property) + " . } ")
         self._sub_properties_cache[parent_property] = to_ret
         return to_ret
+
+    def get_datatype(self, property):
+        """
+        @brief Return the property datatype restriction
+        """
+        answer = self.query_ontology("SELECT ?z WHERE {?x ?t " + property + ". ?x rdf:type owl:Restriction. ?x owl:onDataRange ?z.}")
+        return answer[0] if answer else None
 
     def _call(self, service, msg):
         try:

@@ -121,6 +121,18 @@ class Element(object):
             raise KeyError("No reasoner associated to data {}. Debug: {}".format(get_code, Element._property_reasoner_map))
         return Element._property_reasoner_map[get_code]
 
+    def getAssociatedReasonerId(self, key):
+        """
+        @brief Returns the reasoner associated to a property, or an empty string otherwise
+        """
+        if not isinstance(Element._plug_loader, PluginLoader):
+            self._initPluginLoader()
+        for plugin in Element._plug_loader:
+            r = plugin()
+            if key in r.getAssociatedData():
+                return r.__class__.__name__
+        return ""
+
     def getIdNumber(self):
         """
         @brief Return the element id number as integer
@@ -266,7 +278,7 @@ class Element(object):
             return self.getProperty(key).find(value) != -1
         return self.getProperty(key).values or not not_none
 
-    def setProperty(self, key, value, datatype=None, is_list=False, force_convertion=False):
+    def setProperty(self, key, value, datatype=None, force_convertion=False):
         """
         @brief Set the property to a value. If datatype is specified tries to convert.
         """
@@ -279,33 +291,36 @@ class Element(object):
 
         if datatype:
             if datatype == "xsd:double" or datatype == "xsd:float":
-                self._properties[key] = Property(key, float, is_list)
+                self._properties[key] = Property(key, float)
                 if value is not None:
                     self._properties[key].setValues(value)
             elif datatype == "xsd:int" or datatype == "xsd:integer":
-                self._properties[key] = Property(key, int, is_list)
+                self._properties[key] = Property(key, int)
                 if value is not None:
                     self._properties[key].setValues(int(value))
             elif datatype == "xsd:boolean":
-                self._properties[key] = Property(key, bool, is_list)
+                self._properties[key] = Property(key, bool)
                 if value is not None:
                     self._properties[key].setValues(value)
             elif datatype == "xsd:string":
-                self._properties[key] = Property(key, str, is_list)
+                self._properties[key] = Property(key, str)
                 if value is not None:
                     self._properties[key].setValues(str(value))
             else:
                 log.warn("[Element]", "Datatype {} not recognized. Set default".format(datatype))
-                self._properties[key] = Property(key, value, is_list)
+                self._properties[key] = Property(key, value)
         else:
             if self.hasProperty(key):
                 if force_convertion:
-                    value = self._properties[key].dataType()(value)
+                    if isinstance(value, list):
+                        value = [self._properties[key].dataType()(v) for v in value]
+                    else:
+                        value = self._properties[key].dataType()(value)
                 self._properties[key].setValues(value)
             else:
                 if isinstance(value, unicode):
                     value = str(value)
-                self._properties[key] = Property(key, value, is_list)
+                self._properties[key] = Property(key, value)
 
         if key == 'skiros:DiscreteReasoner':
             new_reasoners = self._properties[key].values
@@ -341,7 +356,7 @@ class Element(object):
         if self.hasProperty(key):
             self._properties[key].addValue(value)
         else:
-            self.setProperty(key, value, is_list=True)
+            self.setProperty(key, value)
 
     def getProperty(self, key):
         """

@@ -231,6 +231,7 @@ class SkillCore(SkillDescription):
         # Execution
         self._state_change = Event()
         self._state = State.Uninitialized
+        self._avg_time_keeper = TimeKeeper()
         self._time_keeper = TimeKeeper()
         self._progress_code = 0
         self._progress_period = 0.0
@@ -253,7 +254,7 @@ class SkillCore(SkillDescription):
         if code is None:
             code = self._progress_code + 1
         self._progress_code = code
-        self._progress_period = self._time_keeper.get_avg_time()
+        self._progress_period = self._avg_time_keeper.get_avg_time()
         self._progress_time = self._time_keeper.time_from_start()
         self._progress_msg = str(msg)
 
@@ -379,6 +380,7 @@ class SkillCore(SkillDescription):
         self.onReset()
         self._params.setDefault()
         self._time_keeper.reset()
+        self._avg_time_keeper.reset()
         self._setProgress("", 0)
         self._setState(State.Idle)
         return self._state

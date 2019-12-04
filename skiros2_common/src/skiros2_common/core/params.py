@@ -30,27 +30,17 @@ class Param(Property):
     True
 
     """
-    __slots__ = ['_key', '_description', '_param_type', '_data_type', '_is_list', '_values', '_default', '_last_update']
+    __slots__ = ['_key', '_description', '_param_type', '_data_type', '_values', '_default', '_last_update']
 
-    def __init__(self, key, description, value, param_type, is_list=False):
-        self._is_list = is_list
-        self._key = key
+    def __init__(self, key, description, value, param_type):
+        super(Param, self).__init__(key, value)
         self._description = description
-        self._setLastUpdate()
         if isinstance(param_type, int):
             self._param_type = ParamTypes(param_type + 1)
         else:
             self._param_type = param_type
-        if isinstance(value, list):
-            self._values = value
-            self._data_type = type(value[0])
-        elif isinstance(value, type):
-            self._data_type = value
-            self._values = list()
-        else:
-            self._data_type = type(value)
-            self._values = [value]
         self._default = deepcopy(self._values)
+        self._setLastUpdate()
 
     def __copy__(self):
         result = self.__class__.__new__(self.__class__)

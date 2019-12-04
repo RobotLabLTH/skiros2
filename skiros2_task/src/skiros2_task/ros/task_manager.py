@@ -1,7 +1,6 @@
 import rospy
 import rospkg
 
-from skiros2_msgs.msg import RobotDescription
 from std_msgs.msg import Empty
 
 import skiros2_msgs.msg as msgs

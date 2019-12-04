@@ -20,18 +20,14 @@ add_message_files(
   Relation.msg
   Statement.msg
   Condition.msg
-  RobotDescription.msg
   SkillProgress.msg
   ResourceDescription.msg
-  ResourceMonitor.msg
   WmElement.msg
   WmMonitor.msg
   )
 
 add_service_files(
   FILES
-  ResourceCommand.srv
-  ResourceSetParams.srv
   ResourceGetDescriptions.srv
   WoQuery.srv
   WoModify.srv
