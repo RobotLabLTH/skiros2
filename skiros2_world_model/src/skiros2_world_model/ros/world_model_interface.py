@@ -11,11 +11,18 @@ from inspect import getframeinfo, stack
 
 class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
     """
-    Interface for scene services on a world model node
+    @brief Interface to world model scene services
     """
     _elements_cache = {}
 
     def __init__(self, author_name="test", make_cache=False):
+        """
+        @brief      Constructs a new instance.
+
+        @param      author_name  *string) Id used to track changes on wm
+        @param      make_cache   If true, keeps a local cache to speed
+                                 up world model access
+        """
         OntologyInterface.__init__(self, author_name)
         self._set_relations = rospy.ServiceProxy('wm/scene/set_relation', srvs.WmSetRelation)
         self._get = rospy.ServiceProxy('wm/get', srvs.WmGet)
@@ -38,6 +45,9 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         return "%s:%d" % (caller.filename[caller.filename.rfind("/"):], caller.lineno)
 
     def _monitor_cb(self, msg):
+        """
+        @brief      Callback updating the cache when a change on wm is detected
+        """
         if self._make_cache:
             if self._last_snapshot_id != msg.prev_snapshot_id or msg.action == 'reset':
                 WorldModelInterface._elements_cache.clear()
@@ -60,6 +70,18 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         if self._external_monitor_cb:
             self._external_monitor_cb(msg)
 
+    def _resolve_local_relations(self, e):
+        for r in e._local_relations:
+            sub_e = r['dst']
+            sub_e.addRelation(e._id, r['type'], "-1")
+            if sub_e._id == "":
+                if self.add_element(sub_e) < 0:
+                    log.error("[{}]".format(self.__class__.__name__), "Failed to add local element {}".format(sub_e))
+            else:
+                if self.update_element(sub_e) < 0:
+                    log.error("[{}]".format(self.__class__.__name__), "Failed to update local element {}".format(sub_e))
+        e._local_relations = list()
+
     def get_scene_name(self):
         """
         @brief Return the name of the scene
@@ -68,7 +90,10 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
 
     def get_scene(self):
         """
-        @brief Returns a triple with all elements in the scene and the associated uuid
+        @brief      Get all scene elements
+
+        @return     tuple(list(Element), string) all elements in the scene and
+                    the scene instance uuid
         """
         msg = srvs.WmGetRequest()
         e = msgs.WmElement()
@@ -83,9 +108,25 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
             return ([utils.msg2element(x) for x in res.elements], res.snapshot_id)
 
     def set_monitor_cb(self, cb):
+        """
+        @brief      Set an external monitor callback
+
+        @param      cb    (function)
+        """
         self._external_monitor_cb = cb
 
     def set_relation(self, subj, pred, obj, value=True):
+        """
+        @brief      Sets a relation.
+
+        @param      subj   (string)The subj uri
+        @param      pred   (string)The predicate uri
+        @param      obj    (string)The object uri
+        @param      value  (Bool) True set the relation, False removes
+                           it
+
+        @return     (bool) False on failure
+        """
         msg = srvs.WmSetRelationRequest()
         msg.author = self._author_name + self._debug_info()
         msg.relation = utils.relation2msg(utils.makeRelation(subj, pred, obj))
@@ -95,19 +136,14 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
             return res.ok
         return False
 
-    def _resolve_local_relations(self, e):
-        for r in e._local_relations:
-            sub_e = r['dst']
-            sub_e.addRelation(e._id, r['type'], "-1")
-            if sub_e._id == "":
-                if self.add_element(sub_e) < 0:
-                    log.error("[{}]".format(self.__class__.__name__), "Failed to add local element {}".format(sub_e))
-            else:
-                if self.update_element(sub_e) < 0:
-                    log.error("[{}]".format(self.__class__.__name__), "Failed to update local element {}".format(sub_e))
-        e._local_relations = list()
-
     def add_elements(self, es, context_id='scene'):
+        """
+        @brief      Adds elements.
+
+        @param      es          list(Elements)
+
+        @return     list(Elements)
+        """
         msg = srvs.WmModifyRequest()
         msg.context = context_id
         msg.author = self._author_name + self._debug_info()
@@ -188,6 +224,15 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         return -1
 
     def resolve_elements(self, e, context_id='scene'):
+        """
+        @brief      Find all elements matching the input *type, label
+                    and properties)
+
+        @param      e           An element to match
+        @param      context_id  The ontology context identifier
+
+        @return     list(Element) List of matches
+        """
         msg = srvs.WmGetRequest()
         msg.context = context_id
         msg.element = utils.element2msg(e)
@@ -197,15 +242,34 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
             return [utils.msg2element(x) for x in res.elements]
 
     def resolve_element(self, e, context_id='scene'):
+        """
+        @brief      Like resolve_elements, but returns only the first
+                    match
+
+        @return     Element or None if no match is found
+        """
         res = self.resolve_elements(e, context_id)
         if res:
             return res[0]
 
     def instanciate(self, uri, recursive=False, relations=list(), relation_filter=["skiros:hasA", "skiros:contain"], antiloop_bind=set(), context_id='scene'):
         """
-        Gets a template individual, adds it to the scene and returns a corresponding element
+        @brief      Gets a template individual, adds it to the scene and
+                    returns a corresponding element
 
-        If recursive, instanciate all individuals related to the starting individual
+        @param      uri              (string)URI of the individual to
+                                     instanciate
+        @param      recursive        (bool)If true, instanciate all
+                                     individuals related to the starting
+                                     individual with releations in
+                                     releation_filter
+        @param      relations        The relations
+        @param      relation_filter  list(string) Relations to consider
+                                     for recursive instanciation
+        @param      antiloop_bind    The antiloop bind
+        @param      context_id       The ontology context identifier
+
+        @return     (Element)
         """
         if isinstance(uri, basestring):
             template = self.get_template_element(uri)
@@ -227,6 +291,14 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         return template
 
     def get_template_element(self, uri, context_id='scene'):
+        """
+        @brief      Gets a template element, an ontology individual that is not instanciated in the world model.
+
+        @param      uri         (string)URI of the individual
+        @param      context_id  (string)Ontology context identifier
+
+        @return     (Element)
+        """
         msg = srvs.WmGetRequest()
         e = msgs.WmElement()
         e.label = uri
@@ -238,6 +310,14 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
             return utils.msg2element(res.elements[0])
 
     def get_element(self, eid, context_id='scene'):
+        """
+        @brief      Gets an element instanciated in the world model.
+
+        @param      eid         (string)Id of the element instance
+        @param      context_id  (string)Ontology context identifier
+
+        @return     (Element)
+        """
         if eid not in WorldModelInterface._elements_cache:
             msg = srvs.WmGetRequest()
             e = msgs.WmElement()
