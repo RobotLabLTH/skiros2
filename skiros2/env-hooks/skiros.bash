@@ -10,6 +10,9 @@ function skiros() {
 	sm)
 	    rosrun skiros2_skill ${@:2}
 	    ;;
+	tm)
+	    rosrun skiros2_task ${@:2}
+	    ;;
     esac
 }
 
@@ -31,6 +34,10 @@ function _skiros() {
 		    ;;
 		sm|skill_mgr)
 		    local launchfiles=$(find $(rospack find skiros2_skill)/nodes/utils -name '*' -type f -printf "%f\n")
+		    COMPREPLY=( $(compgen -W "${launchfiles}" -- $cur) )
+		    ;;
+		tm|task_mgr)
+		    local launchfiles=$(find $(rospack find skiros2_task)/nodes/utils -name '*' -type f -printf "%f\n")
 		    COMPREPLY=( $(compgen -W "${launchfiles}" -- $cur) )
 		    ;;
 	    esac

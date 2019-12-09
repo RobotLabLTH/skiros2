@@ -1,5 +1,4 @@
 import rospy
-import rospkg
 
 from std_msgs.msg import Empty
 
@@ -21,18 +20,14 @@ from skiros2_skill.ros.utils import SkillHolder
 
 
 class TaskManagerNode(PrettyObject):
-    """
-    This class manage the robot task.
-    A list of goals can be modified by external agent (e.g. users) with the service 'set_goals'
-    The task manager plans a sequence of skills to reach the goals.
-    In case of execution failure replans until all goals are reached.
-    """
-
     def __init__(self):
-        """Initialization of the task manager.
+        """
+        This class manage the robot task planning. A list of goals can be set by
+        external agent (e.g. users) with the action server 'task_plan' The task
+        manager plans a sequence of skills to reach the goals and returns it.
 
-        Initialize task manager as a ros node.
-        Establish access to the global and local world model, skill manager and the task planner.
+        Initialize task manager as a ros node. Establish access to the global
+        and local world model, skill manager and the task planner.
         """
         rospy.init_node("task_manager", anonymous=False)
         self._author_name = rospy.get_name()
@@ -43,10 +38,12 @@ class TaskManagerNode(PrettyObject):
 
         self._wmi = wmi.WorldModelInterface(self._author_name)
         self._sli = sli.SkillLayerInterface(self._author_name)
-        self._pddl_interface = pddl.PddlInterface(workspace=rospkg.RosPack().get_path("skiros2_task"))
+        self._pddl_interface = pddl.PddlInterface()
 
         self._verbose = rospy.get_param('~verbose', True)
-        self._assign_task_action = actionlib.SimpleActionServer('~task_plan', msgs.AssignTaskAction, execute_cb=self._assign_task_cb, auto_start=False)
+        log.setLevel(log.INFO)
+        self._assign_task_action = actionlib.SimpleActionServer(
+            '~task_plan', msgs.AssignTaskAction, execute_cb=self._assign_task_cb, auto_start=False)
         self._assign_task_action.start()
 
         self._is_ready = False
@@ -125,14 +122,13 @@ class TaskManagerNode(PrettyObject):
             skill = deepcopy(self.skills[tokens.pop(0)])
             planned_map = self._pddl_interface.getActionParamMap(skill.name, tokens)
 #            print "{}".format(planned_map)
-            for k,v in planned_map.iteritems():
+            for k, v in planned_map.iteritems():
                 e = self.get_element(v)
-                if e.getIdNumber()<0:
-                    e._id = "" #ID must be clear if element is not an instance
+                if e.getIdNumber() < 0:
+                    e._id = ""  # ID must be clear if element is not an instance
                 skill.ph.specify(k, e)
             task.children.append(skill)
         return task
-
 
     def initDomain(self):
         skills = self._wmi.resolve_elements(wmi.Element(":Skill"))
@@ -212,7 +208,7 @@ class TaskManagerNode(PrettyObject):
                         if p.name in relations:
                             self._pddl_interface.addInitState(pddl.GroundPredicate(p.name, [xe.id, ye.id]))
             else:
-                #The predicate is handled normally
+                # The predicate is handled normally
                 if len(p.params) == 1:
                     if p.value != None:
                         c = cond.ConditionProperty("", p.name, "x", p.operator, p.value, True)
@@ -222,12 +218,15 @@ class TaskManagerNode(PrettyObject):
                     for xe in elements[xtype]:
                         params.specify("x", xe)
                         if c.evaluate(params, self._wmi):
-                            self._pddl_interface.addInitState(pddl.GroundPredicate(p.name, [xe._id], p.operator, p.value))
+                            self._pddl_interface.addInitState(
+                                pddl.GroundPredicate(p.name, [xe._id], p.operator, p.value))
                 else:
                     xtype = p.params[0]["valueType"]
                     ytype = p.params[1]["valueType"]
-                    subx = [xtype] if self._pddl_interface.getSubTypes(xtype) is None else self._pddl_interface.getSubTypes(xtype)
-                    suby = [ytype] if self._pddl_interface.getSubTypes(ytype) is None else self._pddl_interface.getSubTypes(ytype)
+                    subx = [xtype] if self._pddl_interface.getSubTypes(
+                        xtype) is None else self._pddl_interface.getSubTypes(xtype)
+                    suby = [ytype] if self._pddl_interface.getSubTypes(
+                        ytype) is None else self._pddl_interface.getSubTypes(ytype)
                     if p.abstracts:
                         query_str_template = """
                             SELECT ?x ?y WHERE {{

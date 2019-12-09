@@ -11,11 +11,15 @@ from skiros2_common.tools.time_keeper import TimeKeepers
 
 
 class IndividualsDataset(Ontology):
-    """
-    An ontology with methods to handle individuals using the Element class
-    """
-
     def __init__(self, verbose, context_id, graph=None, init=False):
+        """
+        @brief      Manages a set of individuals using the Element class
+
+        @param      verbose     The verbose
+        @param      context_id  The context identifier
+        @param      graph       The graph
+        @param      init        The initialize
+        """
         Ontology.__init__(self, graph)
         self._reasoners = {}
         self._verbose = verbose
@@ -488,11 +492,15 @@ class IndividualsDataset(Ontology):
 
 
 class WorldModel(IndividualsDataset):
-    """
-    @brief A set of individuals with unique ID generation
-    """
-
     def __init__(self, verbose, context_id, change_cb):
+        """
+        @brief      Manages a set of individuals with unique ID
+                    generation
+
+        @param      verbose     The verbose
+        @param      context_id  The context identifier
+        @param      change_cb   The change cb
+        """
         self._id_gen = IdGen()
         self._change_cb = change_cb
         IndividualsDataset.__init__(self, verbose, context_id, init=False)

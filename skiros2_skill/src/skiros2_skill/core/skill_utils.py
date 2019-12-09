@@ -196,7 +196,7 @@ class NodeExecutor():
         """
         @brief ground undefined parameters with elements in the world model
         """
-        matches = self._wm.resolve_elements2(to_resolve, cp)
+        matches = self._wm._resolve_elements2(to_resolve, cp)
         _grounded = ''
         for key, match in matches.iteritems():
             if match.any():

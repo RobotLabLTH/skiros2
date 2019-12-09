@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import skiros2_world_model.core.local_world_model as wm
 import skiros2_world_model.ros.world_model_interface as wmi
 import sys
 

@@ -1277,9 +1277,6 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         self._add_frequently_used_skill(self.skill_tree_widget.currentItem().data(2, 0))
         # Start logger
         if not self._sli.has_active_agents:
-            prefix = self.logs_file_lineEdit.text()
-            prefix = prefix[0:prefix.rfind("/")]
-            self.logs_file_lineEdit.setText("{}/{}_{}".format(prefix, datetime.now().strftime("%Y-%m-%d:%H:%M:%S"), skill.name))
             self.on_save_logs_checkBox_clicked()
         # Send command
         if not self._get_parameters(skill.ph):
@@ -1294,19 +1291,34 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         self.on_save_logs_checkBox_clicked()
 
     def on_save_logs_checkBox_clicked(self):
-        if self.log_file is not None:
-            self.logs_textEdit.clear()
-            self.log_file.close()
-            self.log_file = None
-        if self.save_logs_checkBox.isChecked():
-            file_name = os.path.expanduser(self.logs_file_lineEdit.text())
-            directory = file_name[0: file_name.rfind('/')]
-            if not os.path.exists(directory):
-                os.makedirs(directory)
-            elif os.path.exists(file_name):
-                with open(file_name, "r") as f:
-                    self.logs_textEdit.setText(f.read())
-            self.log_file = open(file_name, "a")
+        try:
+            #Close old log file
+            if self.log_file is not None:
+                self.logs_textEdit.clear()
+                self.log_file.close()
+                self.log_file = None
+            #Open new log file
+            if self.save_logs_checkBox.isChecked():
+                directory, file_name = self._get_new_log_filename()
+                self.log_file = open(file_name, "a")
+        except (IOError) as e:
+            log.error("[IOError]", str(e))
+            self.save_logs_checkBox.setChecked(False)
+        except (AttributeError) as e:
+            pass
+
+    def _get_new_log_filename(self):
+        skill = self.skill_tree_widget.currentItem().data(2, 0)
+        directory = self.logs_file_lineEdit.text()
+        directory = directory[0:directory.rfind("/")]
+        file_name = "{}_{}".format(datetime.now().strftime("%Y-%m-%d:%H:%M:%S"), skill.name)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        elif os.path.exists(file_name):
+            with open(file_name, "r") as f:
+                self.logs_textEdit.setText(f.read())
+        self.logs_file_lineEdit.setText("{}/{}".format(directory, file_name))
+        return directory, file_name
 
     def _save_log(self, msg, log_type):
         if log_type == "skill":
