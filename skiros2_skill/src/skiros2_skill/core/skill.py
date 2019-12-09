@@ -45,12 +45,24 @@ class SkillInterface(SkillCore):
         return self
 
     @property
+    def wmi(self):
+        """
+        @brief      Returns the world model interface
+        """
+        return self._wmi
+
+    @property
     def parent(self):
+        """
+        @brief      Returns the parent skill
+        """
         return self._parent
 
     def getLightCopy(self):
         """
-        Makes a light copy (only description, params and state)
+        @brief      Makes a light copy (only description, params and state)
+
+        @return     A light copy
         """
         p = self.__class__(self._children_processor)
         p._children_processor = deepcopy(self._children_processor)
@@ -73,7 +85,7 @@ class SkillInterface(SkillCore):
 
     def _clearRemaps(self):
         """
-        Clear remaps
+        @brief      Clear remaps
         """
         for r1, r2 in reversed(self._remaps.items()):
             self.remap(r2, r1)
@@ -82,14 +94,15 @@ class SkillInterface(SkillCore):
 
     def _copyRemaps(self, skill):
         """
-        Copy the remaps of another skill. Called automatically when the skill is added as a child
+        @brief      Copy the remaps of another skill. Called automatically when
+                    the skill is added as a child
         """
         for r1, r2 in skill._remaps.iteritems():
             self.remap(r1, r2)
 
     def _revertRemaps(self):
         """
-        Revert remaps. Just used in revertInput
+        @brief      Revert remaps. Just used in revertInput
         """
         remapid = len(self._params_cache)
         try:
