@@ -116,7 +116,7 @@ class Property(object):
         """
         @brief Set all the values
         """
-        if not value:
+        if value is None:
             self._values = list()
         elif isinstance(value, list):
             if self._isListOfType(value, self._data_type):

@@ -308,26 +308,19 @@ class ParamHandler(object):
     def isSpecified(self, key):
         return self._params[key].isSpecified()
 
-    def getParamValue(self, key, make_instance=False):
+    def getParamValue(self, key):
         """
-        Return the first value of the parameter
-
-        If make_instance is True and the parameter is not specified, an instance is returned
-        rather than None
+        @brief      Like getParamValues, but returns the first value of the
+                    parameter
         """
         if self.hasParam(key):
-            if make_instance and not self.isSpecified(key):
-                return self._params[key].makeInstance()
             return self._params[key].getValue()
         else:
             log.error('getParamValue', 'Param {} is not in the map. Debug: {}'.format(key, self.printState()))
 
     def getParamValues(self, key):
         """
-        Return the parameter values (list)
-
-        If make_instance is True and the parameter is not specified, an instance list is returned
-        rather than a None list
+        @brief      Return the parameter values (list)
         """
         if self.hasParam(key):
             return self._params[key].getValues()
