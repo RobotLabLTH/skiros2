@@ -141,17 +141,7 @@ class TestParamHandler(unittest.TestCase):
         getParamValue should return None if there is no parameter for 
         the key"""
         self.assertEqual(None, ph1.getParamValue("b"), msg)
-        
-        msg = """
-        getParamValue should return None if parameter is not
-        specified and make_instance is False"""
-        self.assertEqual(None, ph1.getParamValue("a"), msg)
-        
-        msg = """
-        getParamValue should return an instance if parameter is 
-        specified and make_instance is True"""
-        self.assertEqual(0, ph1.getParamValue("a", True), msg)
-        
+         
         msg = """
         getParamValue should return the first value of the parameter"""
         ph1.specify("a", [1, 2])
