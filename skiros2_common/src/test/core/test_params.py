@@ -48,15 +48,7 @@ class TestParamHandler(unittest.TestCase):
         self.ph2.addParam("a", float, params.ParamTypes.Required)
         value_dict = self._mergeAndMapValues(self.ph1, self.ph2) 
         self.assertEqual({"b": [2], "c": [3]}, value_dict, msg)
-
-#    def test_addParam(self):
-#        ph = params.ParamHandler()
-#        ph.addParam("Trajectory", {"MyTraj": "Ue"}, 
-#                params.ParamTypes.Required)
-#        self.assertEqual(['Trajectory'], ph.keys())
-#        self.assertEqual({'MyTraj': 'Ue'}, 
-#                ph.getParam("Trajectory").value)
-        
+ 
     def test_specify(self):
         ph = self.ph1
         # overrides the param given to "a" from the setup
@@ -166,24 +158,19 @@ class TestParamHandler(unittest.TestCase):
         self.assertEqual(1, ph1.getParamValue("a"), msg)
 
     def test_getParamValues(self):
-        """
-        Error in the code or comment, no parameter make_instance
-        """
-        raise NotImplementedError
+        ph1 = self.ph1
+        ph1.addParam("a", int, params.ParamTypes.Required)
+        ph1.addParam("b", [1.1, 2.0], params.ParamTypes.Required)
+        values = ph1.getParamValues("a")
+        msg = """
+        getParamValues should return an empty list if parameter is
+        not specified"""
+        self.assertEquals([], values, msg)
 
-#        ph1 = self.ph1
-#        ph1.addParam("a", int, params.ParamTypes.Required)
-#        ph1.addParam("b", [1.1, 2.0], params.ParamTypes.Required)
-#        values = ph1.getParamValues("a", make_instance = True)
-#        msg = """
-#        getParamValues should return a list with an instance if 
-#        make_instance is True and parameter is not specified"""
-#        self.assertEquals([0], values, msg)
-#
-#        msg = """
-#        getParamValues should return the parameter values as a list"""
-#        values = ph1.getParamValues("b")
-#        self.assertEquals([1.1, 2.0], values, msg)
+        msg = """
+        getParamValues should return the parameter values as a list"""
+        values = ph1.getParamValues("b")
+        self.assertEquals([1.1, 2.0], values, msg)
 
 
     def test_getElementParams(self):
