@@ -241,12 +241,7 @@ class ParamHandler(object):
         @brief Remap a parameter to a new key
         """
         if self.hasParam(initial_key):
-            #print self.printState()
-            temp = self._params[initial_key]
-            temp._key = target_key
-            self._params[target_key] = temp
-            del self._params[initial_key]
-            #print 'after ' + self.printState()
+            self._params[target_key] = self._params.pop(initial_key)
 
     def specifyParams(self, other, keep_default=False):
         """
