@@ -24,11 +24,10 @@ ParamOptions = Enum('ParamOptions', 'Consume Output Unspecify Lock RespectType')
 
 
 class SkillDescription(object):
-    """
-    An abstract skill description
-    """
-
     def __init__(self):
+        """
+        @brief      An abstract skill description
+        """
         # Description
         self._type = "skiros:" + self.__class__.__name__
         # Params
@@ -43,25 +42,41 @@ class SkillDescription(object):
 
     @property
     def params(self):
+        """
+        @brief      Gets the skill's parameter handler
+        """
         return self._params
 
     @property
     def label(self):
+        """
+        @brief      Gets the skill's label
+        """
         return self._label
 
     @property
     def type(self):
+        """
+        @brief      Gets the skill's type
+        """
         return self._type
+
+    @property
+    def wmi(self):
+        """
+        @brief      Returns the world model interface
+        """
+        return self._wmi
 
     def getDescription(self):
         """
-        Extracts the skill description
+        @brief Extracts the skill description
         """
         return (self._type, self._params, self._pre_conditions, self._hold_conditions, self._post_conditions)
 
     def setDescription(self, typein, paramsin, prein, holdin, postin):
         """
-        Sets the skill description (makes a deepcopy)
+        @brief Sets the skill description (makes a deepcopy)
         """
         self._type = copy(typein)
         self._params = deepcopy(paramsin)
@@ -71,7 +86,7 @@ class SkillDescription(object):
 
     def addParam(self, key, value, param_type, options=[], description=""):
         """
-        Add a parameter
+        @brief Adds a parameter
 
         key: a unique string identifier
         value: the default value or type
@@ -95,7 +110,7 @@ class SkillDescription(object):
 
     def generateDefParams(self):
         """
-        Some default params are added automatically
+        @brief Some default params are added automatically
         """
         if not self._params.hasParam('Robot'):
             self._params.addParam("Robot", Element("sumo:Agent"), params.ParamTypes.Inferred)
@@ -104,7 +119,7 @@ class SkillDescription(object):
 
     def generateDefConditions(self):
         """
-        Some default preconditions are added automatically
+        @brief Some default preconditions are added automatically
         """
         #self.addPreCondition(self.getRelationCond("HasSkill", "hasSkill", "Robot", "Skill", True))
         # for key, param in self._params.getParamMapFiltered(params.ParamTypes.Hardware).iteritems():
@@ -210,13 +225,13 @@ class SkillDescription(object):
 
 
 class SkillCore(SkillDescription):
-    """
-    @brief An abstract executable skill with a description (type, label, params, conditions), a state and progress code
-    """
-
     gen_id = IdGen()
 
     def __init__(self):
+        """
+        @brief      An abstract executable skill with a description (type,
+                    label, params, conditions), a state and progress code
+        """
         # Description
         self._id = SkillCore.gen_id.getId()
         self._type = ""

@@ -136,6 +136,16 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
             return res.ok
         return False
 
+    def is_scene_element(self, eid):
+        """
+        @brief      Determines whether the specified eid is scene element.
+
+        @param      eid   (string) The element id
+
+        @return     True if the specified eid is a scene element, False otherwise.
+        """
+        return eid.find("-") > 0
+
     def add_elements(self, es, context_id='scene'):
         """
         @brief      Add elements to the scene. The id is updated with

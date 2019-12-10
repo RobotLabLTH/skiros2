@@ -45,13 +45,6 @@ class SkillInterface(SkillCore):
         return self
 
     @property
-    def wmi(self):
-        """
-        @brief      Returns the world model interface
-        """
-        return self._wmi
-
-    @property
     def parent(self):
         """
         @brief      Returns the parent skill
