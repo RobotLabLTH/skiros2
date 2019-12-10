@@ -20,15 +20,15 @@ For detailed info refer to the [wiki](https://github.com/RVMI/skiros2/wiki)
 
 ### Dependencies
 
-> roscd skiros2/..
-> pip install -r requirements.txt --user
+> roscd skiros2/..  
+> pip install -r requirements.txt --user  
 
 ### Task planning
 
 To run the task planning you should install the fast downward planner:
 
-> roscd skiros2/scripts
-> ./install_fd_task_planner.sh
+> roscd skiros2/scripts  
+> ./install_fd_task_planner.sh  
 
 When asked for the install folder, you can insert a location of your preference or just leave the default.
 
