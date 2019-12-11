@@ -861,7 +861,8 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         # check if element is already in tree
         items = self.wm_tree_widget.findItems(elem.id, Qt.MatchRecursive | Qt.MatchFixedString, 1)
         if not items:
-            return
+            #Element is not in the tree. Can happen if the node didn't have a spatial relation before
+            return self._add_wm_node(elem)
         item = items[0]
         # check if updated item is selected
         if elem.id == cur_item_id:
@@ -870,17 +871,18 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
             self.fill_properties_table(elem)
             self.wm_properties_widget.blockSignals(False)
 
-        # get parent node in tree
+        # get parent node in GUI tree
         parent = item.parent()
         if not parent:
             return
 
-        # check if the old parent is still parent of the updated element
+        # get parent relation
         parent_rel = elem.getRelation(pred=self._wmi.get_sub_properties('skiros:spatiallyRelated'), obj='-1')
         if not parent_rel:
             parent_rel = elem.getRelation(pred=self._wmi.get_sub_properties('skiros:skillProperty'), obj='-1')
         if not parent_rel:
             parent_rel = elem.getRelation(pred='skiros:hasSkill', obj='-1')
+        # check if the GUI parent is still parent of the updated element
         if not parent.text(1) in parent_rel['src']:
             # elem moved spatially
             item.parent().removeChild(item)
@@ -893,7 +895,6 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
             parents[0].addChild(item)
 
     def _add_wm_node(self, elem):
-        # print "Adding {}".format(elem.id)
         parent_rel = elem.getRelation(pred=self._wmi.get_sub_properties('skiros:spatiallyRelated'), obj='-1')
         to_expand = True
         if not parent_rel:
