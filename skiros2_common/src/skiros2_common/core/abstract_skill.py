@@ -3,7 +3,7 @@ from skiros2_common.core.world_element import Element
 import skiros2_common.core.conditions as cond
 from skiros2_common.tools.id_generator import IdGen
 import skiros2_common.tools.logger as log
-from flufl.enum import Enum
+from enum import Enum
 from copy import copy, deepcopy
 from multiprocessing.dummy import Event
 from sets import Set

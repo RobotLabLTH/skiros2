@@ -460,7 +460,7 @@ class SkillManagerNode(DiscoverableNode):
         msg.label = kwargs['label']
         if self.publish_runtime_parameters:
             msg.params = utils.serializeParamMap(kwargs['params'])
-        msg.state = int(kwargs['state'])
+        msg.state = kwargs['state'].value
         msg.processor = kwargs['processor']
         msg.parent_label = kwargs['parent_label']
         msg.parent_id = kwargs['parent_id']

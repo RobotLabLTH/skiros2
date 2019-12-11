@@ -1,4 +1,4 @@
-from flufl.enum import Enum
+from enum import Enum
 from copy import copy, deepcopy
 import skiros2_common.tools.logger as log
 from skiros2_common.core.property import Property
@@ -159,7 +159,7 @@ class Param(Property):
     def toElement(self):
         to_ret = Element("skiros:Parameter", self._key)
         to_ret.setProperty("rdfs:comment", self._description)
-        to_ret.setProperty("skiros:ParameterType", int(self._param_type) - 1)
+        to_ret.setProperty("skiros:ParameterType", self._param_type.value - 1)
         if(not self.dataTypeIs(Element)):
             to_ret.setProperty("skiros:DataType", self._data_type)
             if self.hasSpecifiedDefault():

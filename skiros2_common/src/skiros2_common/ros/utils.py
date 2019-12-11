@@ -150,7 +150,7 @@ def getTypeFromStr(name):
 
 
 def encodeParam(encoder, obj):
-    return {"key": obj._key, "description": obj._description, "specType": int(obj._param_type) - 1, "type": getStrFromType(obj._data_type),
+    return {"key": obj._key, "description": obj._description, "specType": obj._param_type.value - 1, "type": getStrFromType(obj._data_type),
             "values": obj._values}
 
 

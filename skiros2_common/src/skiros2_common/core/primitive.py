@@ -21,7 +21,7 @@ class PrimitiveBase(SkillCore):
             with self._avg_time_keeper:
                 return_state = self.execute()
                 assert type(return_state) == State
-                self._setState(self.execute(return_state))
+                self._setState(return_state)
                 self._updateRoutine(start_time)
             if self.hasState(State.Success) or self.hasState(State.Failure):
                 if not self.onEnd():
