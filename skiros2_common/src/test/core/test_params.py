@@ -1,6 +1,6 @@
 import unittest
 import skiros2_common.core.params as params
-
+import skiros2_common.core.world_element as we
 
 def paramMapValues(ph):
     # map paramhandler keys to a list of their parameter values 
@@ -155,16 +155,23 @@ class TestParamHandler(unittest.TestCase):
         msg = """
         getParamValues should return an empty list if parameter is
         not specified"""
-        self.assertEquals([], values, msg)
+        self.assertEqual([], values, msg)
 
         msg = """
         getParamValues should return the parameter values as a list"""
         values = ph1.getParamValues("b")
-        self.assertEquals([1.1, 2.0], values, msg)
+        self.assertEqual([1.1, 2.0], values, msg)
 
 
     def test_getElementParams(self):
-        raise NotImplementedError
+        ph1 = self.ph1
+        e1 = we.Element("Type1")
+        e2 = we.Element("Type2")
+        ph1.addParam("e1", e1, params.ParamTypes.Optional)
+        ph1.addParam("e2", e2, params.ParamTypes.Optional)
+        elements = {k: v.value for k, v in ph1.getElementParams().items()}
+        self.assertEqual({"e1": e1, "e2": e2}, elements)
+        
     def test_getParamMapFiltered(self):
         ph1 = self.ph1
         ph1.addParam("b", "hello", params.ParamTypes.Optional)
@@ -199,9 +206,25 @@ class TestParam(unittest.TestCase):
         recently"""
         p.value = 1
         self.assertEqual(True, p.hasChanges(t), msg)
+    
     def test_toElement(self):
-        raise NotImplementedError
+        p = params.Param("MyProp", "", 0, params.ParamTypes.Required)
+        element = p.toElement()
+        self.assertEqual(
+                int, element.getProperty("skiros:DataType").dataType())
+        self.assertEqual([0], element.getProperty("skiros:Default").values)
+        self.assertEqual([0], element.getProperty("skiros:Value").values)
 
+        e = we.Element("MyType", eid = "1")
+        p = params.Param("MyElement", "", e, params.ParamTypes.Required)
+        element = p.toElement()
+        self.assertEqual(
+                ["MyType"], element.getProperty("skiros:DataType").values)
+        
+        expected = {"src": "-1", "dst": "1", "type": "skiros:hasValue",
+                "state": True, "abstract": False}
+        self.assertEqual(
+                expected, element.getRelation("-1", "skiros:hasValue", "1")) 
 
 if __name__ == "__main__":
     unittest.main()
