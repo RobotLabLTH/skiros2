@@ -82,9 +82,6 @@ class TestWorldElement(unittest.TestCase):
         expected = self._relationsDefault(relations_list)
         self.assertEqual(expected, self.e.getRelations())
 
-    def test_hasRelation(self):
-        # comment incorrect in src code
-        raise NotImplementedError
     def test_hasProperty(self):
         e = Element()
         e.setProperty("Integer", "2", "xsd:int")
@@ -97,11 +94,8 @@ class TestWorldElement(unittest.TestCase):
         
     def test_setProperty(self):
         e = Element()
-        msg = """
-        setProperty should convert when creating the property if 
-        force_convertion is true"""
-        e.setProperty("Integer", "1", force_convertion = True)
-        self.assertEqual([1], e.getProperty("Integer").values, msg)
+        e.setProperty("Integer", 1)
+        self.assertEqual([1], e.getProperty("Integer").values)
 
         msg = """
         setProperty should convert when setting the property if 
@@ -110,16 +104,10 @@ class TestWorldElement(unittest.TestCase):
         self.assertEqual([2], e.getProperty("Integer").values, msg)
         
         msg = """
-        setProperty should convert when creating the property if 
-        value is a list and if force_convertion is true"""
-        e.setProperty("Integers", ["1", "2"], force_convertion = True)
-        self.assertEqual([1, 2], e.getProperty("Integers").values, msg)
-        
-        msg = """
         setProperty should convert when setting the property if 
         value is a list and if force_convertion is true"""
-        e.setProperty("Integers", ["3", "4"], force_convertion = True)
-        self.assertEqual([3, 4], e.getProperty("Integers").values, msg)
+        e.setProperty("Integer", ["1", "2"], force_convertion = True)
+        self.assertEqual([1, 2], e.getProperty("Integer").values, msg)
 
         msg = """
         setProperty should convert unicode values to str before
@@ -132,11 +120,6 @@ class TestWorldElement(unittest.TestCase):
         the property"""
         e.setProperty("strKey", u"b")
         self.assertEqual(["b"], e.getProperty("strKey").values, msg)
-
-        msg = """
-        setProperty should handle str and unicode values the same way"""
-        e.setProperty("strKey", "a")
-        self.assertEqual(["a"], e.getProperty("strKey").values, msg)     
         
     def test_appendProperty(self):
         e = Element()
