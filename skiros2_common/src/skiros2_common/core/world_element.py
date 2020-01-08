@@ -253,7 +253,7 @@ class Element(object):
 
     def hasRelation(self, subj, predicate, obj, value=True, abstract=False):
         """
-        @brief Add a relation with another element
+        @brief Return true if element has the relation
         @subj An element or an element id
         @obj An element or an element id
         @value The state of the relation should be True or False
@@ -276,7 +276,7 @@ class Element(object):
             return False
         if value is not None:
             return self.getProperty(key).find(value) != -1
-        return self.getProperty(key).values or not not_none
+        return self.getProperty(key).isSpecified() or not not_none
 
     def setProperty(self, key, value, datatype=None, force_convertion=False):
         """
@@ -316,6 +316,8 @@ class Element(object):
                         value = [self._properties[key].dataType()(v) for v in value]
                     else:
                         value = self._properties[key].dataType()(value)
+                elif isinstance(value, unicode):
+                    value = str(value)
                 self._properties[key].setValues(value)
             else:
                 if isinstance(value, unicode):
