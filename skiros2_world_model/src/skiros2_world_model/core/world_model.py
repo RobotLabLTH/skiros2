@@ -402,7 +402,7 @@ class IndividualsDataset(Ontology):
         elif param.dataTypeIs(int):
             return XSD.integer
         else:
-            log.error("[Wm]", "Param {} has type {} that is not supported.".format(param.key, param.dataType))
+            log.error("[Wm]", "Param {} has type {} that is not supported.".format(param.key, param.dataType()))
             return None
 
     def _set(self, statement, author, time=None, probability=1.0):
