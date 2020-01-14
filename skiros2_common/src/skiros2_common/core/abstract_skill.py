@@ -6,7 +6,6 @@ import skiros2_common.tools.logger as log
 from enum import Enum
 from copy import copy, deepcopy
 from multiprocessing.dummy import Event
-from sets import Set
 from skiros2_common.tools.time_keeper import TimeKeeper
 
 """
