@@ -9,25 +9,30 @@ s_param_map_strings = [
 '[param: "{\\"values\\": [\\"String\\"], \\"specType\\": 0, \\"type\\": \\"str\\", \\"description\\": \\"\\\n  \\", \\"key\\": \\"MyString\\"}"]']
 
 class TestSerialization(unittest.TestCase):
+    def assertSameItems(self, a, b):
+        msg = "{} does not have the same items as {}".format(a, b)
+        self.longMessage = False
+        self.assertEqual(sorted(a), sorted(b), msg)
+    
     def test_serialize_ParamMap(self):
         ph = param.ParamHandler()
         ph.addParam("MyDict", dict, param.ParamTypes.Required)
         s_param_map  = utils.serializeParamMap(ph._params)
-        self.assertEqual(s_param_map_strings[0], str(s_param_map))
+        self.assertSameItems(s_param_map_strings[0], str(s_param_map))
 
         ph.addParam("MyList", list, param.ParamTypes.Required)
         s_param_map  = utils.serializeParamMap(ph._params)
-        self.assertEqual(s_param_map_strings[1], str(s_param_map))
+        self.assertSameItems(s_param_map_strings[1], str(s_param_map))
 
         params = {}
         params["MyDict"] = param.Param("MyDict", "", dict, param.ParamTypes.Required)
         s_param_map = utils.serializeParamMap(params)
-        self.assertEqual(s_param_map_strings[0], str(s_param_map))
+        self.assertSameItems(s_param_map_strings[0], str(s_param_map))
         
         params = {}
         params["MyString"] = param.Param("MyString", "", "String", param.ParamTypes.Required)
         s_param_map = utils.serializeParamMap(params)
-        self.assertEqual(s_param_map_strings[2], str(s_param_map))
+        self.assertSameItems(s_param_map_strings[2], str(s_param_map))
 
     def test_deserializeParamMap(self):
         ph = param.ParamHandler()
