@@ -78,6 +78,7 @@ class Element(object):
     def label(self, l):
         self._label = l
 
+    @property
     def available_properties(self):
         return self._properties.keys()
 
@@ -228,18 +229,21 @@ class Element(object):
 
     def setRelation(self, subj, predicate, obj):
         """
-        @brief Set a relation, removing previous definitions
+        @brief Set a relation, overriding previous definitions
         """
         self.removeRelations(self.getRelations(subj if subj == "-1" else "", predicate, obj if obj == "-1" else ""))
         self.addRelation(subj, predicate, obj)
 
     def addRelation(self, subj, predicate, obj, value=True, abstract=False):
         """
-        @brief Add a relation with another element
-        @subj An element or an element id
-        @obj An element or an element id
-        @value The state of the relation should be True or False
-        @abstract Whether the relation is between abstract objects or instances
+        @brief      Add a relation with another element
+
+        @param      subj       An element id
+        @param      predicate  The predicate
+        @param      obj        An element or an element id
+        @param      value      The state of the relation should be True or False
+        @param      abstract   Whether the relation is between abstract objects
+                               or instances
         """
         self._setLastUpdate()
         if isinstance(obj, Element):
@@ -249,28 +253,38 @@ class Element(object):
             if not r in self._relations:
                 self._relations.append(r)
         else:
-            raise ValueError('Subject/Object must be of type string: subject type is {}. object type is {}'.format(type(subj), type(obj)))
+            raise ValueError('Subject/Object must be of type string or Element: subject type is {}. object type is {}'.format(type(subj), type(obj)))
 
     def hasRelation(self, subj, predicate, obj, value=True, abstract=False):
         """
         @brief Return true if element has the relation
-        @subj An element or an element id
-        @obj An element or an element id
-        @value The state of the relation should be True or False
-        @abstract Whether the relation is between abstract objects or instances
+
+        @param      subj       An element or an element id
+        @param      predicate  The predicate
+        @param      obj        An element or an element id
+        @param      value      The state of the relation should be True or False
+        @param      abstract   Whether the relation is between abstract objects
+                               or instances
+
+        @return     True if relation, False otherwise.
         """
-        if subj == "-1":
+        if not subj or subj == "-1":
             subj = self.id
-        elif obj == "-1":
+        elif not obj or obj == "-1":
             obj = self.id
         return {'src': subj, 'type': predicate, 'dst': obj, 'state': value, 'abstract': abstract} in self._relations
 
     def hasProperty(self, key, value=None, not_none=False):
         """
-        @brief Return true if element has the property.
-        @key the property to check
-        @value if specified, return true if the property has that value
-        @not_none when set to true, checks that the property doesn't have none as value
+        @brief      Return true if element has the property.
+
+        @param      key       the property to check
+        @param      value     if specified, return true if the property has that
+                              value
+        @param      not_none  when set to true, checks that the property doesn't
+                              have none as value
+
+        @return     True if property, False otherwise.
         """
         if key not in self._properties:
             return False

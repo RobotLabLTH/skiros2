@@ -451,8 +451,10 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         self.last_executed_skill = ""
         self.skill_stop_button.setEnabled(False)
         self.skill_pause_button.setEnabled(False)
-        self.space_shortcut = QShortcut(QtGui.QKeySequence(Qt.Key_Space, Qt.Key_Plus), self)
+        self.space_shortcut = QShortcut(QtGui.QKeySequence(Qt.Key_Space), self)
+        self.plus_shortcut = QShortcut(QtGui.QKeySequence(Qt.Key_Plus), self)
         self.space_shortcut.activated.connect(self.skill_start_stop)
+        self.plus_shortcut.activated.connect(self.skill_start_stop)
         self.task_tree_widget.setColumnWidth(0, 480)
         self.task_tree_widget.setColumnWidth(1, 60)
         self.skill_item = dict()

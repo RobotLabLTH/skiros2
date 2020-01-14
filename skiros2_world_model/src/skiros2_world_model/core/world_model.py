@@ -226,8 +226,8 @@ class IndividualsDataset(Ontology):
         if reasoner is not None:
             prop_to_update = reasoner.getAssociatedData()
         else:
-            prop_to_update = e.available_properties()
-            prop_to_remove = set(old_e.available_properties()).difference(set(prop_to_update))
+            prop_to_update = e.available_properties
+            prop_to_remove = set(old_e.available_properties).difference(set(prop_to_update))
             for k in prop_to_remove:
                 predicate = self.lightstring2uri(k)
                 values = old_e.getProperty(k).values
