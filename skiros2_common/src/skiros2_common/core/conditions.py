@@ -1,5 +1,6 @@
-import params
-from world_element import Element
+from __future__ import absolute_import
+from . import params
+from .world_element import Element
 from copy import deepcopy
 import operator
 

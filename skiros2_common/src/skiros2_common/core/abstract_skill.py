@@ -126,7 +126,7 @@ class SkillDescription(object):
         #self.addPreCondition(self.getRelationCond("HasSkill", "hasSkill", "Robot", "Skill", True))
         # for key, param in self._params.getParamMapFiltered(params.ParamTypes.Hardware).iteritems():
         #    self.addPreCondition(self.getPropCond("DeviceIdle", "deviceState", key, "Idle", True))
-        for key, param in self._params.getParamMapFiltered(params.ParamTypes.Optional).iteritems():
+        for key, param in self._params.getParamMapFiltered(params.ParamTypes.Optional).items():
             if isinstance(Element(), param.dataType()):
                 c1 = self.getGenerateCond("Has" + key, key, True)
                 dont_add = False

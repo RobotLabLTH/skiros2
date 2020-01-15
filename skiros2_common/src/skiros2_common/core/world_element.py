@@ -5,6 +5,17 @@ from skiros2_common.core.property import Property
 from datetime import datetime
 import rospy
 
+try:
+    unicode
+    def ispy2unicode(value):
+        return isinstance(value, unicode)
+except NameError:
+    def ispy2unicode(value):
+        return False
+try:
+    basestring
+except NameError:
+    basestring = str
 
 class Element(object):
     """
@@ -38,7 +49,7 @@ class Element(object):
             to_ret = self._id
         to_ret = to_ret + "-" + self._label  # + self._properties
         if verbose:
-            for k, p in self._properties.iteritems():
+            for k, p in self._properties.items():
                 if k == filter or filter == "":
                     to_ret += "\n" + p.printState()
             for r in self._relations:
@@ -330,11 +341,11 @@ class Element(object):
                         value = [self._properties[key].dataType()(v) for v in value]
                     else:
                         value = self._properties[key].dataType()(value)
-                elif isinstance(value, unicode):
+                elif ispy2unicode(value):
                     value = str(value)
                 self._properties[key].setValues(value)
             else:
-                if isinstance(value, unicode):
+                if ispy2unicode(value):
                     value = str(value)
                 self._properties[key] = Property(key, value)
 
@@ -392,7 +403,7 @@ class Element(object):
         if not (abstract._label == "" or abstract._label == "Unknown" or self._label == abstract._label):
             return False
         # Filter by properties
-        for k, p in abstract._properties.iteritems():
+        for k, p in abstract._properties.items():
             if not self.hasProperty(k):
                 return False
             for v in p.getValues():
