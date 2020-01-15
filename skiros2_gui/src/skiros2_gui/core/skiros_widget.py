@@ -105,7 +105,7 @@ class SkirosModifyRelationDialog(QDialog):
         comboBox = QComboBox()
         size_policy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         comboBox.setSizePolicy(size_policy)
-        [comboBox.addItem(l, d) for l, d in elements.iteritems()]
+        [comboBox.addItem("{} {}".format(alias, self.parent()._wmi.get_element(key).label), key) for alias, key in elements.iteritems()]
         comboBox.model().sort(0)
         self.formLayout.insertRow(len(self._rows), label, comboBox)
         self._rows.append(comboBox)
@@ -203,6 +203,7 @@ class SkirosAddObjectDialog(QDialog):
         self.create_comboBox(label='Type')
         self.comboBox_individual.clear()
         [self.comboBox_individual.addItem(l, d) for l, d in self.parent().get_individuals(self.default_type).iteritems()]
+        self.comboBox_individual.model().sort(0)
 
     @property
     def object(self):
@@ -251,6 +252,7 @@ class SkirosAddObjectDialog(QDialog):
         if index > 0 or (id > 0 and index == 0):
             self.comboBox_individual.addItem('new ' + utils.ontology_type2name(selected), selected)
         [self.comboBox_individual.addItem(l, d) for l, d in self.parent().get_individuals(selected).iteritems()]
+        self.comboBox_individual.model().sort(0)
         QTimer.singleShot(0, self.adjustSize)
 
     def create_comboBox(self, subtype='sumo:Object', label='Subtype'):
@@ -1303,7 +1305,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
             #Open new log file
             if self.save_logs_checkBox.isChecked():
                 directory, file_name = self._get_new_log_filename()
-                self.log_file = open(file_name, "a")
+                self.log_file = open("{}/{}".format(directory, file_name), "a")
         except (IOError) as e:
             log.error("[IOError]", str(e))
             self.save_logs_checkBox.setChecked(False)
@@ -1313,7 +1315,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
     def _get_new_log_filename(self):
         skill = self.skill_tree_widget.currentItem().data(2, 0)
         directory = self.logs_file_lineEdit.text()
-        directory = directory[0:directory.rfind("/")]
+        directory = os.path.expanduser(directory[0:directory.rfind("/")])
         file_name = "{}_{}".format(datetime.now().strftime("%Y-%m-%d:%H:%M:%S"), skill.name)
         if not os.path.exists(directory):
             os.makedirs(directory)
