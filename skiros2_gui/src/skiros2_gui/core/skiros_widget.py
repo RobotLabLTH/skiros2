@@ -105,7 +105,9 @@ class SkirosModifyRelationDialog(QDialog):
         comboBox = QComboBox()
         size_policy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         comboBox.setSizePolicy(size_policy)
-        [comboBox.addItem("{} {}".format(alias, self.parent()._wmi.get_element(key).label), key) for alias, key in elements.iteritems()]
+        for alias, key in elements.iteritems():
+            label = self.parent()._wmi.get_element(key).label if self.parent()._wmi.is_scene_element(key) else ""
+            comboBox.addItem("{} {}".format(alias, label), key)
         comboBox.model().sort(0)
         self.formLayout.insertRow(len(self._rows), label, comboBox)
         self._rows.append(comboBox)
