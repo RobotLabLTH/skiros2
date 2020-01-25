@@ -1,4 +1,4 @@
-from ontology_interface import *
+from .ontology_interface import *
 import skiros2_common.ros.utils as utils
 import skiros2_common.core.params as params
 import skiros2_common.tools.logger as log
@@ -6,7 +6,10 @@ from skiros2_world_model.core.world_model_abstract_interface import WorldModelAb
 import copy
 import numpy as np
 from inspect import getframeinfo, stack
-
+try:
+    basestring
+except NameError:
+    basestring = str
 
 class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
     _elements_cache = {}
@@ -601,8 +604,8 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
                 coupled_keys2 = []
                 merged = {}
                 # print 'qui:'
-                for k1, s1 in couples.iteritems():
-                    for k2, s2 in couples.iteritems():
+                for k1, s1 in couples.items():
+                    for k2, s2 in couples.items():
                         shared_k = [k for k in k1 if k in k2]
                         if k1 == k2 or not shared_k:
                             continue
@@ -622,7 +625,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
                         merged[rk] = rs  # Temporary store merged tuple
                 for key in keys:  # Add not merged tuples
                     if not key in coupled_keys2:
-                        for k1, s1 in couples.iteritems():
+                        for k1, s1 in couples.items():
                             if key in k1:
                                 merged[k1] = s1
                 couples = merged
@@ -631,7 +634,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
             if not key in coupled_keys:
                 couples[key] = first[key]
         if verbose:
-            for k, v in couples.iteritems():
+            for k, v in couples.items():
                 s = "{}:".format(k)
                 for i in v:
                     if not isinstance(i, Element):
@@ -641,7 +644,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
                         s += "]"
                     else:
                         s += "{},".format(i)
-                print s
+                print(s)
         return couples
 
     def _concatenate(self, a, b):

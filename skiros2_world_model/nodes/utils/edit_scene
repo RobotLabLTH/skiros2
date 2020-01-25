@@ -6,15 +6,15 @@ import skiros2_common.tools.logger as log
 
 
 def printUsage():
-    print """usage: scene [<command>] [<arg1>].
+    print("""usage: scene [<command>] [<arg1>].
 Possible commands: load, save, add.
 Examples:
 edit_scene load file.owl
-edit_scene add large_box_test_starter"""
+edit_scene add large_box_test_starter""")
 
 
 if __name__ == '__main__':
-    print sys.argv
+    print(sys.argv)
     if len(sys.argv) == 1:
         printUsage()
     else:
@@ -24,7 +24,7 @@ if __name__ == '__main__':
         elif sys.argv[1] == "load":
             wmi.load(sys.argv[2])
         elif sys.argv[1] == "add":
-            print "ID: {}".format(wmi.instanciate(sys.argv[2])._id)
+            print("ID: {}".format(wmi.instanciate(sys.argv[2])._id))
         else:
             log.error("InputError", "Command {} not recognized".format(sys.argv[1]))
             printUsage()

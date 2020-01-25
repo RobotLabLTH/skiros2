@@ -301,5 +301,5 @@ class OntologyInterface(OntologyAbstractInterface):
             resp1 = service(msg)
             return resp1
         except rospy.ServiceException as e:
-            print "Service call failed: %s" % e
+            print("Service call failed: %s" % e)
             raise WmException("Service call failed: %s" % e)
