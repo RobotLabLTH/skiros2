@@ -9,12 +9,23 @@ import skiros2_common.tools.logger as log
 
 class TaskManagerInterface(PrettyObject):
     def __init__(self):
+        """
+        @brief      Interface for the task planning action server
+        """
         self._assign_task_client = actionlib.SimpleActionClient('/tm/task_plan', msgs.AssignTaskAction)
         self._assign_task_client.wait_for_server()
 
     def plan(self, goals, done_cb=None, feedback_cb=None):
         """
-        @brief Send goals to task manager. If the task is accepted returns True, False otherwise
+        @brief      Send goals to task planner action server
+
+        @param      goals        list(string) List of goals in PDDL format e.g.
+                                 ["(skiros:contain skiros:LargeBox-80
+                                 skiros:Starter-145)"]
+        @param      done_cb      (function) Callback on done
+        @param      feedback_cb  (function) Callback on feedback
+
+        @return     (bool) True if action server is found, False otherwise
         """
         req = msgs.AssignTaskGoal()
         req.goals = goals
@@ -25,8 +36,16 @@ class TaskManagerInterface(PrettyObject):
         return True
 
     def preempt(self):
+        """
+        @brief      Cancel goals for the task manager
+        """
         self._assign_task_client.cancel_all_goals()
 
     def wait_for_result(self):
+        """
+        @brief      Wait for the task manager
+
+        @return     { description_of_the_return_value }
+        """
         self._assign_task_client.wait_for_result()
         return self._assign_task_client.get_result()

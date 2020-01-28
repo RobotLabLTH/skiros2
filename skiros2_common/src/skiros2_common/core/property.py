@@ -22,6 +22,8 @@ class Property(object):
         if isinstance(value, list):
             self._values = value
             self._data_type = type(value[0])
+            if not self._isListOfType(value, self._data_type):
+                raise ValueError('all values must be of same type')
         elif isinstance(value, type):
             self._values = list()
             self._data_type = value
@@ -114,19 +116,16 @@ class Property(object):
         """
         @brief Set all the values
         """
-        if isinstance(value, list):
-            if len(value) == 0:
-                self._values = list()
-                return
-            if isinstance(value[0], self._data_type):
+        if value is None:
+            self._values = list()
+        elif isinstance(value, list):
+            if self._isListOfType(value, self._data_type):
                 self._values = value
             else:
                 log.error("setValuesList", "{}: Input {} != {} Debug: {}. Input: {}.".format(
                     self.key, type(value[0]), self._data_type, self.printState(), value))
         elif isinstance(value, self._data_type):
             self._values = [value]
-        elif value is None:
-            self._values = list()
         else:
             log.error("setValues", "{}: Input {} != {}. Debug: {}".format(self.key, type(value), self._data_type, self.printState()))
 
@@ -184,3 +183,15 @@ class Property(object):
         v = str(self._values)
         max_lenght = 500
         return "{}:{}".format(self._key, v) if len(v) < max_lenght else "{}:{} ...]".format(self._key, v[0:max_lenght])
+
+    #check that the elements of a list have expected type
+    def _isListOfType(self, value_list, expected_type):
+        for v in value_list:
+            if not isinstance(v, expected_type):
+                return False
+        return True
+
+
+
+
+

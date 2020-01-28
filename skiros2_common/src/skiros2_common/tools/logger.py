@@ -81,7 +81,7 @@ class Log:
     def logInfo(self, msg, desc=None):     self.log(logMode.INFO, msg, desc)
     def logDebug(self, msg, desc=None):    self.log(logMode.DEBUG, msg, desc)
     def logTrace(self, msg, desc=None):    self.log(logMode.TRACE, msg, desc)
-    
+
     def countErrorMsg(self): return countMsg(logMode.ERROR)
     def countWarnMsg(self):  return countMsg(logMode.WARN)
     def countOkMsg(self):    return countMsg(logMode.OK)
@@ -102,17 +102,19 @@ class Log:
     def assertWarn(self, cond, msg, desc = None):  return self.test(cond, msg, logMode.WARN, desc)
     def assertOk(self, cond, msg, desc = None):    return self.test(not cond, msg, logMode.OK, desc)
     def assertInfo(self, cond, msg, desc = None):  return self.test(not cond, msg, logMode.INFO, desc)
-    
+
     def testError(self, cond, msg, descFailed = None, descSuccess = None): return self.test(cond, msg, logMode.ERROR, descFailed, logMode.OK, descSuccess)
     def testWarn(self, cond, msg, descFailed = None, descSuccess = None):  return self.test(cond, msg, logMode.WARN,  descFailed, logMode.OK, descSuccess)
-    
+
     def lastError(self): return self.lastModeMsg(logMode.ERROR)
     def lastWarn(self):  return self.lastModeMsg(logMode.WARN)
-    
-    # set logging level
-    def setLevel(self, mode): self.__level = mode
 
-    def getLevel(self): return self.__level
+    # set logging level
+    def setLevel(self, mode):
+        self.__level = mode
+
+    def getLevel(self):
+        return self.__level
 
     # clear log
     def clear(self):
@@ -133,9 +135,11 @@ class Log:
         self.__buffered = True
 
     # set indentation
-    def indent(self): self.__indent += 2
+    def indent(self):
+        self.__indent += 2
 
-    def unindent(self): self.__indent = max(0, self.__indent - 2)
+    def unindent(self):
+        self.__indent = max(0, self.__indent - 2)
 
     # return last message of mode
     def lastModeMsg(self, mode):
@@ -196,7 +200,7 @@ class Log:
             k = msg[0]
             m = msg[1]
             d = msg[2]
-            
+
             if (k == logMode.TRACE):    resString += self.msgTrace(m.ljust(maxLength))
             elif (k == logMode.DEBUG):  resString += self.msgDebug(m.ljust(maxLength))
             elif (k == logMode.INFO):   resString += self.msgInfo(m.ljust(maxLength))
@@ -204,10 +208,10 @@ class Log:
             elif (k == logMode.WARN):   resString += m.ljust(maxLength) + self.msgWarn("warn")
             elif (k == logMode.ERROR):  resString += m.ljust(maxLength) + self.msgError("error")
             else: resString += m.ljust(maxLength)
-            
+
             if (d is not None) and (k <= logMode.OK): resString += msgMode(k, ": ")
             if (d is not None): resString += msgMode(k, d)
-        
+
             resString += "\n"
 
         if not self.__useColor:
@@ -222,7 +226,7 @@ class Log:
 
         maxLength = 20
         resString = ""
-        
+
         if (k == logMode.TRACE):    resString += self.msgTrace(m.ljust(maxLength))
         elif (k == logMode.DEBUG):  resString += self.msgDebug(m.ljust(maxLength))
         elif (k == logMode.INFO):   resString += self.msgInfo(m.ljust(maxLength))
@@ -230,7 +234,7 @@ class Log:
         elif (k == logMode.WARN):   resString += m.ljust(maxLength) + self.msgWarn("warn")
         elif (k == logMode.ERROR):  resString += m.ljust(maxLength) + self.msgError("error")
         else: resString += m.ljust(maxLength)
-        
+
         if (d is not None) and (k <= logMode.OK): resString += msgMode(k, ": ")
         if (d is not None): resString += msgMode(k, d)
 
@@ -281,7 +285,7 @@ ok       = _inst.logOk
 info     = _inst.logInfo
 debug    = _inst.logDebug
 trace    = _inst.logTrace
-    
+
 hasError    = _inst.hasError
 hasWarn     = _inst.hasWarn
 hasOk       = _inst.hasOk
@@ -294,7 +298,7 @@ assertOk    = _inst.assertOk
 assertInfo  = _inst.assertInfo
 assertError = _inst.assertError
 assertWarn  = _inst.assertWarn
-    
+
 testError   = _inst.testError
 testWarn    = _inst.testWarn
 

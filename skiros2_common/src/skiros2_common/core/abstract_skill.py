@@ -3,10 +3,9 @@ from skiros2_common.core.world_element import Element
 import skiros2_common.core.conditions as cond
 from skiros2_common.tools.id_generator import IdGen
 import skiros2_common.tools.logger as log
-from flufl.enum import Enum
+from enum import Enum
 from copy import copy, deepcopy
 from multiprocessing.dummy import Event
-from sets import Set
 from skiros2_common.tools.time_keeper import TimeKeeper
 
 """
@@ -24,11 +23,10 @@ ParamOptions = Enum('ParamOptions', 'Consume Output Unspecify Lock RespectType')
 
 
 class SkillDescription(object):
-    """
-    An abstract skill description
-    """
-
     def __init__(self):
+        """
+        @brief      An abstract skill description
+        """
         # Description
         self._type = "skiros:" + self.__class__.__name__
         # Params
@@ -43,25 +41,41 @@ class SkillDescription(object):
 
     @property
     def params(self):
+        """
+        @brief      Gets the skill's parameter handler
+        """
         return self._params
 
     @property
     def label(self):
+        """
+        @brief      Gets the skill's label
+        """
         return self._label
 
     @property
     def type(self):
+        """
+        @brief      Gets the skill's type
+        """
         return self._type
+
+    @property
+    def wmi(self):
+        """
+        @brief      Returns the world model interface
+        """
+        return self._wmi
 
     def getDescription(self):
         """
-        Extracts the skill description
+        @brief Extracts the skill description
         """
         return (self._type, self._params, self._pre_conditions, self._hold_conditions, self._post_conditions)
 
     def setDescription(self, typein, paramsin, prein, holdin, postin):
         """
-        Sets the skill description (makes a deepcopy)
+        @brief Sets the skill description (makes a deepcopy)
         """
         self._type = copy(typein)
         self._params = deepcopy(paramsin)
@@ -71,7 +85,7 @@ class SkillDescription(object):
 
     def addParam(self, key, value, param_type, options=[], description=""):
         """
-        Add a parameter
+        @brief Adds a parameter
 
         key: a unique string identifier
         value: the default value or type
@@ -87,15 +101,18 @@ class SkillDescription(object):
                 elif o == ParamOptions.Unspecify:
                     self._post_conditions += [self.getIsSpecifiedCond("Unset" + key, key, False)]
                 elif o == ParamOptions.Lock:
-                    self._pre_conditions += [self.getPropCond(key + 'Idle', "skiros:StateProperty", key, "=", "Idle", True)]
-                    self._hold_conditions += [self.getPropCond(key + 'Busy', "skiros:StateProperty", key, "=", "Idle", False)]
-                    self._post_conditions += [self.getPropCond(key + 'Idle', "skiros:StateProperty", key, "=", "Idle", True)]
+                    self._pre_conditions += [self.getPropCond(key + 'Idle',
+                                                              "skiros:StateProperty", key, "=", "Idle", True)]
+                    self._hold_conditions += [self.getPropCond(key + 'Busy',
+                                                               "skiros:StateProperty", key, "=", "Idle", False)]
+                    self._post_conditions += [self.getPropCond(key + 'Idle',
+                                                               "skiros:StateProperty", key, "=", "Idle", True)]
                 elif o == ParamOptions.RespectType:
                     self._pre_conditions.append(self.getOnTypeCond(key + 'OfType', key, self.params[key].default.type))
 
     def generateDefParams(self):
         """
-        Some default params are added automatically
+        @brief Some default params are added automatically
         """
         if not self._params.hasParam('Robot'):
             self._params.addParam("Robot", Element("sumo:Agent"), params.ParamTypes.Inferred)
@@ -104,7 +121,7 @@ class SkillDescription(object):
 
     def generateDefConditions(self):
         """
-        Some default preconditions are added automatically
+        @brief Some default preconditions are added automatically
         """
         #self.addPreCondition(self.getRelationCond("HasSkill", "hasSkill", "Robot", "Skill", True))
         # for key, param in self._params.getParamMapFiltered(params.ParamTypes.Hardware).iteritems():
@@ -174,7 +191,7 @@ class SkillDescription(object):
         return s
 
     def printConditions(self):
-        s=""
+        s = ""
         if self._pre_conditions:
             s += "PreConditions:\n"
             for c in self._pre_conditions:
@@ -203,20 +220,20 @@ class SkillDescription(object):
             to_ret.addRelation(self, "skiros:hasPostCondition", c.toElement())
         return to_ret
 
-    #--------Virtual functions--------
+    # --------Virtual functions--------
     def createDescription(self):
         """ Optional, Not implemented in abstract class. """
         return
 
 
 class SkillCore(SkillDescription):
-    """
-    @brief An abstract executable skill with a description (type, label, params, conditions), a state and progress code
-    """
-
     gen_id = IdGen()
 
     def __init__(self):
+        """
+        @brief      An abstract executable skill with a description (type,
+                    label, params, conditions), a state and progress code
+        """
         # Description
         self._id = SkillCore.gen_id.getId()
         self._type = ""
@@ -238,7 +255,7 @@ class SkillCore(SkillDescription):
         self._progress_time = 0.0
         self._progress_msg = ""
         self._expand_on_start = False
-    #--------Class functions--------
+    # --------Class functions--------
 
     def expand(self, skill):
         return
@@ -285,7 +302,8 @@ class SkillCore(SkillDescription):
     @property
     def expand_on_start(self):
         """
-        @brief Default False. If true, the skill will expand every time it is started. Used e.g. in a planner skill
+        @brief      Default False. If true, the skill will expand every time it
+                    is started. Used e.g. in a planner skill
         """
         return self._expand_on_start
 
@@ -303,8 +321,12 @@ class SkillCore(SkillDescription):
 
     def checkPreCond(self, verbose=False):
         """
-        @brief Check pre-conditions.
-        @return A list of parameters that breaks the conditions, or an empty list if all are satisfied
+        @brief      Check pre-conditions.
+
+        @param      verbose  (bool) Print error message when check fail
+
+        @return     A list of parameters that breaks the conditions, or an empty
+                    list if all are satisfied
         """
         to_ret = list()
         err_msg = ""
@@ -319,8 +341,12 @@ class SkillCore(SkillDescription):
 
     def checkHoldCond(self, verbose=False):
         """
-        @brief Check hold-conditions.
-        @return A list of parameters that breaks the conditions, or an empty list if all are satisfied
+        @brief      Check hold-conditions.
+
+        @param      verbose  (bool) Print error message when check fail
+
+        @return     A list of parameters that breaks the conditions, or an empty
+                    list if all are satisfied
         """
         to_ret = list()
         err_msg = ""
@@ -338,8 +364,12 @@ class SkillCore(SkillDescription):
 
     def checkPostCond(self, verbose=False):
         """
-        @brief Check post-conditions.
-        @return A list of parameters that breaks the conditions, or an empty list if all are satisfied
+        @brief      Check post-conditions.
+
+        @param      verbose  (bool) Print error message when check fail
+
+        @return     A list of parameters that breaks the conditions, or an empty
+                    list if all are satisfied
         """
         to_ret = list()
         for c in self._post_conditions:
@@ -348,7 +378,7 @@ class SkillCore(SkillDescription):
                     log.error(c.getDescription(), "ConditionCheck failed")
                 to_ret += c.getKeys()
         return list(set(to_ret))
-    #-------- Control functions--------
+    # -------- Control functions--------
 
     def preempt(self):
         if self.hasState(State.Running):
@@ -366,15 +396,15 @@ class SkillCore(SkillDescription):
     def waitState(self, state, isset=True):
         if isset:  # Xor?
             while self._state != state:
-                #print 'Waiting set.. {}'.format(self._state)
+                # print 'Waiting set.. {}'.format(self._state)
                 self._state_change.clear()
                 self._state_change.wait()
         else:
             while self._state == state:
-                #print 'Waiting not set.. {}'.format(self._state)
+                # print 'Waiting not set.. {}'.format(self._state)
                 self._state_change.clear()
                 self._state_change.wait()
-        #print 'State changed {}'.format(self._state)
+        # print 'State changed {}'.format(self._state)
 
     def reset(self):
         self.onReset()
@@ -417,7 +447,10 @@ class SkillCore(SkillDescription):
 
     def specifyParamDefault(self, key, values):
         """
-        Specify a value and set it as default value too
+        @brief      Specify a value and set it as default value too
+
+        @param      key     (string) Parameter key
+        @param      values  Parameter value(s)
         """
         if not self._params.hasParam(key):
             log.error("specifyParamDefault", "No param '{}' found. Debug: {}".format(key, self.printInfo(True)))
@@ -425,7 +458,10 @@ class SkillCore(SkillDescription):
 
     def specifyParam(self, key, values):
         """
-        Specify a parameter and update the input cache
+        @brief      Specify a parameter and update the input cache
+
+        @param      key     (string) Parameter key
+        @param      values  Parameter value(s)
         """
         if not self._params.hasParam(key):
             log.error("specifyParam", "No param '{}' found. Debug: {}".format(key, self.printInfo(True)))
@@ -433,24 +469,28 @@ class SkillCore(SkillDescription):
 
     def specifyParamsDefault(self, input_params):
         """
-        Set the parameters and makes them default (they will no more be overwritten by specifyParams, even with keep_offline=False)
+        @brief      Set the parameters and makes them default (they will no more
+                    be overwritten by specifyParams, even with
+                    keep_offline=False)
+
+        @param      input_params  (dict)
         """
         self._params.specifyParamsDefault(input_params)
 
     def specifyParams(self, input_params, keep_default=True):
         """
-        Set the parameters.
+        @brief      Set the parameters
 
-        If keep_offline is true, params already specified are preserved
-
-        TODO: changed for working in real. Can fuck up in optimization
+        @param      input_params  (dict) Parameters to set
+        @param      keep_default  (bool) If True, params already specified are
+                                  preserved
         """
         self._params.specifyParams(input_params, keep_default)
 
-    #-------- User's functions--------
+    # -------- User's functions--------
     def setDescription(self, description, label=""):
         """
-        Description is a SkillDescription
+        @brief Description is a SkillDescription
         """
         self._description = description
         self._type = description._type
@@ -462,6 +502,8 @@ class SkillCore(SkillDescription):
         """
         @brief signal an error during the starting routine
         """
+        assert type(msg) == str
+        assert type(code) == int
         self.fail(msg, code)
         return False
 
@@ -469,14 +511,16 @@ class SkillCore(SkillDescription):
         """
         @brief Set a running breakpoint
         """
+        assert type(msg) == str
         self._setProgress(msg)
         return State.Running
-        #print '[{}:{}]'.format(self._label, self._progress)
 
     def fail(self, msg, code):
         """
         @brief Set a failure state
         """
+        assert type(msg) == str
+        assert type(code) == int
         if code > 0:
             code *= -1
         self._setProgress(msg, code)
@@ -486,10 +530,11 @@ class SkillCore(SkillDescription):
         """
         @brief Set a success state
         """
+        assert type(msg) == str
         self._setProgress(msg)
         return State.Success
 
-    #-------- Virtual functions--------
+    # -------- Virtual functions--------
     def modifyDescription(self, skill):
         """
         @brief Override to define additional parameters/condition over the skill
@@ -505,12 +550,16 @@ class SkillCore(SkillDescription):
     def onStart(self):
         """
         @brief Called just before 1st execute
+
+        @return (Bool)
         """
         return True
 
     def onPreempt(self):
         """
         @brief Called when skill is requested to stop.
+
+        @return (State)
         """
         self._setProgress("Preempted", -1)
         return State.Failure
@@ -518,11 +567,15 @@ class SkillCore(SkillDescription):
     def execute(self):
         """
         @brief Main execution function
+
+        @return (State)
         """
         raise NotImplementedError("Not implemented in abstract class")
 
     def onEnd(self):
         """
-        @brief Called just after last execute
+        @brief Called just after last execute or preemption
+
+        @return (Bool)
         """
         return True

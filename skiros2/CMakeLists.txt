@@ -18,5 +18,5 @@ catkin_add_env_hooks(skiros SHELLS bash DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/en
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 install(DIRECTORY owl launch DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
-install(PROGRAMS scripts/install_fd_task_planner.sh 
+install(PROGRAMS scripts/install_fd_task_planner.sh
         DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}/scripts)

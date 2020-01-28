@@ -7,6 +7,9 @@ from wrapt.decorators import synchronized
 
 class Ontology:
     def __init__(self, graph=None):
+        """
+        @brief      Manages an ontology using rdflib
+        """
         if graph is not None:
             self._ontology = graph
         else:
@@ -76,12 +79,22 @@ class Ontology:
         return rdflib.term.URIRef(name)
 
     def has_context(self, context_id):
-        # TODO:
-        return
+        """
+        @brief      Verify if an ontology context id is defined
+        """
+        raise NotImplementedError("NOT IMPLEMENTED.")
 
     def add_context(self, context_id, uri=None, imports=[]):
         """
-        @brief Creates a new ontology in a new context
+        @brief      Creates a new ontology context
+
+        @param      context_id  (string) The context identifier
+        @param      uri         (string/None) if None the ontology uri
+                                is set equal to context id
+        @param      imports     list(string) A list of ontologies that
+                                the new ontology is dependent from
+
+        @return     { description_of_the_return_value }
         """
         new = self._ontology.get_context(context_id)
         if uri is None:
@@ -162,17 +175,3 @@ class Ontology:
             else:
                 to_ret.append(self.uri2lightstring(subj))
         return to_ret
-
-
-if __name__ == "__main__":
-    temp = Ontology()
-    temp.load("/home/francesco/ros_ws/scalable_ws/src/libs/skiros2/skiros2/skiros2/owl/IEEE-1872-2015/cora.owl")
-    temp.load("/home/francesco/ros_ws/scalable_ws/src/libs/skiros2/skiros2/skiros2/owl/IEEE-1872-2015/coraX.owl")
-    temp.add_context("scene", imports=["cora:cora.owl"])
-    for c in temp._ontology.store.contexts(None):
-        print c.identifier
-    for r in temp.query("SELECT ?x WHERE {?x rdf:type ?y.}", context_id=""):
-        print r
-#    temp.save("test.turtle")
-#    for s, p , o in temp._ontology:
-#        print "{} {} {}".format(s, p , o)

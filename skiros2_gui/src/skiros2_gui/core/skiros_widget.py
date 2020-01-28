@@ -105,7 +105,9 @@ class SkirosModifyRelationDialog(QDialog):
         comboBox = QComboBox()
         size_policy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         comboBox.setSizePolicy(size_policy)
-        [comboBox.addItem(l, d) for l, d in elements.iteritems()]
+        for alias, key in elements.iteritems():
+            label = self.parent()._wmi.get_element(key).label if self.parent()._wmi.is_scene_element(key) else ""
+            comboBox.addItem("{} {}".format(alias, label), key)
         comboBox.model().sort(0)
         self.formLayout.insertRow(len(self._rows), label, comboBox)
         self._rows.append(comboBox)
@@ -203,6 +205,7 @@ class SkirosAddObjectDialog(QDialog):
         self.create_comboBox(label='Type')
         self.comboBox_individual.clear()
         [self.comboBox_individual.addItem(l, d) for l, d in self.parent().get_individuals(self.default_type).iteritems()]
+        self.comboBox_individual.model().sort(0)
 
     @property
     def object(self):
@@ -251,6 +254,7 @@ class SkirosAddObjectDialog(QDialog):
         if index > 0 or (id > 0 and index == 0):
             self.comboBox_individual.addItem('new ' + utils.ontology_type2name(selected), selected)
         [self.comboBox_individual.addItem(l, d) for l, d in self.parent().get_individuals(selected).iteritems()]
+        self.comboBox_individual.model().sort(0)
         QTimer.singleShot(0, self.adjustSize)
 
     def create_comboBox(self, subtype='sumo:Object', label='Subtype'):
@@ -452,7 +456,9 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         self.skill_stop_button.setEnabled(False)
         self.skill_pause_button.setEnabled(False)
         self.space_shortcut = QShortcut(QtGui.QKeySequence(Qt.Key_Space), self)
+        self.plus_shortcut = QShortcut(QtGui.QKeySequence(Qt.Key_Plus), self)
         self.space_shortcut.activated.connect(self.skill_start_stop)
+        self.plus_shortcut.activated.connect(self.skill_start_stop)
         self.task_tree_widget.setColumnWidth(0, 480)
         self.task_tree_widget.setColumnWidth(1, 60)
         self.skill_item = dict()
@@ -861,7 +867,8 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         # check if element is already in tree
         items = self.wm_tree_widget.findItems(elem.id, Qt.MatchRecursive | Qt.MatchFixedString, 1)
         if not items:
-            return
+            #Element is not in the tree. Can happen if the node didn't have a spatial relation before
+            return self._add_wm_node(elem)
         item = items[0]
         # check if updated item is selected
         if elem.id == cur_item_id:
@@ -870,17 +877,18 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
             self.fill_properties_table(elem)
             self.wm_properties_widget.blockSignals(False)
 
-        # get parent node in tree
+        # get parent node in GUI tree
         parent = item.parent()
         if not parent:
             return
 
-        # check if the old parent is still parent of the updated element
+        # get parent relation
         parent_rel = elem.getRelation(pred=self._wmi.get_sub_properties('skiros:spatiallyRelated'), obj='-1')
         if not parent_rel:
             parent_rel = elem.getRelation(pred=self._wmi.get_sub_properties('skiros:skillProperty'), obj='-1')
         if not parent_rel:
             parent_rel = elem.getRelation(pred='skiros:hasSkill', obj='-1')
+        # check if the GUI parent is still parent of the updated element
         if not parent.text(1) in parent_rel['src']:
             # elem moved spatially
             item.parent().removeChild(item)
@@ -893,7 +901,6 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
             parents[0].addChild(item)
 
     def _add_wm_node(self, elem):
-        # print "Adding {}".format(elem.id)
         parent_rel = elem.getRelation(pred=self._wmi.get_sub_properties('skiros:spatiallyRelated'), obj='-1')
         to_expand = True
         if not parent_rel:
@@ -1277,9 +1284,6 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         self._add_frequently_used_skill(self.skill_tree_widget.currentItem().data(2, 0))
         # Start logger
         if not self._sli.has_active_agents:
-            prefix = self.logs_file_lineEdit.text()
-            prefix = prefix[0:prefix.rfind("/")]
-            self.logs_file_lineEdit.setText("{}/{}_{}".format(prefix, datetime.now().strftime("%Y-%m-%d:%H:%M:%S"), skill.name))
             self.on_save_logs_checkBox_clicked()
         # Send command
         if not self._get_parameters(skill.ph):
@@ -1294,19 +1298,34 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         self.on_save_logs_checkBox_clicked()
 
     def on_save_logs_checkBox_clicked(self):
-        if self.log_file is not None:
-            self.logs_textEdit.clear()
-            self.log_file.close()
-            self.log_file = None
-        if self.save_logs_checkBox.isChecked():
-            file_name = os.path.expanduser(self.logs_file_lineEdit.text())
-            directory = file_name[0: file_name.rfind('/')]
-            if not os.path.exists(directory):
-                os.makedirs(directory)
-            elif os.path.exists(file_name):
-                with open(file_name, "r") as f:
-                    self.logs_textEdit.setText(f.read())
-            self.log_file = open(file_name, "a")
+        try:
+            #Close old log file
+            if self.log_file is not None:
+                self.logs_textEdit.clear()
+                self.log_file.close()
+                self.log_file = None
+            #Open new log file
+            if self.save_logs_checkBox.isChecked():
+                directory, file_name = self._get_new_log_filename()
+                self.log_file = open("{}/{}".format(directory, file_name), "a")
+        except (IOError) as e:
+            log.error("[IOError]", str(e))
+            self.save_logs_checkBox.setChecked(False)
+        except (AttributeError) as e:
+            pass
+
+    def _get_new_log_filename(self):
+        skill = self.skill_tree_widget.currentItem().data(2, 0)
+        directory = self.logs_file_lineEdit.text()
+        directory = os.path.expanduser(directory[0:directory.rfind("/")])
+        file_name = "{}_{}".format(datetime.now().strftime("%Y-%m-%d:%H:%M:%S"), skill.name)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        elif os.path.exists(file_name):
+            with open(file_name, "r") as f:
+                self.logs_textEdit.setText(f.read())
+        self.logs_file_lineEdit.setText("{}/{}".format(directory, file_name))
+        return directory, file_name
 
     def _save_log(self, msg, log_type):
         if log_type == "skill":

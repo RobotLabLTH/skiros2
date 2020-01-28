@@ -8,7 +8,6 @@ class PrimitiveBase(SkillCore):
     """
     @brief Base class for primitive skills
     """
-    #--------Control functions--------
 
     def tick(self):
         if self.hasState(State.Success) or self.hasState(State.Failure):
@@ -20,10 +19,10 @@ class PrimitiveBase(SkillCore):
         else:
             start_time = datetime.now()
             with self._avg_time_keeper:
-                self._setState(self.execute())
+                return_state = self.execute()
+                assert type(return_state) == State
+                self._setState(return_state)
                 self._updateRoutine(start_time)
-#            if self._progress_msg!="":
-#                log.info("[{}]".format(self.printState()), self._progress_msg)
             if self.hasState(State.Success) or self.hasState(State.Failure):
                 if not self.onEnd():
                     self._setState(State.Failure)
@@ -39,8 +38,9 @@ class PrimitiveBase(SkillCore):
 
     def _updateRoutine(self, time):
         """
-        @brief Sync the modified parameters elements with wm
-        @time The time to evaluate if a parameter was changed
+        @brief      Sync the modified parameters elements with wm
+
+        @param      time  The time to evaluate if a parameter was changed
         """
         for k, p in self.params.iteritems():
             if p.dataTypeIs(Element()) and p.hasChanges(time):
@@ -51,9 +51,13 @@ class PrimitiveBase(SkillCore):
                     else:
                         vs[i] = self._wmi.add_element(e)
 
+    # --------Virtual functions--------
 
-    #--------Virtual functions--------
     def onInit(self):
-        """Called once when loading the primitive. If return False, the primitive is not loaded"""
-        return True
+        """
+        @brief      Called once when loading the primitive. If return False, the
+                    primitive is not loaded
 
+        @return     (None)
+        """
+        pass

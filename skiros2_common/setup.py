@@ -7,9 +7,7 @@ from catkin_pkg.python_setup import generate_distutils_setup
 setup_args = generate_distutils_setup(
     packages=['skiros2_common'],
     package_dir={'': 'src'},
-    install_requires=[
-        'flufl.enum',
-    ],
+    install_requires=[],
 )
 
 setup(**setup_args)

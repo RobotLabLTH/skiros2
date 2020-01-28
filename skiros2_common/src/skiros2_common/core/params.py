@@ -1,4 +1,4 @@
-from flufl.enum import Enum
+from enum import Enum
 from copy import copy, deepcopy
 import skiros2_common.tools.logger as log
 from skiros2_common.core.property import Property
@@ -159,7 +159,7 @@ class Param(Property):
     def toElement(self):
         to_ret = Element("skiros:Parameter", self._key)
         to_ret.setProperty("rdfs:comment", self._description)
-        to_ret.setProperty("skiros:ParameterType", int(self._param_type) - 1)
+        to_ret.setProperty("skiros:ParameterType", self._param_type.value - 1)
         if(not self.dataTypeIs(Element)):
             to_ret.setProperty("skiros:DataType", self._data_type)
             if self.hasSpecifiedDefault():
@@ -241,12 +241,7 @@ class ParamHandler(object):
         @brief Remap a parameter to a new key
         """
         if self.hasParam(initial_key):
-            #print self.printState()
-            temp = self._params[initial_key]
-            temp._key = target_key
-            self._params[target_key] = temp
-            del self._params[initial_key]
-            #print 'after ' + self.printState()
+            self._params[target_key] = self._params.pop(initial_key)
 
     def specifyParams(self, other, keep_default=False):
         """
@@ -313,26 +308,19 @@ class ParamHandler(object):
     def isSpecified(self, key):
         return self._params[key].isSpecified()
 
-    def getParamValue(self, key, make_instance=False):
+    def getParamValue(self, key):
         """
-        Return the first value of the parameter
-
-        If make_instance is True and the parameter is not specified, an instance is returned
-        rather than None
+        @brief      Like getParamValues, but returns the first value of the
+                    parameter
         """
         if self.hasParam(key):
-            if make_instance and not self.isSpecified(key):
-                return self._params[key].makeInstance()
             return self._params[key].getValue()
         else:
             log.error('getParamValue', 'Param {} is not in the map. Debug: {}'.format(key, self.printState()))
 
     def getParamValues(self, key):
         """
-        Return the parameter values (list)
-
-        If make_instance is True and the parameter is not specified, an instance list is returned
-        rather than a None list
+        @brief      Return the parameter values (list)
         """
         if self.hasParam(key):
             return self._params[key].getValues()
