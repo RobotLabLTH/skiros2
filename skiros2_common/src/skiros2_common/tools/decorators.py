@@ -51,7 +51,7 @@ def prevent(**attributes):
     def decorator(func):
         @wraps(func)
         def wrapped(self, *args, **kwargs):
-            for attr, value in attributes.iteritems():
+            for attr, value in attributes.items():
                 if not hasattr(self, attr) or getattr(self, attr) is value:
                     raise AttributeError("Attribute self.{} must not equal {}.".format(attr, value))
             return func(self, *args, **kwargs)
