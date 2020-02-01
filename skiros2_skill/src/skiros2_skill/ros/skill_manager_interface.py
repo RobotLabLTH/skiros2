@@ -198,6 +198,6 @@ class SkillManagerInterface:
         try:
             resp1 = service(msg)
             return resp1
-        except rospy.ServiceException, e:
+        except rospy.ServiceException as e:
             log.error("[call]", "Service call failed: %s"%e)
             return
