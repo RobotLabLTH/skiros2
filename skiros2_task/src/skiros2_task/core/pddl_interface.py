@@ -2,7 +2,11 @@ import subprocess
 import os
 import skiros2_common.tools.logger as log
 
-
+try:
+    basestring
+except NameError:
+    basestring = str
+    
 class PddlTypes(object):
     __slots__ = '_types'
 
@@ -19,7 +23,7 @@ class PddlTypes(object):
 
     def toPddl(self):
         string = "(:types \n"
-        for supertype, types in self._types.iteritems():
+        for supertype, types in self._types.items():
             string += '\t'
             string += ' '.join(types)
             string += " - {}\n".format(supertype)
@@ -310,7 +314,7 @@ class PddlInterface:
     def printProblem(self, to_file=False):
         string = "(define (problem {}) (:domain {})\n".format("1", self._title)
         string += "(:objects \n"
-        for objType, objects in self._objects.iteritems():
+        for objType, objects in self._objects.items():
             if len(objects):
                 string += '\t'
                 string += ' '.join(objects)
