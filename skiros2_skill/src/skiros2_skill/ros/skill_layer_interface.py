@@ -1,6 +1,6 @@
 import skiros2_common.tools.logger as log
 from skiros2_skill.ros.skill_manager_interface import SkillManagerInterface
-from discovery_interface import DiscoveryInterface
+from .discovery_interface import DiscoveryInterface
 
 
 class SkillLayerInterface(DiscoveryInterface):
@@ -26,7 +26,7 @@ class SkillLayerInterface(DiscoveryInterface):
         """
         @brief Return the first available skill manager
         """
-        return self._agents.itervalues().next()
+        return next(iter(self._agents.values()))
 
     @property
     def agents(self):
@@ -84,5 +84,5 @@ class SkillLayerInterface(DiscoveryInterface):
             self._monitor_cb(msg)
 
     def print_state(self):
-        for k, a in self._agents.iteritems():
-            print k + ":" + a.printState()
+        for k, a in self._agents.items():
+            print(k + ":" + a.printState())

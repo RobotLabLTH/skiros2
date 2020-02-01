@@ -1,6 +1,6 @@
 import skiros2_common.core.params as params
 import skiros2_common.tools.logger as log
-from processors import *
+from .processors import *
 from copy import deepcopy
 from copy import copy
 from collections import OrderedDict, defaultdict
@@ -80,7 +80,7 @@ class SkillInterface(SkillCore):
         """
         @brief      Clear remaps
         """
-        for r1, r2 in reversed(self._remaps.items()):
+        for r1, r2 in reversed(list(self._remaps.items())):
             self.remap(r2, r1)
         self._remaps = OrderedDict()
         self._remaps_cache = defaultdict(list)
@@ -90,7 +90,7 @@ class SkillInterface(SkillCore):
         @brief      Copy the remaps of another skill. Called automatically when
                     the skill is added as a child
         """
-        for r1, r2 in skill._remaps.iteritems():
+        for r1, r2 in skill._remaps.items():
             self.remap(r1, r2)
 
     def _revertRemaps(self):
@@ -102,13 +102,13 @@ class SkillInterface(SkillCore):
             if self._remaps_cache[remapid]:
                 for remap in self._remaps_cache[remapid]:
                     log.warn("REMAP", "Revert {} {}".format(remap[0], remap[1]))
-                    print self._remaps_cache
+                    print(self._remaps_cache)
                     self._remaps.pop(remap[0])
                     self.remap(remap[1], remap[0], False)
                 del self._remaps_cache[remapid]
         except BaseException:
-            print self.printInfo(True)
-            print self._remaps_cache
+            print(self.printInfo(True))
+            print(self._remaps_cache)
             raise
 
     def getParamsNoRemaps(self):
@@ -117,7 +117,7 @@ class SkillInterface(SkillCore):
         """
         ph = params.ParamHandler()
         ph.reset(self._params.getCopy())
-        for r1, r2 in reversed(self._remaps.items()):
+        for r1, r2 in reversed(list(self._remaps.items())):
             ph.remap(r2, r1)
         return ph
 
@@ -357,21 +357,21 @@ class SkillInterface(SkillCore):
         if modify_description:
             self._description.addPreCondition(deepcopy(condition))
         self._pre_conditions.append(condition)
-        for r1, r2 in self._remaps.iteritems():
+        for r1, r2 in self._remaps.items():
             self._pre_conditions[-1].remap(r1, r2)
 
     def addHoldCondition(self, condition, modify_description=False):
         if modify_description:
             self._description.addHoldCondition(deepcopy(condition))
         self._hold_conditions.append(condition)
-        for r1, r2 in self._remaps.iteritems():
+        for r1, r2 in self._remaps.items():
             self._hold_conditions[-1].remap(r1, r2)
 
     def addPostCondition(self, condition, modify_description=False):
         if modify_description:
             self._description.addPostCondition(deepcopy(condition))
         self._post_conditions.append(condition)
-        for r1, r2 in self._remaps.iteritems():
+        for r1, r2 in self._remaps.items():
             self._post_conditions[-1].remap(r1, r2)
 
     def processChildren(self, visitor):
@@ -481,7 +481,7 @@ class SkillWrapper(SkillInterface):
 
     def _copyInstanceParams(self):
         self._params.specifyParams(self._instance._params, False)
-        for k, p in self._instance._params._params.iteritems():  # Hack to get remapped key back
+        for k, p in self._instance._params._params.items():  # Hack to get remapped key back
             if k in self._remaps:
                 while self._remaps[k] in self._remaps:  # Hack to work with chained remmapping
                     k = self._remaps[k]

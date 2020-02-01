@@ -43,7 +43,7 @@ class DiscoveryInterface(object):
 
     def discover(self, event=None):
         self._pub_discovery.publish(Empty())
-        for n, t in dict(self._active_nodes).iteritems():
+        for n, t in dict(self._active_nodes).items():
             if rospy.Time.now()-t>self._active_timeout:
                 del self._active_nodes[n]
                 self.on_inactive(n) #Node inactive
