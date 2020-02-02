@@ -78,10 +78,11 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
             sub_e = r['dst']
             sub_e.addRelation(e._id, r['type'], "-1")
             if sub_e._id == "":
-                if self.add_element(sub_e) < 0:
+                res = self.add_element(sub_e) 
+                if res == None:
                     log.error("[{}]".format(self.__class__.__name__), "Failed to add local element {}".format(sub_e))
             else:
-                if self.update_element(sub_e) < 0:
+                if self.update_element(sub_e) == -1:
                     log.error("[{}]".format(self.__class__.__name__), "Failed to update local element {}".format(sub_e))
         e._local_relations = list()
 
@@ -510,7 +511,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
             if not first[key].any():
                 log.warn("resolve_elements", "No input found for param {}. Resolving: {}".format(
                     key, ph.getParamValue(key).printState(True)))
-        all_keys = ph.keys()
+        all_keys = list(ph.keys())
         coupled_keys = []
         overlap_keys = []
         relations_done = set([])
