@@ -208,7 +208,7 @@ class ParamHandler(object):
     def values(self):
         return self._params.values()
 
-    def iteritems(self):
+    def items(self):
         return self._params.items()
 
     def reset(self, copy):

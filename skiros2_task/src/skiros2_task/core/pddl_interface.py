@@ -177,7 +177,7 @@ class Action(object):
     def toPddl(self):
         string = '(:durative-action {}\n'.format(self.name)
         string += "\t:parameters ("
-        for p, t in self.params.iteritems():
+        for p, t in self.params.items():
             string += "?{} - {} ".format(p, t)
         string += ")\n"
         string += '\t:duration (= ?duration 1)\n'

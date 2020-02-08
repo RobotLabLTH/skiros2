@@ -28,7 +28,7 @@ class NodePrinter():
 
     def printParams(self, params):
         to_ret = "\n"
-        for _, p in params.getParamMap().iteritems():
+        for _, p in params.getParamMap().items():
             if isinstance(Element(), p.dataType()):
                 to_ret += p._key + ": "
                 for e in p.getValues():
@@ -49,7 +49,7 @@ class NodeExecutor():
         self._last_print = ""
 
     def syncParams(self, params):
-        for k, p in params.iteritems():
+        for k, p in params.items():
             vs = p.values
             if p.dataTypeIs(Element):
                 for i in reversed(range(0, len(vs))):

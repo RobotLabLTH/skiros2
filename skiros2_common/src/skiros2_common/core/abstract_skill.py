@@ -209,7 +209,7 @@ class SkillDescription(object):
     def toElement(self):
         to_ret = Element(self._type)
         to_ret._label = self._label
-        for _, p in self.params.iteritems():
+        for _, p in self.params.items():
             if p.dataTypeIs(Element):
                 to_ret.addRelation(self, "skiros:hasParam", p.toElement())
         for c in self._pre_conditions:
