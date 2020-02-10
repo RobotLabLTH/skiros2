@@ -8,6 +8,7 @@ from rdflib.namespace import RDF, RDFS, OWL, XSD
 from wrapt.decorators import synchronized
 from skiros2_common.tools.id_generator import IdGen
 from skiros2_common.tools.time_keeper import TimeKeepers
+from collections import OrderedDict
 
 try:
     unicode
@@ -337,7 +338,7 @@ class IndividualsDataset(Ontology):
         """
         @brief Get an element from the scene and all elements related to the initial one
         """
-        to_ret = {}
+        to_ret = OrderedDict()
         rels_filter = []
         types_filter = []
         if rel_filter != "":
