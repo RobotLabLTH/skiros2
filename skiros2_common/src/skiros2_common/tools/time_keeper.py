@@ -2,7 +2,7 @@ from functools import wraps
 from timeit import default_timer as now
 
 import time
-import logger as log
+from . import logger as log
 
 
 class Timer(object):
@@ -103,6 +103,6 @@ class TimeKeepers():
         return self._map[key]
 
     def printAvgTimings(self):
-        for k, keeper in self._map.iteritems():
+        for k, keeper in self._map.items():
             time = keeper.getAvgTime()
-            print "Average {}: {}. {} times. ".format(k, time, len(keeper._list))
+            print("Average {}: {}. {} times. ".format(k, time, len(keeper._list)))

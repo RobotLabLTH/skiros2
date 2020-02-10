@@ -1,3 +1,8 @@
+try:
+    basestring
+except NameError:
+    basestring = str
+
 def ontology_type2name(ontology_type):
     if isinstance(ontology_type, list):
         return [ontology_type2name(t) for t in ontology_type]

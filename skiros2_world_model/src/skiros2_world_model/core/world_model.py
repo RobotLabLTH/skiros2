@@ -8,7 +8,12 @@ from rdflib.namespace import RDF, RDFS, OWL, XSD
 from wrapt.decorators import synchronized
 from skiros2_common.tools.id_generator import IdGen
 from skiros2_common.tools.time_keeper import TimeKeepers
+from collections import OrderedDict
 
+try:
+    unicode
+except NameError:
+    unicode = str
 
 class IndividualsDataset(Ontology):
     def __init__(self, verbose, context_id, graph=None, init=False):
@@ -182,7 +187,7 @@ class IndividualsDataset(Ontology):
         @brief Add an element to the context
         """
         self._make_unique_uri(e)
-        for name, r in self._reasoners.iteritems():
+        for name, r in self._reasoners.items():
             if not r.parse(e, "add"):
                 raise Exception("Reasoner {} rejected the element {} add".format(name, e))
         if e.hasProperty("skiros:Template"):
@@ -198,7 +203,7 @@ class IndividualsDataset(Ontology):
         """
         @brief Update an element in the scene
         """
-        for name, r in self._reasoners.iteritems():
+        for name, r in self._reasoners.items():
             if not r.parse(e, "update"):
                 raise Exception("Reasoner {} rejected the element {} update".format(name, e))
         prev = self._element2statements(self.get_element(e.id))
@@ -218,7 +223,7 @@ class IndividualsDataset(Ontology):
         """
         @brief Update properties of an element in the scene
         """
-        for name, r in self._reasoners.iteritems():
+        for name, r in self._reasoners.items():
             if not r.parse(e, "update"):
                 raise Exception("Reasoner {} rejected the element {} update".format(name, e))
         old_e = self.get_element(e.id)
@@ -272,7 +277,7 @@ class IndividualsDataset(Ontology):
         # Filter by properties
         for e in first:
             add = True
-            for k, p in description._properties.iteritems():
+            for k, p in description._properties.items():
                 if not e.hasProperty(k):
                     add = False
                     break
@@ -298,7 +303,7 @@ class IndividualsDataset(Ontology):
         except BaseException:
             log.warn("[remove_element]", "Trying to remove element {}, but doesn't exist.".format(e.id))
             return False
-        for name, r in self._reasoners.iteritems():
+        for name, r in self._reasoners.items():
             if not r.parse(e, "remove"):
                 raise Exception("Reasoner {} rejected the element {} removal".format(name, e))
         del self._elements_cache[e.id]
@@ -333,7 +338,7 @@ class IndividualsDataset(Ontology):
         """
         @brief Get an element from the scene and all elements related to the initial one
         """
-        to_ret = {}
+        to_ret = OrderedDict()
         rels_filter = []
         types_filter = []
         if rel_filter != "":
@@ -459,7 +464,7 @@ class IndividualsDataset(Ontology):
         to_ret.append(((subject, RDF.type, OWL.NamedIndividual), False))
         to_ret.append(((subject, RDF.type, self.lightstring2uri(e.type)), False))
         to_ret.append(((subject, RDFS.label, rdflib.term.Literal(e.label)), False))
-        for k, p in e._properties.iteritems():
+        for k, p in e._properties.items():
             predicate = self.lightstring2uri(k)
             for v in p.getValues():
                 value = rdflib.term.Literal(v, datatype=self._get_datatype(p))

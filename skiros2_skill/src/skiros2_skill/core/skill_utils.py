@@ -24,11 +24,11 @@ class NodePrinter():
     def printTree(self, skill, verbose=True):
         s = "-" * self._indend + self._prefix + skill.printState(verbose)
         #s = "-"*self._indend + self._prefix + skill.printInfo(verbose)
-        print s
+        print(s)
 
     def printParams(self, params):
         to_ret = "\n"
-        for _, p in params.getParamMap().iteritems():
+        for _, p in params.getParamMap().items():
             if isinstance(Element(), p.dataType()):
                 to_ret += p._key + ": "
                 for e in p.getValues():
@@ -49,7 +49,7 @@ class NodeExecutor():
         self._last_print = ""
 
     def syncParams(self, params):
-        for k, p in params.iteritems():
+        for k, p in params.items():
             vs = p.values
             if p.dataTypeIs(Element):
                 for i in reversed(range(0, len(vs))):
@@ -85,7 +85,7 @@ class NodeExecutor():
                 to_print += key + ' not available. '
         if to_print and to_print != self._last_print:
             self._last_print = to_print
-            print prefix + to_print
+            print(prefix + to_print)
 
     def setSimulate(self, sim=True):
         self._simulate = sim
@@ -131,7 +131,7 @@ class NodeExecutor():
                             dont_add = True
                     if dont_add:
                         continue
-                    print "{} Adding condition {}".format(skill.type, pc.getDescription())
+                    print("{} Adding condition {}".format(skill.type, pc.getDescription()))
                     for key in pc.getKeys():
                         if not skill.params.hasParam(key):
                             skill.params[key] = deepcopy(parent.params[key])
@@ -141,7 +141,7 @@ class NodeExecutor():
         """
         @brief ground undefined parameters with parameters in the Black Board
         """
-        to_resolve = [key for key, param in skill._params.getParamMap().iteritems() if param.paramType != params.ParamTypes.Optional and param.dataTypeIs(Element) and param.getValue().getIdNumber() < 0]
+        to_resolve = [key for key, param in skill._params.getParamMap().items() if param.paramType != params.ParamTypes.Optional and param.dataTypeIs(Element) and param.getValue().getIdNumber() < 0]
         if not to_resolve:
             return True
         log.assertInfo(self._verbose, "[Autoparametrize]", "Resolving {}:{}".format(skill.type, to_resolve))
@@ -153,7 +153,7 @@ class NodeExecutor():
             c.setDesiredState(cp)
         for key in to_resolve:
             remap[key] = []
-            for k, p in self._params._params.iteritems():
+            for k, p in self._params._params.items():
                 if p.dataTypeIs(Element()):
                     if p.getValue().isInstance(cp.getParamValue(key), self._wm):
                         remap[key].append(k)
@@ -198,7 +198,7 @@ class NodeExecutor():
         """
         matches = self._wm._resolve_elements2(to_resolve, cp)
         _grounded = ''
-        for key, match in matches.iteritems():
+        for key, match in matches.items():
             if match.any():
                 if isinstance(key, tuple):
                     for i, key2 in enumerate(key):
@@ -367,9 +367,9 @@ class NodeMemorizer:
             return skill
 
     def printMemory(self):
-        print self._name + ":"
+        print(self._name + ":")
         for p in self._tree:
-            print p[0].printState() + '-' + p[1]
+            print(p[0].printState() + '-' + p[1])
 
 
 class TreeBuilder:
@@ -476,7 +476,7 @@ class NodeReversibleSimulator(NodeExecutor, TreeBuilder):
             return
         if processor is not None and self.previousParentIsSameWithWrongProcessor(processor):
             # Else wrap the previous and the current into a node with the right processor
-            print '{} wants {}, parent is {}'.format(skill._label, processor().printType(), self.getExecutionParent()._label)
+            print('{} wants {}, parent is {}'.format(skill._label, processor().printType(), self.getExecutionParent()._label))
             self.undoPrevious()
             pp = skill(processor().printType(), processor(), self._wm)
             self.execute(pp)
@@ -499,7 +499,7 @@ class NodeReversibleSimulator(NodeExecutor, TreeBuilder):
             skill = self.getExecutionParent()._label
         self.makeStatic(True)
         while skill != self.forward.recall()[0]._label:
-            print self.forward.recall()[0]._label
+            print(self.forward.recall()[0]._label)
             self.makeStatic(True)
         self.makeStatic(True)
 

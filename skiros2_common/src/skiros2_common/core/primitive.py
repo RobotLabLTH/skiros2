@@ -42,7 +42,7 @@ class PrimitiveBase(SkillCore):
 
         @param      time  The time to evaluate if a parameter was changed
         """
-        for k, p in self.params.iteritems():
+        for k, p in self.params.items():
             if p.dataTypeIs(Element()) and p.hasChanges(time):
                 vs = p.values
                 for i, e in enumerate(vs):

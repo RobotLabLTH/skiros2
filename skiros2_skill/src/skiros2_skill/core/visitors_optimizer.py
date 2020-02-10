@@ -1,4 +1,4 @@
-from visitors import *
+from .visitors import *
 import rospy
 from collections import defaultdict
 
@@ -76,7 +76,7 @@ class VisitorOptimizer(VisitorInterface, NodePrinter, NodeReversibleSimulator):
         if p1.inSubtreeOf(p2):
             s = p1._label + ' is child of ' + p2._label + '. Adding conditions: '
             for c2 in p2._pre_conditions:
-                if [key for key, _ in p1._params.getParamMap().iteritems() if key in c2.getKeys()]:
+                if [key for key, _ in p1._params.getParamMap().items() if key in c2.getKeys()]:
                     dont_add = False
                     for c1 in p1._pre_conditions:
                         if c1.isEqual(c2):
@@ -141,7 +141,7 @@ class VisitorOptimizer(VisitorInterface, NodePrinter, NodeReversibleSimulator):
         start_time = rospy.Time.now()
         if not self.initAndParametrize(procedure):
             log.error(procedure._label, 'Initialization failed')
-            print self.printParams(procedure._params)
+            print(self.printParams(procedure._params))
             return False
         # discard redundant
         if not procedure.checkPostCond() and procedure.hasPostCond():
@@ -177,7 +177,7 @@ class VisitorOptimizer(VisitorInterface, NodePrinter, NodeReversibleSimulator):
                 log.info("SWAP", self.back.recall()[0]._label)
             if not self.redo():
                 log.error('Redo failed')
-                print self.printParams(procedure._params)
+                print(self.printParams(procedure._params))
                 return False
             processor = None
 
@@ -186,7 +186,7 @@ class VisitorOptimizer(VisitorInterface, NodePrinter, NodeReversibleSimulator):
             start_time = rospy.Time.now()
         if not self.execute(procedure, processor=processor):
             log.error('Execute failed')
-            print self.printParams(procedure._params)
+            print(self.printParams(procedure._params))
             return False
         if self._verbose:
             log.info("Insert done. Insert parallel. ")

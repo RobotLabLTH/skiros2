@@ -32,7 +32,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 from rqt_gui_py.plugin import Plugin
-from core.skiros_widget import SkirosWidget
+from .core.skiros_widget import SkirosWidget
 
 
 class Skiros(Plugin):

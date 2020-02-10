@@ -24,7 +24,7 @@ class PluginLoader(object):
             if modname not in sys.modules:
                 try:
                     importlib.import_module(modname)
-                except ImportError, e:
+                except ImportError as e:
                     log.warn("[ImportError]", "Module {} not loaded, some dependencies are missing: {}".format(modname, e))
                     continue
 

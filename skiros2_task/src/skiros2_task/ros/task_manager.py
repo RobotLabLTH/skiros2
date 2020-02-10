@@ -59,8 +59,8 @@ class TaskManagerNode(PrettyObject):
         """
         if self._sli.has_changes:
             self._skills.clear()
-            for ak, e in self._sli._agents.iteritems():
-                for sk, s in e._skill_list.iteritems():
+            for ak, e in self._sli._agents.items():
+                for sk, s in e._skill_list.items():
                     s.manager = ak
                     self._skills[sk] = s
         return self._skills
@@ -91,10 +91,10 @@ class TaskManagerNode(PrettyObject):
             self._result = msgs.AssignTaskResult(3, task.toJson())
             self._assign_task_action.set_succeeded(self._result)
             return
-        except OSError, e:
+        except OSError as e:
             self._result = msgs.AssignTaskResult(1, "FD task planner not found. Maybe is not installed?")
             self._assign_task_action.set_aborted(self._result)
-        except Exception, e:
+        except Exception as e:
             self._result = msgs.AssignTaskResult(1, str(e))
             self._assign_task_action.set_aborted(self._result)
 
@@ -122,7 +122,7 @@ class TaskManagerNode(PrettyObject):
             skill = deepcopy(self.skills[tokens.pop(0)])
             planned_map = self._pddl_interface.getActionParamMap(skill.name, tokens)
 #            print "{}".format(planned_map)
-            for k, v in planned_map.iteritems():
+            for k, v in planned_map.items():
                 e = self.get_element(v)
                 if e.getIdNumber() < 0:
                     e._id = ""  # ID must be clear if element is not an instance
@@ -187,7 +187,7 @@ class TaskManagerNode(PrettyObject):
                 self._elements[e.id.lower()] = e
         self._pddl_interface.setObjects(objects)
         # Evaluate inital state
-        for supertype, types in self._pddl_interface._types._types.iteritems():
+        for supertype, types in self._pddl_interface._types._types.items():
             elements[supertype] = []
             for t in types:
                 elements[supertype] += elements[t]

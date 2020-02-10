@@ -5,7 +5,7 @@ import sys
 
 if __name__ == '__main__':
     if len(sys.argv) != 4:
-        print "usage: simple_query [<triple>]. Example: ?x rdf:type skiros:Alternator "
+        print("usage: simple_query [<triple>]. Example: ?x rdf:type skiros:Alternator ")
     else:
         query_str = "SELECT "
         for i in range(1, 4):
@@ -15,7 +15,7 @@ if __name__ == '__main__':
         query_str += "{} {} {}".format(sys.argv[1], sys.argv[2], sys.argv[3])
         query_str += ".}"
         wmi = wmi.WorldModelInterface()
-        print "Query: {}".format(query_str)
+        print("Query: {}".format(query_str))
         answer = wmi.query_ontology(query_str)
         for a in answer:
-            print "\t {}".format(a)
+            print("\t {}".format(a))

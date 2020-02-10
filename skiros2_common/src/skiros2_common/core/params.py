@@ -208,8 +208,8 @@ class ParamHandler(object):
     def values(self):
         return self._params.values()
 
-    def iteritems(self):
-        return self._params.iteritems()
+    def items(self):
+        return self._params.items()
 
     def reset(self, copy):
         self._params = copy
@@ -225,7 +225,7 @@ class ParamHandler(object):
         @brief Return the parameter map, result of the merge between self and another ParameterHandler
         """
         to_ret = self.getCopy()
-        for key, param in other._params.iteritems():
+        for key, param in other._params.items():
             if self.hasParam(key):
                 if not param.isSpecified():  # If not specified (None) parameter is removed
                     del to_ret[key]
@@ -247,7 +247,7 @@ class ParamHandler(object):
         """
         @brief Set the input params
         """
-        for key, param in other._params.iteritems():
+        for key, param in other._params.items():
             if self.hasParam(key):
                 t = self._params[key]
                 if keep_default and t.hasSpecifiedDefault():
@@ -261,7 +261,7 @@ class ParamHandler(object):
         """
         @brief Set the input params and default value
         """
-        for key, param in other._params.iteritems():
+        for key, param in other._params.items():
             if self.hasParam(key):
                 self._params[key].makeDefault(param.getValues())
 
@@ -279,7 +279,7 @@ class ParamHandler(object):
             for k in key:
                 self._params[k].setDefault()
         elif key is None:
-            for _, p in self._params.iteritems():
+            for _, p in self._params.items():
                 p.setDefault()
         else:
             self._params[key].setDefault()
@@ -329,14 +329,14 @@ class ParamHandler(object):
 
     def getElementParams(self):
         to_ret = {}
-        for key, param in self._params.iteritems():
+        for key, param in self._params.items():
             if isinstance(param.value, Element):
                 to_ret[key] = param
         return to_ret
 
     def getParamMapFiltered(self, type_filter):
         to_ret = {}
-        for key, param in self._params.iteritems():
+        for key, param in self._params.items():
             if isinstance(type_filter, list):
                 if param.paramType in type_filter:
                     to_ret[key] = param
@@ -347,7 +347,7 @@ class ParamHandler(object):
 
     def printState(self):
         to_ret = ""
-        for _, p in self._params.iteritems():
+        for _, p in self._params.items():
             if not p.dataTypeIs(Element) or not p.isSpecified():
                 to_ret += p.printState() + " "
             else:

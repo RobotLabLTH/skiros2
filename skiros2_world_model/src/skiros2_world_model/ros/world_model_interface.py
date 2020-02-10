@@ -1,4 +1,4 @@
-from ontology_interface import *
+from .ontology_interface import *
 import skiros2_common.ros.utils as utils
 import skiros2_common.core.params as params
 import skiros2_common.tools.logger as log
@@ -6,7 +6,10 @@ from skiros2_world_model.core.world_model_abstract_interface import WorldModelAb
 import copy
 import numpy as np
 from inspect import getframeinfo, stack
-
+try:
+    basestring
+except NameError:
+    basestring = str
 
 class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
     _elements_cache = {}
@@ -75,10 +78,11 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
             sub_e = r['dst']
             sub_e.addRelation(e._id, r['type'], "-1")
             if sub_e._id == "":
-                if self.add_element(sub_e) < 0:
+                res = self.add_element(sub_e) 
+                if res == None:
                     log.error("[{}]".format(self.__class__.__name__), "Failed to add local element {}".format(sub_e))
             else:
-                if self.update_element(sub_e) < 0:
+                if self.update_element(sub_e) == -1:
                     log.error("[{}]".format(self.__class__.__name__), "Failed to update local element {}".format(sub_e))
         e._local_relations = list()
 
@@ -507,7 +511,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
             if not first[key].any():
                 log.warn("resolve_elements", "No input found for param {}. Resolving: {}".format(
                     key, ph.getParamValue(key).printState(True)))
-        all_keys = ph.keys()
+        all_keys = list(ph.keys())
         coupled_keys = []
         overlap_keys = []
         relations_done = set([])
@@ -601,8 +605,8 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
                 coupled_keys2 = []
                 merged = {}
                 # print 'qui:'
-                for k1, s1 in couples.iteritems():
-                    for k2, s2 in couples.iteritems():
+                for k1, s1 in couples.items():
+                    for k2, s2 in couples.items():
                         shared_k = [k for k in k1 if k in k2]
                         if k1 == k2 or not shared_k:
                             continue
@@ -622,7 +626,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
                         merged[rk] = rs  # Temporary store merged tuple
                 for key in keys:  # Add not merged tuples
                     if not key in coupled_keys2:
-                        for k1, s1 in couples.iteritems():
+                        for k1, s1 in couples.items():
                             if key in k1:
                                 merged[k1] = s1
                 couples = merged
@@ -631,7 +635,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
             if not key in coupled_keys:
                 couples[key] = first[key]
         if verbose:
-            for k, v in couples.iteritems():
+            for k, v in couples.items():
                 s = "{}:".format(k)
                 for i in v:
                     if not isinstance(i, Element):
@@ -641,7 +645,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
                         s += "]"
                     else:
                         s += "{},".format(i)
-                print s
+                print(s)
         return couples
 
     def _concatenate(self, a, b):
