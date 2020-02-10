@@ -34,7 +34,7 @@ class SkillInstanciator:
         return skill
 
     def expand_all(self):
-        for _, ps in self._available_instances.iteritems():
+        for _, ps in self._available_instances.items():
             for p in ps:
                 p.expand(p)
 
@@ -83,12 +83,12 @@ class SkillInstanciator:
 
     def print_state(self, verbose=True, filter_type=""):
         s = 'Descriptions:\n'
-        for t, p in self._available_descriptions.iteritems():
+        for t, p in self._available_descriptions.items():
             if p.type == filter_type or filter_type == "":
                 s += p.printInfo(verbose)
                 s += '\n'
         s += '\nInstances:\n'
-        for k, l in self._available_instances.iteritems():
+        for k, l in self._available_instances.items():
             for p in l:
                 if p.type == filter_type or filter_type == "":
                     s += p.printInfo(verbose)

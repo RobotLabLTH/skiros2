@@ -5,12 +5,12 @@ import json
 
 def encodeSkill(encoder, obj):
     return {'manager': obj.manager, 'type': obj.type, 'name': obj.name,
-    'ph': {k: encoder.default(v) for k, v in obj.ph.iteritems() }, 'children': obj.children}
+    'ph': {k: encoder.default(v) for k, v in obj.ph.items() }, 'children': obj.children}
 
 def decodeSkill(obj):
     if isinstance(obj, str):
         obj = json_loads_byteified(obj)
-    return SkillHolder(obj['manager'], obj['type'], obj['name'], {k: decodeParam(v) for k, v in obj['ph'].iteritems()}, [decodeSkill(c) for c in obj['children']])
+    return SkillHolder(obj['manager'], obj['type'], obj['name'], {k: decodeParam(v) for k, v in obj['ph'].items()}, [decodeSkill(c) for c in obj['children']])
 
 class SkillHolder(object):
     __slots__ = ['manager', 'type', 'name', 'ph', 'children']

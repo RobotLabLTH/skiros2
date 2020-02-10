@@ -7,7 +7,7 @@ import skiros2_world_model.ros.world_model_interface as wmi
 import skiros2_skill.core.skill as skill
 from skiros2_common.core.abstract_skill import State
 from skiros2_skill.core.skill_instanciator import SkillInstanciator
-from discovery_interface import DiscoverableNode
+from .discovery_interface import DiscoverableNode
 import skiros2_common.tools.logger as log
 from skiros2_common.core.world_element import Element
 from skiros2_common.tools.id_generator import IdGen
@@ -346,9 +346,9 @@ class SkillManager:
             else:
                 self._task = self.visitor.getExecutionRoot()
                 return False
-        except KeyError, e:
+        except KeyError as e:
             self._task = self.visitor.getExecutionRoot()
-            print "Exe: {}".format(self.visitor._execution_branch)
+            print("Exe: {}".format(self.visitor._execution_branch))
             self.print_task()
             raise e
 

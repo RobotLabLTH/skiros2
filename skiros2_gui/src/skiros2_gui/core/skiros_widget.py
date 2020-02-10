@@ -105,7 +105,7 @@ class SkirosModifyRelationDialog(QDialog):
         comboBox = QComboBox()
         size_policy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         comboBox.setSizePolicy(size_policy)
-        for alias, key in elements.iteritems():
+        for alias, key in elements.items():
             label = self.parent()._wmi.get_element(key).label if self.parent()._wmi.is_scene_element(key) else ""
             comboBox.addItem("{} {}".format(alias, label), key)
         comboBox.model().sort(0)
@@ -153,7 +153,7 @@ class SkirosModifyPropertyDialog(QDialog):
         comboBox = QComboBox()
         size_policy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         comboBox.setSizePolicy(size_policy)
-        [comboBox.addItem(l, d) for l, d in elements.iteritems()]
+        [comboBox.addItem(l, d) for l, d in elements.items()]
         comboBox.model().sort(0)
         self.formLayout.insertRow(len(self._rows), label, comboBox)
         self._rows.append(comboBox)
@@ -204,7 +204,7 @@ class SkirosAddObjectDialog(QDialog):
         self._comboBoxes = []
         self.create_comboBox(label='Type')
         self.comboBox_individual.clear()
-        [self.comboBox_individual.addItem(l, d) for l, d in self.parent().get_individuals(self.default_type).iteritems()]
+        [self.comboBox_individual.addItem(l, d) for l, d in self.parent().get_individuals(self.default_type).items()]
         self.comboBox_individual.model().sort(0)
 
     @property
@@ -253,7 +253,7 @@ class SkirosAddObjectDialog(QDialog):
         self.comboBox_individual.clear()
         if index > 0 or (id > 0 and index == 0):
             self.comboBox_individual.addItem('new ' + utils.ontology_type2name(selected), selected)
-        [self.comboBox_individual.addItem(l, d) for l, d in self.parent().get_individuals(selected).iteritems()]
+        [self.comboBox_individual.addItem(l, d) for l, d in self.parent().get_individuals(selected).items()]
         self.comboBox_individual.model().sort(0)
         QTimer.singleShot(0, self.adjustSize)
 
@@ -270,7 +270,7 @@ class SkirosAddObjectDialog(QDialog):
         sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         comboBox.setSizePolicy(sizePolicy)
         comboBox.addItem('All')
-        [comboBox.addItem(l, d) for l, d in self.parent().get_types(subtype).iteritems()]
+        [comboBox.addItem(l, d) for l, d in self.parent().get_types(subtype).items()]
         comboBox.currentIndexChanged.connect(partial(self.on_select_type, len(self._comboBoxes)))
         self.formLayout.insertRow(len(self._comboBoxes), label, comboBox)
         self._comboBoxes.append(comboBox)
@@ -289,8 +289,8 @@ class SkirosInteractiveMarkers:
             mp += ", " + str(feedback.mouse_point.y)
             mp += ", " + str(feedback.mouse_point.z)
             mp += " in frame " + feedback.header.frame_id
-        print s
-        print mp
+        print(s)
+        print(mp)
 
     def _make_box(self, msg, size):
         marker = Marker()
@@ -578,7 +578,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
             fu.setExpanded(True)
             root = QTreeWidgetItem(self.skill_tree_widget, ["All", "All"])
             root.setExpanded(True)
-            for ak, e in self._sli._agents.iteritems():
+            for ak, e in self._sli._agents.items():
                 for s in e._skill_list.values():
                     s.manager = ak
                     self._add_available_skill(s)
@@ -594,7 +594,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         # Update robot BT rate
         if self._sli.agents:
             robot_info = ""
-            for name, manager in self._sli.agents.iteritems():
+            for name, manager in self._sli.agents.items():
                 robot_info += "{}: {:0.1f}hz ".format(name.replace("/", ""), manager.get_tick_rate())
             self.robot_rate_info.setText(robot_info)
             self.robot_output.setText(self.robot_text)
@@ -662,7 +662,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
             self._wmi.remove_element(elem)
 
             log.debug(self.__class__.__name__, 'Removed element {}'.format(item_id))
-        except wmi.WmException, e:
+        except wmi.WmException as e:
             log.error("[remove_object]", "{}".format(e))
 
     @Slot()
@@ -679,7 +679,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
             log.info("[add_property]", "Adding: {} {} {}".format(*dialog.get_result()))
             elem.setProperty(*dialog.get_result(), force_convertion=True)
             self._wmi.update_element_properties(elem)
-        except ValueError, e:
+        except ValueError as e:
             log.error("[on_add_property_button_clicked]", "{}".format(e))
 
     @Slot()
@@ -719,7 +719,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
             log.info("[add_relation]", "Adding: {} {} {}".format(*result))
             elem.addRelation(*dialog.get_result())
             self._wmi.update_element(elem)
-        except ValueError, e:
+        except ValueError as e:
             log.error("[on_add_relation_button_clicked]", "Current object must be subject and/or object of the relation.")
 
     @Slot()
