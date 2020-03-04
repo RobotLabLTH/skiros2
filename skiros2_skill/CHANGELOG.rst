@@ -2,11 +2,33 @@
 Changelog for package skiros2_skill
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge pull request `#23 <https://github.com/RVMI/skiros2/issues/23>`_ from RVMI/py3-fixes
+  Py3 fixes
+* Change name of method iteritems in param handler
+* Python3 fixes in skill_manager
+* Make exception handling py3 compatible
+* Python3 fixes in skiros2_skill
+* Converted all enums from flufl.enum to standard enum. Removed dependency.
+* Moved wmi to base skill class. Added function to determine if an element id refers to a template or an instantiated object.
+* Added SerialStar processor and deprecated Sequential (still there as an alias). Comments to task manager interface
+* Added wmi property to skill.
+* Added more documentation. Removed obsolete files. Moved generated files (e.g. logs and plans) into ~/.skiros folder. Simplified planner installation, that now doesn't modify system path.
+* Finish improved-debugging-tools
+* Fixed bug leaving composite skills in running state and resetting processor.
+* Removed obsolete function
+* 1.0.3
+* Updated changelog
+* Calling onEnd function also when skill crashes. Removed filter to skills progress output in skill manager.
+* Sending processor in skill progress
+* Contributors: Emmanuel Kring, Francesco Rovida
+
 1.0.3 (2019-09-16)
 ------------------
 * Calling onEnd function also when skill crashes. Removed filter to skills progress output in skill manager.
 * Sending processor in skill progress
-* Contributors: francesco
+* Contributors: Francesco Rovida
 
 1.0.2 (2019-08-26)
 ------------------
@@ -15,7 +37,7 @@ Changelog for package skiros2_skill
 * Printing SLOW tag to primitives running with a period above 40msec.
 * Added transformation templates and fix in skill interface
 * Updated changelog
-* Contributors: Bjarne Grossmann, RvmiLab, francesco
+* Contributors: Bjarne Grossmann, RvmiLab, Francesco Rovida
 
 1.0.1 (2019-05-22)
 ------------------
@@ -27,7 +49,7 @@ Changelog for package skiros2_skill
 * Better output of conditions and reverted 2 changes causing problems.
 * Serial processor preempting when switching. Skill call onEnd function when stopping.
 * Avoiding crash when an object in the BB is removed from the world model
-* Contributors: Bjarne Grossmann, RvmiLab, francesco
+* Contributors: Bjarne Grossmann, RvmiLab, Francesco Rovida
 
 1.0.0 (2019-04-30)
 ------------------
@@ -59,7 +81,7 @@ Changelog for package skiros2_skill
 * Updated version and changelog file
 * Cleaned dependencies
 * Changed implementation of sequential processor
-* Contributors: Francesco Rovida, Matthias Mayr, RvmiLab, francesco
+* Contributors: Francesco Rovida, Matthias Mayr, RvmiLab, Francesco Rovida
 
 0.1.0 (2018-09-27)
 ------------------
@@ -195,4 +217,4 @@ Changelog for package skiros2_skill
 * new visitor to expand bt and retrieve skill sequence used to monitor task progress
 * new visitor to expand bt and retrieve skill sequence used to monitor task progress
 * First commit
-* Contributors: Bjarne Grossmann, DavidWuthier, Francesco Rovida, francesco, ipa-led
+* Contributors: Bjarne Grossmann, DavidWuthier, Francesco Rovida, Francesco Rovida, ipa-led

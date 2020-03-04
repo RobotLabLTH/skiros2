@@ -2,11 +2,34 @@
 Changelog for package skiros2_gui
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge pull request `#23 <https://github.com/RVMI/skiros2/issues/23>`_ from RVMI/py3-fixes
+  Py3 fixes
+* Python3 fixes in skiros2_gui
+* Fix in add relation
+* Sorting elements when adding a new object. Fix in log saving.
+* Fix on GUI shortcuts and Element hasRelation function.
+* Use also 'plus' as a 'space' shortcut
+* Bug-fix for elements sometimes not appearing in GUI
+* Added assertions to guard skill execution return value
+* Added more documentation. Removed obsolete files. Moved generated files (e.g. logs and plans) into ~/.skiros folder. Simplified planner installation, that now doesn't modify system path.
+* Fixed error introduced in commit 21f6693e61ac9efacaf4d341642a777dd477a2e5 making GUI crash when changing label property.
+* Fix for possible crash reason on start
+* Supporting input of lists in properties from the GUI
+* Removed obsolete attribute _is_list from Property class.
+* Finish improved-debugging-tools
+* 1.0.3
+* Updated changelog
+* Finish gui-improved-visualization
+* Added guards to avoid gui crash.
+* Contributors: DavidWuthier, Francesco Rovida, RvmiLab, emmanuelkring
+
 1.0.3 (2019-09-16)
 ------------------
 * Finish gui-improved-visualization
 * Added guards to avoid gui crash.
-* Contributors: francesco
+* Contributors: Francesco Rovida
 
 1.0.2 (2019-08-26)
 ------------------
@@ -14,7 +37,7 @@ Changelog for package skiros2_gui
 * Finish gui-improved-visualization
 * Printing SLOW tag to primitives running with a period above 40msec.
 * Updated changelog
-* Contributors: RvmiLab, francesco
+* Contributors: RvmiLab, Francesco Rovida
 
 1.0.1 (2019-05-22)
 ------------------
@@ -47,7 +70,7 @@ Changelog for package skiros2_gui
 * Implemented visualization of active tasks
 * Changed license to L-GPL and updated changelog
 * Updated version and changelog file
-* Contributors: Francesco Rovida, Matthias Mayr, francesco
+* Contributors: Francesco Rovida, Matthias Mayr, Francesco Rovida
 
 0.1.0 (2018-09-27)
 ------------------
@@ -150,4 +173,4 @@ Changelog for package skiros2_gui
 * Development of GUI - WM tab
 * Started GUI for WM: Add objects
 * First commit
-* Contributors: Bjarne Grossmann, DavidWuthier, Francesco Rovida, Ludovic Delval, francesco, ipa-led
+* Contributors: Bjarne Grossmann, DavidWuthier, Francesco Rovida, Ludovic Delval, Francesco Rovida, ipa-led

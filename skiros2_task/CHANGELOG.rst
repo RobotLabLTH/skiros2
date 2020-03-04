@@ -2,6 +2,20 @@
 Changelog for package skiros2_task
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge pull request `#23 <https://github.com/RVMI/skiros2/issues/23>`_ from RVMI/py3-fixes
+  Py3 fixes
+* Change name of method iteritems in param handler
+* Python3 fixes in skiros2_task
+* Converted all enums from flufl.enum to standard enum. Removed dependency.
+* Added SerialStar processor and deprecated Sequential (still there as an alias). Comments to task manager interface
+* Added more documentation. Removed obsolete files. Moved generated files (e.g. logs and plans) into ~/.skiros folder. Simplified planner installation, that now doesn't modify system path.
+* Finish improved-debugging-tools
+* Printing clear error message when task planner is not found
+* 1.0.3
+* Contributors: Francesco Rovida, emmanuelkring, Francesco Rovida
+
 1.0.2 (2019-08-26)
 ------------------
 * Merge branch 'master' into develop
@@ -26,7 +40,7 @@ Changelog for package skiros2_task
   This should fix most violations of pep8.
   Excemptions were made for manually structured code through tabs.
 * Updated version and changelog file
-* Contributors: Francesco Rovida, Matthias Mayr, RvmiLab, francesco
+* Contributors: Francesco Rovida, Matthias Mayr, RvmiLab, Francesco Rovida
 
 0.1.0 (2018-09-27)
 ------------------
@@ -119,4 +133,4 @@ Changelog for package skiros2_task
   Added dummy sub and pub for robot discovery
 * Bug-fix
 * First commit
-* Contributors: Bjarne Grossmann, Francesco Rovida, francesco, ipa-led
+* Contributors: Bjarne Grossmann, Francesco Rovida, Francesco Rovida, ipa-led

@@ -2,6 +2,34 @@
 Changelog for package skiros2_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge pull request `#23 <https://github.com/RVMI/skiros2/issues/23>`_ from RVMI/py3-fixes
+  Py3 fixes
+* Change name of method iteritems in param handler
+* Merge pull request `#21 <https://github.com/RVMI/skiros2/issues/21>`_ from RVMI/common/python3-fixes
+  Python3 compatibility fixes in skiros2_common
+* Python3 compatibility fixes in skiros2_common
+* Fix on GUI shortcuts and Element hasRelation function.
+* Merge pull request `#20 <https://github.com/RVMI/skiros2/issues/20>`_ from RVMI/emk/fixes
+  Emk/fixes
+* Remove deprecated set import
+* Fix bugs in hasProperty and setProperty
+* Converted all enums from flufl.enum to standard enum. Removed dependency.
+* Added assertions to guard skill execution return value
+* Moved wmi to base skill class. Added function to determine if an element id refers to a template or an instantiated object.
+* Removed obsolete make_instance option in getParamValue. Fix in property setValue.
+* Added more documentation. Removed obsolete files. Moved generated files (e.g. logs and plans) into ~/.skiros folder. Simplified planner installation, that now doesn't modify system path.
+* Cherrypick from emk/devel:
+  Fix bug in setValues
+  Fix bug in remap
+* Bug fix in Element setProperty function
+* Supporting input of lists in properties from the GUI
+* Removed obsolete attribute _is_list from Property class.
+* Finish improved-debugging-tools
+* 1.0.3
+* Contributors: Francesco Rovida, RvmiLab, emmanuelkring, Francesco Rovida
+
 1.0.2 (2019-08-26)
 ------------------
 * Merge branch 'master' into develop
@@ -46,7 +74,7 @@ Changelog for package skiros2_common
 * Bug-fix in sequential processor and in Element addRelation
 * Updated version and changelog file
 * Updated setup.py for automatic installation of dependencies. Updated readme
-* Contributors: Francesco Rovida, Matthias Mayr, RvmiLab, francesco
+* Contributors: Francesco Rovida, Matthias Mayr, RvmiLab, Francesco Rovida
 
 0.1.0 (2018-09-27)
 ------------------
@@ -173,4 +201,4 @@ Changelog for package skiros2_common
 * Bug-fix
 * Skill's config params are no more communicated to the wm.
 * First commit
-* Contributors: Bjarne Grossmann, DavidWuthier, Francesco Rovida, francesco, ipa-led
+* Contributors: Bjarne Grossmann, DavidWuthier, Francesco Rovida, Francesco Rovida, ipa-led

@@ -2,6 +2,18 @@
 Changelog for package skiros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Added more documentation. Removed obsolete files. Moved generated files (e.g. logs and plans) into ~/.skiros folder. Simplified planner installation, that now doesn't modify system path.
+* Added force properties to ontology.
+* Finish improved-debugging-tools
+* Minor fix in skiros.launch
+* 1.0.3
+* Updated changelog
+* Corrected script for install planner.
+* Made scene subclass of Object
+* Contributors: Francesco Rovida
+
 1.0.3 (2019-09-16)
 ------------------
 * Corrected script for install planner.
@@ -13,7 +25,7 @@ Changelog for package skiros2
   * install install bash scripts
   * makes everything exec_depend
 * removed owl files executable
-* Contributors: Francesco Rovida, Ludovic Delval, francesco
+* Contributors: Francesco Rovida, Ludovic Delval, Francesco Rovida
 
 1.0.2 (2019-08-26)
 ------------------
@@ -41,7 +53,7 @@ Changelog for package skiros2
 * Changed test camera type
 * Changed license to L-GPL and updated changelog
 * Updated version and changelog file
-* Contributors: Matthias Mayr, RvmiLab, francesco
+* Contributors: Matthias Mayr, RvmiLab, Francesco Rovida
 
 0.1.0 (2018-09-27)
 ------------------
@@ -116,4 +128,4 @@ Changelog for package skiros2
 * Added location, gripper, and arm to test robot
 * Added a default pose to test robot
 * First commit
-* Contributors: Bjarne Grossmann, Francesco Rovida, francesco, ipa-led
+* Contributors: Bjarne Grossmann, Francesco Rovida, Francesco Rovida, ipa-led
