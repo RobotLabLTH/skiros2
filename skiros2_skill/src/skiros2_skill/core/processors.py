@@ -1,13 +1,13 @@
-from skiros2_common.core.abstract_skill import State
-
 """
 Collection of processor, defining how a skill visits its children
 """
 
+from skiros2_common.core.abstract_skill import State
+
 
 class NoProcessor():
     """
-    @brief Primitives have no processor
+    @brief Placeholder for primitives, that have no processor
     """
 
     def printType(self):
@@ -22,7 +22,9 @@ class NoProcessor():
 
 class Serial():
     """
-    @brief Process children serially. Also succeded one are re-executed
+    @brief      The default processor. Process children sequentially until all
+                succeed. Restarts finished (succeeded/failed) skills. Returns on
+                first occurrence of a running skill.
     """
 
     def printType(self):
@@ -32,9 +34,6 @@ class Serial():
         pass
 
     def processChildren(self, children, visitor):
-        """
-        Serial processor - return on first fail, or return success
-        """
         for c in children:
             state = c.visit(visitor)
             if state != State.Success:
@@ -44,12 +43,15 @@ class Serial():
 
     def stopAll(self, children, visitor, index):
         for c in children[index:]:
-            if c.state==State.Running:
+            if c.state == State.Running:
                 c.visitPreempt(visitor)
 
-class Sequential():
+
+class SerialStar():
     """
-    @brief Process children sequentially. Succeded ones are skipped
+    @brief      Like serial, but keeps memory of which nodes previously
+                succeeded and does not tick them again. The memory index is
+                reset on failure, success or preemption.
     """
 
     def __init__(self):
@@ -62,9 +64,6 @@ class Sequential():
         self.index = 0
 
     def processChildren(self, children, visitor):
-        """
-        Serial processor - return on first fail, or return success
-        """
         for i in range(self.index, len(children)):
             c = children[i]
             state = c.visit(visitor)
@@ -75,32 +74,36 @@ class Sequential():
         return State.Success
 
 
-class Enforce():
+class Sequential():
     """
-    @brief Process children sequentially. Succeded ones are skipped, Failed are restarted
+    @brief      Alias of SerialStar. Deprecated
     """
+
+    def __init__(self):
+        self.reset()
 
     def printType(self):
-        return '->*!'
+        return '->*'
 
     def reset(self):
-        pass
+        self.index = 0
 
     def processChildren(self, children, visitor):
-        """
-        Serial processor - return on first fail, or return success
-        """
-        for c in children:
-            if c.state != State.Success:
-                state = c.visit(visitor)
-                if state != State.Success:
-                    return State.Running
+        for i in range(self.index, len(children)):
+            c = children[i]
+            state = c.visit(visitor)
+            if state != State.Success:
+                return state
+            self.index += 1
+        self.index = 0
         return State.Success
 
 
 class Selector():
     """
-    @brief Process children sequentially.
+    @brief      Process children in sequence until one succeeds, ignoring
+                failures. Returns on first occurrence of a running or successful
+                skill.
     """
 
     def printType(self):
@@ -110,25 +113,24 @@ class Selector():
         pass
 
     def processChildren(self, children, visitor):
-        """
-        Serial processor - return on first running/success, or return failure
-        """
         for c in children:
             state = c.visit(visitor)
-            if state==State.Success or state==State.Running:
+            if state == State.Success or state == State.Running:
                 self.stopAll(children, visitor, children.index(c)+1)
                 return state
         return state
 
     def stopAll(self, children, visitor, index):
         for c in children[index:]:
-            if c.state==State.Running:
+            if c.state == State.Running:
                 c.visitPreempt(visitor)
 
 
 class SelectorStar():
     """
-    @brief Process children sequentially. Skips failed
+    @brief      Like Selector, but keeps memory of which nodes previously
+                succeeded and do not tick them again. The memory index is reset
+                on failure, success or preemption.
     """
 
     def printType(self):
@@ -138,13 +140,10 @@ class SelectorStar():
         self.index = 0
 
     def processChildren(self, children, visitor):
-        """
-        Serial processor - return on first running/success, or return failure
-        """
         for i in range(self.index, len(children)):
             c = children[i]
             state = c.visit(visitor)
-            if state==State.Success or state==State.Running:
+            if state == State.Success or state == State.Running:
                 self.stopAll(children, visitor, children.index(c)+1)
                 return state
             self.index += 1
@@ -153,13 +152,14 @@ class SelectorStar():
 
     def stopAll(self, children, visitor, index):
         for c in children[index:]:
-            if c.state==State.Running:
+            if c.state == State.Running:
                 c.visitPreempt(visitor)
 
 
 class ParallelFf():
     """
-    @brief Parallel First Fail - Process children in parallel. Stop all processes if a child fails.
+    @brief      Parallel First Fail - Process children in parallel until all
+                succeed. Stop all processes if a child fails.
     """
 
     def printType(self):
@@ -189,7 +189,8 @@ class ParallelFf():
 
 class ParallelFs():
     """
-    Parallel First Stop - Process children in parallel. Stop all processes if a child ends (success or fail).
+    @brief      Parallel First Success - Process children in parallel until one
+                succeed. Stop all processes if a child succeed/fails.
     """
 
     def printType(self):
@@ -210,32 +211,12 @@ class ParallelFs():
         for c in children:
             if c.state == State.Running:
                 c.visitPreempt(visitor)
-# Decorators
-
-
-class Loop():
-    def __init__(self, processor):
-        self._processor = processor
-
-    def reset(self):
-        pass
-
-    def printType(self):
-        return 'Loop({})'.format(self._processor.printType())
-
-    def processChildren(self, children, visitor):
-        """
-        Repeat execution
-        """
-        state = self._processor.processChildren(children, visitor)
-        if state == State.Failure:
-            return state
-        return State.Running
 
 
 class NoFail():
     """
-    @brief Returns only running or success
+    @brief      Returns only running or success. Failure state is converted in
+                Success state.
     """
 
     def __init__(self, processor):

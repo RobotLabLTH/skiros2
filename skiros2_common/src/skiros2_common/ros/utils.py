@@ -8,6 +8,13 @@ import skiros2_common.core.world_element as we
 import skiros2_common.core.params as param
 from pydoc import locate
 
+try:
+    unicode
+    def ispy2unicode(value):
+        return isinstance(value, unicode)
+except NameError:
+    def ispy2unicode(value):
+        return False
 
 def json_load_byteified(file_handle):
     try:
@@ -31,7 +38,7 @@ def json_loads_byteified(json_text):
 
 def _byteify(data, ignore_dicts=False):
     # if this is a unicode string, return its string representation
-    if isinstance(data, unicode):
+    if ispy2unicode(data):
         return data.encode('utf-8')
     # if this is a list of values, return list of byteified values
     if isinstance(data, list):
@@ -41,7 +48,7 @@ def _byteify(data, ignore_dicts=False):
     if isinstance(data, dict) and not ignore_dicts:
         return {
             _byteify(key, ignore_dicts=True): _byteify(value, ignore_dicts=True)
-            for key, value in data.iteritems()
+            for key, value in data.items()
         }
     # if it's anything else, return it in its original form
     return data
@@ -70,8 +77,10 @@ class ParamsEncoder(json.JSONEncoder):
         name = obj.__class__.__name__
         if name in complex_types_names:
             return complex_types_encoders[complex_types_names.index(name)](self, obj)
-        # Let the base class default method raise the TypeError
-        return json.JSONEncoder.default(self, obj)
+        try:
+            return json.JSONEncoder.default(self, obj)
+        except TypeError:
+            return "NotSerializable"
 
 
 class UnicodeDecoder(json.JSONDecoder):
@@ -89,7 +98,7 @@ def defaultDecoder(obj):
 
 def registerDecoder(name, func):
     if name in complex_types_string:
-        print "{} already registered as decoder".format(name)
+        print("{} already registered as decoder".format(name))
         return
     complex_types_string.append(name)
     complex_types_decoders.append(func)
@@ -98,7 +107,7 @@ def registerDecoder(name, func):
 def registerEncoder(ctype, func):
     class_name = ctype.__name__
     if class_name in complex_types_names:
-        print "{} already registered as encoder".format(class_name)
+        print("{} already registered as encoder".format(class_name))
         return
     complex_types.append(ctype)
     complex_types_names.append(class_name)
@@ -119,7 +128,7 @@ def registerCtype(name, class_type):
     """
     class_name = class_type.__name__
     if class_name in complex_types_names:
-        print "{} already registered as encoder, can t be registered as a C type".format(class_name)
+        print("{} already registered as encoder, can t be registered as a C type".format(class_name))
         return
     ctype_map[class_name] = name
 
@@ -148,7 +157,7 @@ def getTypeFromStr(name):
 
 
 def encodeParam(encoder, obj):
-    return {"key": obj._key, "description": obj._description, "specType": int(obj._param_type) - 1, "type": getStrFromType(obj._data_type),
+    return {"key": obj._key, "description": obj._description, "specType": obj._param_type.value - 1, "type": getStrFromType(obj._data_type),
             "values": obj._values}
 
 
@@ -180,13 +189,13 @@ def decodeProperty(p):
 
 def encodeElement(encoder, obj):
     return {"id": obj._id, "label": obj._label, "type": obj._type, "last_update": 0.0,
-            "properties": {k: encoder.default(v) for k, v in obj._properties.iteritems()}, "relations": obj._relations}
+            "properties": {k: encoder.default(v) for k, v in obj._properties.items()}, "relations": obj._relations}
 
 
 def decodeElement(json_string):
     # TODO json_string['last_update']
     e = we.Element(json_string['type'], json_string['label'], json_string['id'])
-    for k, p in json_string['properties'].iteritems():
+    for k, p in json_string['properties'].items():
         e._properties[k] = decodeProperty(p)
     e._relations = json_string['relations']
     return e
@@ -231,7 +240,7 @@ def serializeParamMap(param_map):
       \\", \\"key\\": \\"MyString\\"}"]
     """
     s_param_map = []
-    for _, p in param_map.iteritems():
+    for p in param_map.values():
         msg = msgs.Param()
         msg.param = str(json.dumps(p, cls=ParamsEncoder))
         s_param_map.append(msg)

@@ -1,8 +1,12 @@
 import subprocess
-from os import walk, remove
+import os
 import skiros2_common.tools.logger as log
 
-
+try:
+    basestring
+except NameError:
+    basestring = str
+    
 class PddlTypes(object):
     __slots__ = '_types'
 
@@ -19,7 +23,7 @@ class PddlTypes(object):
 
     def toPddl(self):
         string = "(:types \n"
-        for supertype, types in self._types.iteritems():
+        for supertype, types in self._types.items():
             string += '\t'
             string += ' '.join(types)
             string += " - {}\n".format(supertype)
@@ -173,7 +177,7 @@ class Action(object):
     def toPddl(self):
         string = '(:durative-action {}\n'.format(self.name)
         string += "\t:parameters ("
-        for p, t in self.params.iteritems():
+        for p, t in self.params.items():
             string += "?{} - {} ".format(p, t)
         string += ")\n"
         string += '\t:duration (= ?duration 1)\n'
@@ -200,15 +204,19 @@ class Action(object):
 
 
 class PddlInterface:
-    """
-    Class to manage a pddl domain and do task planning
+    def __init__(self, workspace="~/.skiros/planner", title="untitled"):
+        """
+        @brief      Class to manage a pddl domain and do task planning
 
-    It generates a pddl definition and invokes a task planner
-    """
+                    It generates a pddl definition and invokes a task planner
 
-    def __init__(self, workspace, title="untitled"):
+        @param      workspace  (string) The workspace folder were pddl files are generated
+        @param      title      (string) Title for the pddl domain
+        """
         self._title = title
-        self._workspace = workspace
+        self._workspace = os.path.expanduser(workspace)
+        if not os.path.exists(self._workspace):
+            os.makedirs(self._workspace)
         self.clear()
 
     def clear(self):
@@ -306,7 +314,7 @@ class PddlInterface:
     def printProblem(self, to_file=False):
         string = "(define (problem {}) (:domain {})\n".format("1", self._title)
         string += "(:objects \n"
-        for objType, objects in self._objects.iteritems():
+        for objType, objects in self._objects.items():
             if len(objects):
                 string += '\t'
                 string += ' '.join(objects)
@@ -339,30 +347,47 @@ class PddlInterface:
         for p in outpaths:
             with open(p, 'r') as f:
                 data.append(f.read())
-            remove(p)
+            os.remove(p)
         return min(data, key=len)#TODO: implement a proper selection
 
 
     def invokePlanner(self, generate_pddl=True):
-        #subprocess.call(["plan.py", "y+Y+a+T+10+t+5+e+r+O+1+C+1", self._workspace+"/domain.pddl", self._workspace+"/p01.pddl", "mypddlplan"])
+        """
+        @brief      Generate pddl files and invoke TFD planner
+
+        @param      generate_pddl  (bool) If False uses previously generated
+                                   pddl files
+
+        @return     (string) The plan
+        """
         if generate_pddl:
             self.printDomain(True)
             self.printProblem(True)
 
-        output = subprocess.Popen(["plan.py", "y+Y+a+T+10+t+5+e+r+O+1+C+1", self._workspace + "/domain.pddl", self._workspace +
-                                   "/p01.pddl", self._workspace + "/pddlplan"], stdout=subprocess.PIPE).communicate()[0]
+        config = "y+Y+a+T+10+t+5+e+r+O+1+C+1"
+        result_name = self._workspace + "/pddlplan"
+        path = os.environ.get('TFD_HOME')
+
+        #Copied from tfd-src-0.4/plan.py
+        # run translator
+        self.run(path + "/translate/translate.py", self._workspace + "/domain.pddl", self._workspace + "/p01.pddl")
+        # run preprocessing
+        self.run(path + "/preprocess/preprocess", input="output.sas")
+        # run search
+        self.run(path + "/search/search", config, "p", result_name, input="output")
+
         outpaths = []
-        for (dirpath, dirnames, filenames) in walk(self._workspace):
+        for (dirpath, dirnames, filenames) in os.walk(self._workspace):
             for name in filenames:
                 if name.find('pddlplan')>=0:
                     outpaths.append(dirpath+'/'+name)
         if outpaths:
             data = self.selectMinDurationPlan(outpaths)
             try:
-                remove("output")
-                remove("all.groups")
-                remove("variables.groups")
-                remove("output.sas")
+                os.remove("output")
+                os.remove("all.groups")
+                os.remove("variables.groups")
+                os.remove("output.sas")
             except BaseException:
                 log.warn("[TOCHECK]", "Not all files were generated while planning.")
             return data
@@ -378,3 +403,21 @@ class PddlInterface:
         for k, v in zip(a.params.keys(), values):
             to_ret[k] = v
         return to_ret
+
+    def run(self, *args, **kwargs):
+        """
+        @brief      Copied from tfd-src-0.4/plan.py. Redirects stdin and stdout
+                    and invokes a script
+
+        @param      args    The arguments
+        @param      kwargs  The keywords arguments
+        """
+        input = kwargs.pop("input", None)
+        assert not kwargs
+        redirections = {}
+        if input:
+            redirections["stdin"] = open(input)
+        redirections["stdout"] = subprocess.PIPE
+        log.debug("[run]", "{} {}".format(args, redirections))
+        output = subprocess.Popen(sum([arg.split("+") for arg in args],[]), **redirections).communicate()[0]
+        log.debug("[output]", str(output))

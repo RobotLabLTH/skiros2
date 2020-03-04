@@ -40,9 +40,9 @@
     
 
 
-    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/cora.owl#OWLObjectProperty_d468f5cc_9cc1_4243_89d5_4e4b4364b129 -->
+    <!-- http://www.inf.ufrgs.br/phi-group/ontologies/cora.owl#robotprocesslink -->
 
-    <owl:ObjectProperty rdf:about="#OWLObjectProperty_d468f5cc_9cc1_4243_89d5_4e4b4364b129">
+    <owl:ObjectProperty rdf:about="#robotprocesslink">
         <rdfs:label xml:lang="en">agentRobot</rdfs:label>
         <rdfs:domain rdf:resource="#Robot"/>
         <rdfs:range rdf:resource="&sumo;Process"/>
@@ -54,7 +54,7 @@
     <!-- http://www.inf.ufrgs.br/phi-group/ontologies/cora.owl#automatedRobot -->
 
     <owl:ObjectProperty rdf:about="#automatedRobot">
-        <rdfs:subPropertyOf rdf:resource="#OWLObjectProperty_d468f5cc_9cc1_4243_89d5_4e4b4364b129"/>
+        <rdfs:subPropertyOf rdf:resource="#robotprocesslink"/>
     </owl:ObjectProperty>
     
 
@@ -72,7 +72,7 @@
     <!-- http://www.inf.ufrgs.br/phi-group/ontologies/cora.owl#fullyautonomousRobot -->
 
     <owl:ObjectProperty rdf:about="#fullyautonomousRobot">
-        <rdfs:subPropertyOf rdf:resource="#OWLObjectProperty_d468f5cc_9cc1_4243_89d5_4e4b4364b129"/>
+        <rdfs:subPropertyOf rdf:resource="#robotprocesslink"/>
     </owl:ObjectProperty>
     
 
@@ -88,7 +88,7 @@
     <!-- http://www.inf.ufrgs.br/phi-group/ontologies/cora.owl#remotecontrolledRobot -->
 
     <owl:ObjectProperty rdf:about="#remotecontrolledRobot">
-        <rdfs:subPropertyOf rdf:resource="#OWLObjectProperty_d468f5cc_9cc1_4243_89d5_4e4b4364b129"/>
+        <rdfs:subPropertyOf rdf:resource="#robotprocesslink"/>
     </owl:ObjectProperty>
     
 
@@ -107,7 +107,7 @@
     <!-- http://www.inf.ufrgs.br/phi-group/ontologies/cora.owl#semiautonomousRobot -->
 
     <owl:ObjectProperty rdf:about="#semiautonomousRobot">
-        <rdfs:subPropertyOf rdf:resource="#OWLObjectProperty_d468f5cc_9cc1_4243_89d5_4e4b4364b129"/>
+        <rdfs:subPropertyOf rdf:resource="#robotprocesslink"/>
     </owl:ObjectProperty>
     
 
@@ -124,7 +124,7 @@
     <!-- http://www.inf.ufrgs.br/phi-group/ontologies/cora.owl#teleoperatedRobot -->
 
     <owl:ObjectProperty rdf:about="#teleoperatedRobot">
-        <rdfs:subPropertyOf rdf:resource="#OWLObjectProperty_d468f5cc_9cc1_4243_89d5_4e4b4364b129"/>
+        <rdfs:subPropertyOf rdf:resource="#robotprocesslink"/>
     </owl:ObjectProperty>
     
 

@@ -1,4 +1,4 @@
-from flufl.enum import Enum
+from enum import Enum
 from copy import copy, deepcopy
 import skiros2_common.tools.logger as log
 from skiros2_common.core.property import Property
@@ -30,27 +30,17 @@ class Param(Property):
     True
 
     """
-    __slots__ = ['_key', '_description', '_param_type', '_data_type', '_is_list', '_values', '_default', '_last_update']
+    __slots__ = ['_key', '_description', '_param_type', '_data_type', '_values', '_default', '_last_update']
 
-    def __init__(self, key, description, value, param_type, is_list=False):
-        self._is_list = is_list
-        self._key = key
+    def __init__(self, key, description, value, param_type):
+        super(Param, self).__init__(key, value)
         self._description = description
-        self._setLastUpdate()
         if isinstance(param_type, int):
             self._param_type = ParamTypes(param_type + 1)
         else:
             self._param_type = param_type
-        if isinstance(value, list):
-            self._values = value
-            self._data_type = type(value[0])
-        elif isinstance(value, type):
-            self._data_type = value
-            self._values = list()
-        else:
-            self._data_type = type(value)
-            self._values = [value]
         self._default = deepcopy(self._values)
+        self._setLastUpdate()
 
     def __copy__(self):
         result = self.__class__.__new__(self.__class__)
@@ -169,7 +159,7 @@ class Param(Property):
     def toElement(self):
         to_ret = Element("skiros:Parameter", self._key)
         to_ret.setProperty("rdfs:comment", self._description)
-        to_ret.setProperty("skiros:ParameterType", int(self._param_type) - 1)
+        to_ret.setProperty("skiros:ParameterType", self._param_type.value - 1)
         if(not self.dataTypeIs(Element)):
             to_ret.setProperty("skiros:DataType", self._data_type)
             if self.hasSpecifiedDefault():
@@ -218,8 +208,8 @@ class ParamHandler(object):
     def values(self):
         return self._params.values()
 
-    def iteritems(self):
-        return self._params.iteritems()
+    def items(self):
+        return self._params.items()
 
     def reset(self, copy):
         self._params = copy
@@ -235,7 +225,7 @@ class ParamHandler(object):
         @brief Return the parameter map, result of the merge between self and another ParameterHandler
         """
         to_ret = self.getCopy()
-        for key, param in other._params.iteritems():
+        for key, param in other._params.items():
             if self.hasParam(key):
                 if not param.isSpecified():  # If not specified (None) parameter is removed
                     del to_ret[key]
@@ -251,18 +241,13 @@ class ParamHandler(object):
         @brief Remap a parameter to a new key
         """
         if self.hasParam(initial_key):
-            #print self.printState()
-            temp = self._params[initial_key]
-            temp._key = target_key
-            self._params[target_key] = temp
-            del self._params[initial_key]
-            #print 'after ' + self.printState()
+            self._params[target_key] = self._params.pop(initial_key)
 
     def specifyParams(self, other, keep_default=False):
         """
         @brief Set the input params
         """
-        for key, param in other._params.iteritems():
+        for key, param in other._params.items():
             if self.hasParam(key):
                 t = self._params[key]
                 if keep_default and t.hasSpecifiedDefault():
@@ -276,7 +261,7 @@ class ParamHandler(object):
         """
         @brief Set the input params and default value
         """
-        for key, param in other._params.iteritems():
+        for key, param in other._params.items():
             if self.hasParam(key):
                 self._params[key].makeDefault(param.getValues())
 
@@ -294,7 +279,7 @@ class ParamHandler(object):
             for k in key:
                 self._params[k].setDefault()
         elif key is None:
-            for _, p in self._params.iteritems():
+            for _, p in self._params.items():
                 p.setDefault()
         else:
             self._params[key].setDefault()
@@ -323,26 +308,19 @@ class ParamHandler(object):
     def isSpecified(self, key):
         return self._params[key].isSpecified()
 
-    def getParamValue(self, key, make_instance=False):
+    def getParamValue(self, key):
         """
-        Return the first value of the parameter
-
-        If make_instance is True and the parameter is not specified, an instance is returned
-        rather than None
+        @brief      Like getParamValues, but returns the first value of the
+                    parameter
         """
         if self.hasParam(key):
-            if make_instance and not self.isSpecified(key):
-                return self._params[key].makeInstance()
             return self._params[key].getValue()
         else:
             log.error('getParamValue', 'Param {} is not in the map. Debug: {}'.format(key, self.printState()))
 
     def getParamValues(self, key):
         """
-        Return the parameter values (list)
-
-        If make_instance is True and the parameter is not specified, an instance list is returned
-        rather than a None list
+        @brief      Return the parameter values (list)
         """
         if self.hasParam(key):
             return self._params[key].getValues()
@@ -351,14 +329,14 @@ class ParamHandler(object):
 
     def getElementParams(self):
         to_ret = {}
-        for key, param in self._params.iteritems():
+        for key, param in self._params.items():
             if isinstance(param.value, Element):
                 to_ret[key] = param
         return to_ret
 
     def getParamMapFiltered(self, type_filter):
         to_ret = {}
-        for key, param in self._params.iteritems():
+        for key, param in self._params.items():
             if isinstance(type_filter, list):
                 if param.paramType in type_filter:
                     to_ret[key] = param
@@ -369,7 +347,7 @@ class ParamHandler(object):
 
     def printState(self):
         to_ret = ""
-        for _, p in self._params.iteritems():
+        for _, p in self._params.items():
             if not p.dataTypeIs(Element) or not p.isSpecified():
                 to_ret += p.printState() + " "
             else:

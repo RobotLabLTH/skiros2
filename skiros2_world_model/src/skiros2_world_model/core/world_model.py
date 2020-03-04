@@ -8,14 +8,23 @@ from rdflib.namespace import RDF, RDFS, OWL, XSD
 from wrapt.decorators import synchronized
 from skiros2_common.tools.id_generator import IdGen
 from skiros2_common.tools.time_keeper import TimeKeepers
+from collections import OrderedDict
 
+try:
+    unicode
+except NameError:
+    unicode = str
 
 class IndividualsDataset(Ontology):
-    """
-    An ontology with methods to handle individuals using the Element class
-    """
-
     def __init__(self, verbose, context_id, graph=None, init=False):
+        """
+        @brief      Manages a set of individuals using the Element class
+
+        @param      verbose     The verbose
+        @param      context_id  The context identifier
+        @param      graph       The graph
+        @param      init        The initialize
+        """
         Ontology.__init__(self, graph)
         self._reasoners = {}
         self._verbose = verbose
@@ -91,7 +100,7 @@ class IndividualsDataset(Ontology):
             else:
                 log.error("[get_individual]", "Ignoring {}-{}-{}. Predicate is not defined in the ontology.".format(name, self.uri2lightstring(predicate), self.uri2lightstring(obj)))
         for subj, predicate in self.ontology(context_id).subject_predicates(subject):
-            if (self.uri2lightstring(predicate)!="skiros:hasTemplate"):
+            if (self.uri2lightstring(predicate) != "skiros:hasTemplate"):
                 e.addRelation(self.uri2lightstring(subj), self.uri2lightstring(predicate), "-1")
         self._add_reasoners_prop(e)
         return e
@@ -178,7 +187,7 @@ class IndividualsDataset(Ontology):
         @brief Add an element to the context
         """
         self._make_unique_uri(e)
-        for name, r in self._reasoners.iteritems():
+        for name, r in self._reasoners.items():
             if not r.parse(e, "add"):
                 raise Exception("Reasoner {} rejected the element {} add".format(name, e))
         if e.hasProperty("skiros:Template"):
@@ -194,7 +203,7 @@ class IndividualsDataset(Ontology):
         """
         @brief Update an element in the scene
         """
-        for name, r in self._reasoners.iteritems():
+        for name, r in self._reasoners.items():
             if not r.parse(e, "update"):
                 raise Exception("Reasoner {} rejected the element {} update".format(name, e))
         prev = self._element2statements(self.get_element(e.id))
@@ -212,10 +221,9 @@ class IndividualsDataset(Ontology):
     @synchronized
     def update_properties(self, e, author, reasoner=None):
         """
-        modified
         @brief Update properties of an element in the scene
         """
-        for name, r in self._reasoners.iteritems():
+        for name, r in self._reasoners.items():
             if not r.parse(e, "update"):
                 raise Exception("Reasoner {} rejected the element {} update".format(name, e))
         old_e = self.get_element(e.id)
@@ -223,7 +231,16 @@ class IndividualsDataset(Ontology):
         if reasoner is not None:
             prop_to_update = reasoner.getAssociatedData()
         else:
-            prop_to_update = e.available_properties()
+            prop_to_update = e.available_properties
+            prop_to_remove = set(old_e.available_properties).difference(set(prop_to_update))
+            for k in prop_to_remove:
+                predicate = self.lightstring2uri(k)
+                values = old_e.getProperty(k).values
+                for v in values:
+                    self._remove((subject, predicate, rdflib.term.Literal(v, datatype=self._get_datatype(old_e.getProperty(k)))), author)
+            for k in prop_to_remove:
+                if old_e.hasProperty(k):
+                    old_e.removeProperty(k)
             # Horrible hack to update also the label. Label should be moved with other properties to make this clean
             old_e.label = e.label
             self._set((subject, RDFS.label, rdflib.term.Literal(e.label)), author)
@@ -237,11 +254,14 @@ class IndividualsDataset(Ontology):
                 for i in range(0, len(values)):
                     self._add((subject, predicate, rdflib.term.Literal(values[i], datatype=self._get_datatype(p))), author)
             elif old_e.getProperty(k).values != values:
-                old_e.setProperty(k, values)
                 if values:
                     self._set((subject, predicate, rdflib.term.Literal(values[0], datatype=self._get_datatype(p))), author)
+                else:
+                    for v in old_e.getProperty(k).values:
+                        self._remove((subject, predicate, rdflib.term.Literal(v, datatype=self._get_datatype(old_e.getProperty(k)))), author)
                 for i in range(1, len(values)):
                     self._add((subject, predicate, rdflib.term.Literal(values[i], datatype=self._get_datatype(p))), author)
+                old_e.setProperty(k, values)
         self._elements_cache[e.id] = old_e
 
     @synchronized
@@ -257,7 +277,7 @@ class IndividualsDataset(Ontology):
         # Filter by properties
         for e in first:
             add = True
-            for k, p in description._properties.iteritems():
+            for k, p in description._properties.items():
                 if not e.hasProperty(k):
                     add = False
                     break
@@ -283,7 +303,7 @@ class IndividualsDataset(Ontology):
         except BaseException:
             log.warn("[remove_element]", "Trying to remove element {}, but doesn't exist.".format(e.id))
             return False
-        for name, r in self._reasoners.iteritems():
+        for name, r in self._reasoners.items():
             if not r.parse(e, "remove"):
                 raise Exception("Reasoner {} rejected the element {} removal".format(name, e))
         del self._elements_cache[e.id]
@@ -318,7 +338,7 @@ class IndividualsDataset(Ontology):
         """
         @brief Get an element from the scene and all elements related to the initial one
         """
-        to_ret = {}
+        to_ret = OrderedDict()
         rels_filter = []
         types_filter = []
         if rel_filter != "":
@@ -387,7 +407,7 @@ class IndividualsDataset(Ontology):
         elif param.dataTypeIs(int):
             return XSD.integer
         else:
-            log.error("[Wm]", "Param {} has type {} that is not supported.".format(param.key, param.dataType))
+            log.error("[Wm]", "Param {} has type {} that is not supported.".format(param.key, param.dataType()))
             return None
 
     def _set(self, statement, author, time=None, probability=1.0):
@@ -444,7 +464,7 @@ class IndividualsDataset(Ontology):
         to_ret.append(((subject, RDF.type, OWL.NamedIndividual), False))
         to_ret.append(((subject, RDF.type, self.lightstring2uri(e.type)), False))
         to_ret.append(((subject, RDFS.label, rdflib.term.Literal(e.label)), False))
-        for k, p in e._properties.iteritems():
+        for k, p in e._properties.items():
             predicate = self.lightstring2uri(k)
             for v in p.getValues():
                 value = rdflib.term.Literal(v, datatype=self._get_datatype(p))
@@ -477,11 +497,15 @@ class IndividualsDataset(Ontology):
 
 
 class WorldModel(IndividualsDataset):
-    """
-    @brief A set of individuals with unique ID generation
-    """
-
     def __init__(self, verbose, context_id, change_cb):
+        """
+        @brief      Manages a set of individuals with unique ID
+                    generation
+
+        @param      verbose     The verbose
+        @param      context_id  The context identifier
+        @param      change_cb   The change cb
+        """
         self._id_gen = IdGen()
         self._change_cb = change_cb
         IndividualsDataset.__init__(self, verbose, context_id, init=False)
@@ -505,7 +529,8 @@ class WorldModel(IndividualsDataset):
         """
         IndividualsDataset._remove(self, statement, author, is_relation)
         if is_relation:
-            self._change_cb(author, "remove", relation={'src': self.uri2lightstring(statement[0]), 'type': self.uri2lightstring(statement[1]), 'dst': self.uri2lightstring(statement[2])})
+            self._change_cb(author, "remove", relation={'src': self.uri2lightstring(
+                statement[0]), 'type': self.uri2lightstring(statement[1]), 'dst': self.uri2lightstring(statement[2])})
 
     def _add(self, statement, author, is_relation=False):
         """
@@ -513,7 +538,8 @@ class WorldModel(IndividualsDataset):
         """
         IndividualsDataset._add(self, statement, author, is_relation)
         if is_relation:
-            self._change_cb(author, "add", relation={'src': self.uri2lightstring(statement[0]), 'type': self.uri2lightstring(statement[1]), 'dst': self.uri2lightstring(statement[2])})
+            self._change_cb(author, "add", relation={'src': self.uri2lightstring(
+                statement[0]), 'type': self.uri2lightstring(statement[1]), 'dst': self.uri2lightstring(statement[2])})
 
     def _uri2type(self, uri):
         return uri.split('-')[0]

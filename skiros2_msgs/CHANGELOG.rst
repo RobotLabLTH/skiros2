@@ -2,10 +2,18 @@
 Changelog for package skiros2_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.4 (2020-03-04)
+------------------
+* Finish improved-debugging-tools
+* 1.0.3
+* Updated changelog
+* Sending processor in skill progress
+* Contributors: Francesco Rovida
+
 1.0.3 (2019-09-16)
 ------------------
 * Sending processor in skill progress
-* Contributors: francesco
+* Contributors: Francesco Rovida
 
 1.0.2 (2019-08-26)
 ------------------
@@ -13,7 +21,7 @@ Changelog for package skiros2_msgs
 * Finish gui-improved-visualization
 * Printing SLOW tag to primitives running with a period above 40msec.
 * Updated changelog
-* Contributors: francesco
+* Contributors: Francesco Rovida
 
 1.0.1 (2019-05-22)
 ------------------
@@ -25,7 +33,7 @@ Changelog for package skiros2_msgs
 * GUI improvements: BT execution visualization and more intuitive interface
 * Changed license to L-GPL and updated changelog
 * Updated version and changelog file
-* Contributors: Matthias Mayr, francesco
+* Contributors: Matthias Mayr, Francesco Rovida
 
 0.1.0 (2018-09-27)
 ------------------
@@ -58,4 +66,4 @@ Changelog for package skiros2_msgs
 * Optimized some code;
   Added dummy sub and pub for robot discovery
 * First commit
-* Contributors: Bjarne Grossmann, Francesco Rovida, Ludovic Delval, francesco, ipa-led
+* Contributors: Bjarne Grossmann, Francesco Rovida, Ludovic Delval, Francesco Rovida, ipa-led

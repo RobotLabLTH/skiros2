@@ -2,19 +2,39 @@
 Changelog for package skiros2_world_model
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.4 (2020-03-04)
+------------------
+* Keeping the order in get_recursive, so that root is first and children come afterward.
+* Merge pull request `#23 <https://github.com/RVMI/skiros2/issues/23>`_ from RVMI/py3-fixes
+  Py3 fixes
+* Make comparisons work with python3 and convert dict_keys to list before indexing
+* Merge pull request `#22 <https://github.com/RVMI/skiros2/issues/22>`_ from RVMI/world_model/python3-fixes
+  World model/python3 fixes
+* Python3 fixes in skiros2_world_model
+* Fix on GUI shortcuts and Element hasRelation function.
+* Merge pull request `#20 <https://github.com/RVMI/skiros2/issues/20>`_ from RVMI/emk/fixes
+  Emk/fixes
+* Fix bug in _get_dataType making the type not print on error
+* Moved wmi to base skill class. Added function to determine if an element id refers to a template or an instantiated object.
+* Added more documentation. Removed obsolete files. Moved generated files (e.g. logs and plans) into ~/.skiros folder. Simplified planner installation, that now doesn't modify system path.
+* Started world model interface doc fix.
+* Finish improved-debugging-tools
+* 1.0.3
+* Contributors: Emmanuel Kring, Francesco Rovida
+
 1.0.2 (2019-08-26)
 ------------------
 * Merge branch 'master' into develop
 * Printing SLOW tag to primitives running with a period above 40msec.
 * Updated changelog
-* Contributors: RvmiLab, francesco
+* Contributors: RvmiLab, Francesco Rovida
 
 1.0.1 (2019-05-22)
 ------------------
 * Better debug output2
 * Better debug output in world model and sync parameters when preempting.
 * Avoiding crash when an object in the BB is removed from the world model
-* Contributors: RvmiLab, francesco
+* Contributors: RvmiLab, Francesco Rovida
 
 1.0.0 (2019-04-30)
 ------------------
@@ -37,7 +57,7 @@ Changelog for package skiros2_world_model
 * Updated version and changelog file
 * Cleaned dependencies
 * Updated setup.py for automatic installation of dependencies. Updated readme
-* Contributors: Francesco Rovida, Matthias Mayr, RvmiLab, francesco
+* Contributors: Francesco Rovida, Matthias Mayr, RvmiLab, Francesco Rovida
 
 0.1.0 (2018-09-27)
 ------------------
@@ -155,4 +175,4 @@ Changelog for package skiros2_world_model
 * Added support to run skiros under a ROS namespace. Updated readME.
 * Skill's config params are no more communicated to the wm.
 * First commit
-* Contributors: Bjarne Grossmann, DavidWuthier, Francesco Rovida, francesco, ipa-led
+* Contributors: Bjarne Grossmann, DavidWuthier, Francesco Rovida, Francesco Rovida, ipa-led

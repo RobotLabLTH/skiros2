@@ -1,6 +1,6 @@
 import skiros2_common.core.params as params
 import skiros2_common.tools.logger as log
-from processors import *
+from .processors import *
 from copy import deepcopy
 from copy import copy
 from collections import OrderedDict, defaultdict
@@ -46,11 +46,16 @@ class SkillInterface(SkillCore):
 
     @property
     def parent(self):
+        """
+        @brief      Returns the parent skill
+        """
         return self._parent
 
     def getLightCopy(self):
         """
-        Makes a light copy (only description, params and state)
+        @brief      Makes a light copy (only description, params and state)
+
+        @return     A light copy
         """
         p = self.__class__(self._children_processor)
         p._children_processor = deepcopy(self._children_processor)
@@ -73,36 +78,37 @@ class SkillInterface(SkillCore):
 
     def _clearRemaps(self):
         """
-        Clear remaps
+        @brief      Clear remaps
         """
-        for r1, r2 in reversed(self._remaps.items()):
+        for r1, r2 in reversed(list(self._remaps.items())):
             self.remap(r2, r1)
         self._remaps = OrderedDict()
         self._remaps_cache = defaultdict(list)
 
     def _copyRemaps(self, skill):
         """
-        Copy the remaps of another skill. Called automatically when the skill is added as a child
+        @brief      Copy the remaps of another skill. Called automatically when
+                    the skill is added as a child
         """
-        for r1, r2 in skill._remaps.iteritems():
+        for r1, r2 in skill._remaps.items():
             self.remap(r1, r2)
 
     def _revertRemaps(self):
         """
-        Revert remaps. Just used in revertInput
+        @brief      Revert remaps. Just used in revertInput
         """
         remapid = len(self._params_cache)
         try:
             if self._remaps_cache[remapid]:
                 for remap in self._remaps_cache[remapid]:
                     log.warn("REMAP", "Revert {} {}".format(remap[0], remap[1]))
-                    print self._remaps_cache
+                    print(self._remaps_cache)
                     self._remaps.pop(remap[0])
                     self.remap(remap[1], remap[0], False)
                 del self._remaps_cache[remapid]
         except BaseException:
-            print self.printInfo(True)
-            print self._remaps_cache
+            print(self.printInfo(True))
+            print(self._remaps_cache)
             raise
 
     def getParamsNoRemaps(self):
@@ -111,7 +117,7 @@ class SkillInterface(SkillCore):
         """
         ph = params.ParamHandler()
         ph.reset(self._params.getCopy())
-        for r1, r2 in reversed(self._remaps.items()):
+        for r1, r2 in reversed(list(self._remaps.items())):
             ph.remap(r2, r1)
         return ph
 
@@ -310,9 +316,6 @@ class SkillInterface(SkillCore):
         return res
 
     #--------User functions--------
-    def setChildrenProcessor(self, processor):
-        self._children_processor = processor
-
     def resetDescription(self, other=None):
         if other:
             self._params.reset(self._description._params.merge(other._params))
@@ -354,21 +357,21 @@ class SkillInterface(SkillCore):
         if modify_description:
             self._description.addPreCondition(deepcopy(condition))
         self._pre_conditions.append(condition)
-        for r1, r2 in self._remaps.iteritems():
+        for r1, r2 in self._remaps.items():
             self._pre_conditions[-1].remap(r1, r2)
 
     def addHoldCondition(self, condition, modify_description=False):
         if modify_description:
             self._description.addHoldCondition(deepcopy(condition))
         self._hold_conditions.append(condition)
-        for r1, r2 in self._remaps.iteritems():
+        for r1, r2 in self._remaps.items():
             self._hold_conditions[-1].remap(r1, r2)
 
     def addPostCondition(self, condition, modify_description=False):
         if modify_description:
             self._description.addPostCondition(deepcopy(condition))
         self._post_conditions.append(condition)
-        for r1, r2 in self._remaps.iteritems():
+        for r1, r2 in self._remaps.items():
             self._post_conditions[-1].remap(r1, r2)
 
     def processChildren(self, visitor):
@@ -408,7 +411,7 @@ class SkillWrapper(SkillInterface):
     """
 
     def __init__(self, ptype, plabel, instanciator=None):
-        super(SkillWrapper, self).__init__()
+        super(SkillWrapper, self).__init__(NoProcessor())
         # Description
         self._type = ptype
         self._label = plabel
@@ -460,7 +463,8 @@ class SkillWrapper(SkillInterface):
             self.resetDescription()
         self._description.setDescription(*self.getDescription())
         self._instance = instance
-        self._children_processor = self._instance._children_processor if hasattr(self._instance, '_children_processor') else NoProcessor()
+        if isinstance(self._children_processor, NoProcessor) and hasattr(self._instance, '_children_processor'):
+            self._children_processor = self._instance._children_processor
         self._has_instance = True
         self._wmi = instance._wmi
         # self._setState(self._instance.getState())
@@ -477,7 +481,7 @@ class SkillWrapper(SkillInterface):
 
     def _copyInstanceParams(self):
         self._params.specifyParams(self._instance._params, False)
-        for k, p in self._instance._params._params.iteritems():  # Hack to get remapped key back
+        for k, p in self._instance._params._params.items():  # Hack to get remapped key back
             if k in self._remaps:
                 while self._remaps[k] in self._remaps:  # Hack to work with chained remmapping
                     k = self._remaps[k]
@@ -515,14 +519,13 @@ class SkillWrapper(SkillInterface):
         if res is not None:
             return res
         else:
+            self._instance._setState(self._state)
             return self._state
-
 
 class SkillBase(SkillInterface, object):
     """
     @brief Base class for user's skills
     """
-
     def _parse_type(self, ptype):
         if ptype.find("skiros:") >= 0:
             return ptype

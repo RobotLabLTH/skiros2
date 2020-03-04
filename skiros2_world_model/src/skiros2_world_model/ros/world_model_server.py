@@ -144,7 +144,7 @@ class WorldModelServer(OntologyServer):
             elif msg.action == msg.GET_TEMPLATE:
                 to_ret.elements.append(utils.element2msg(self._get_context(msg.context).get_template_individual(msg.element.label)))
             elif msg.action == msg.GET_RECURSIVE:
-                for _, e in self._get_context(msg.context).get_recursive(msg.element.id, msg.relation_filter, msg.type_filter).iteritems():
+                for _, e in self._get_context(msg.context).get_recursive(msg.element.id, msg.relation_filter, msg.type_filter).items():
                     to_ret.elements.append(utils.element2msg(e))
             elif msg.action == msg.RESOLVE:
                 for e in self._get_context(msg.context).resolve_elements(utils.msg2element(msg.element)):

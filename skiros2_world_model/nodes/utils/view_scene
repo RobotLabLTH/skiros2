@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 
-import skiros2_world_model.core.local_world_model as wm
 import skiros2_world_model.ros.world_model_interface as wmi
 import sys
 
 
 def _print_recursive(wmi, name, d, indentation=""):
     e = d[name]
-    print "{}->{}".format(indentation, e.printState())
+    print("{}->{}".format(indentation, e.printState()))
     for r in e.getRelations(subj="-1", pred=wmi.get_sub_properties("skiros:spatiallyRelated")):
         _print_recursive(wmi, r['dst'], d, indentation + "--")
 
@@ -21,7 +20,7 @@ def print_scene(wmi):
 
 
 if __name__ == '__main__':
-    print "usage: view_scene [<predicate>]. Default: skiros:spatiallyRelated. Other common predicates: skiros:sceneProperty, skiros:skillProperty."
+    print("usage: view_scene [<predicate>]. Default: skiros:spatiallyRelated. Other common predicates: skiros:sceneProperty, skiros:skillProperty.")
     predicate = "skiros:spatiallyRelated"
     if len(sys.argv) > 1:
         predicate = sys.argv[1]

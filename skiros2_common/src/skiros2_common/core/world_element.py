@@ -5,6 +5,17 @@ from skiros2_common.core.property import Property
 from datetime import datetime
 import rospy
 
+try:
+    unicode
+    def ispy2unicode(value):
+        return isinstance(value, unicode)
+except NameError:
+    def ispy2unicode(value):
+        return False
+try:
+    basestring
+except NameError:
+    basestring = str
 
 class Element(object):
     """
@@ -38,7 +49,7 @@ class Element(object):
             to_ret = self._id
         to_ret = to_ret + "-" + self._label  # + self._properties
         if verbose:
-            for k, p in self._properties.iteritems():
+            for k, p in self._properties.items():
                 if k == filter or filter == "":
                     to_ret += "\n" + p.printState()
             for r in self._relations:
@@ -78,6 +89,7 @@ class Element(object):
     def label(self, l):
         self._label = l
 
+    @property
     def available_properties(self):
         return self._properties.keys()
 
@@ -120,6 +132,18 @@ class Element(object):
         if get_code not in Element._property_reasoner_map:
             raise KeyError("No reasoner associated to data {}. Debug: {}".format(get_code, Element._property_reasoner_map))
         return Element._property_reasoner_map[get_code]
+
+    def getAssociatedReasonerId(self, key):
+        """
+        @brief Returns the reasoner associated to a property, or an empty string otherwise
+        """
+        if not isinstance(Element._plug_loader, PluginLoader):
+            self._initPluginLoader()
+        for plugin in Element._plug_loader:
+            r = plugin()
+            if key in r.getAssociatedData():
+                return r.__class__.__name__
+        return ""
 
     def getIdNumber(self):
         """
@@ -216,18 +240,21 @@ class Element(object):
 
     def setRelation(self, subj, predicate, obj):
         """
-        @brief Set a relation, removing previous definitions
+        @brief Set a relation, overriding previous definitions
         """
         self.removeRelations(self.getRelations(subj if subj == "-1" else "", predicate, obj if obj == "-1" else ""))
         self.addRelation(subj, predicate, obj)
 
     def addRelation(self, subj, predicate, obj, value=True, abstract=False):
         """
-        @brief Add a relation with another element
-        @subj An element or an element id
-        @obj An element or an element id
-        @value The state of the relation should be True or False
-        @abstract Whether the relation is between abstract objects or instances
+        @brief      Add a relation with another element
+
+        @param      subj       An element id
+        @param      predicate  The predicate
+        @param      obj        An element or an element id
+        @param      value      The state of the relation should be True or False
+        @param      abstract   Whether the relation is between abstract objects
+                               or instances
         """
         self._setLastUpdate()
         if isinstance(obj, Element):
@@ -237,36 +264,46 @@ class Element(object):
             if not r in self._relations:
                 self._relations.append(r)
         else:
-            raise ValueError('Subject/Object must be of type string: subject type is {}. object type is {}'.format(type(subj), type(obj)))
+            raise ValueError('Subject/Object must be of type string or Element: subject type is {}. object type is {}'.format(type(subj), type(obj)))
 
     def hasRelation(self, subj, predicate, obj, value=True, abstract=False):
         """
-        @brief Add a relation with another element
-        @subj An element or an element id
-        @obj An element or an element id
-        @value The state of the relation should be True or False
-        @abstract Whether the relation is between abstract objects or instances
+        @brief Return true if element has the relation
+
+        @param      subj       An element or an element id
+        @param      predicate  The predicate
+        @param      obj        An element or an element id
+        @param      value      The state of the relation should be True or False
+        @param      abstract   Whether the relation is between abstract objects
+                               or instances
+
+        @return     True if relation, False otherwise.
         """
-        if subj == "-1":
+        if not subj or subj == "-1":
             subj = self.id
-        elif obj == "-1":
+        elif not obj or obj == "-1":
             obj = self.id
         return {'src': subj, 'type': predicate, 'dst': obj, 'state': value, 'abstract': abstract} in self._relations
 
     def hasProperty(self, key, value=None, not_none=False):
         """
-        @brief Return true if element has the property.
-        @key the property to check
-        @value if specified, return true if the property has that value
-        @not_none when set to true, checks that the property doesn't have none as value
+        @brief      Return true if element has the property.
+
+        @param      key       the property to check
+        @param      value     if specified, return true if the property has that
+                              value
+        @param      not_none  when set to true, checks that the property doesn't
+                              have none as value
+
+        @return     True if property, False otherwise.
         """
         if key not in self._properties:
             return False
         if value is not None:
             return self.getProperty(key).find(value) != -1
-        return self.getProperty(key).values or not not_none
+        return self.getProperty(key).isSpecified() or not not_none
 
-    def setProperty(self, key, value, datatype=None, is_list=False, force_convertion=False):
+    def setProperty(self, key, value, datatype=None, force_convertion=False):
         """
         @brief Set the property to a value. If datatype is specified tries to convert.
         """
@@ -279,33 +316,38 @@ class Element(object):
 
         if datatype:
             if datatype == "xsd:double" or datatype == "xsd:float":
-                self._properties[key] = Property(key, float, is_list)
+                self._properties[key] = Property(key, float)
                 if value is not None:
                     self._properties[key].setValues(value)
             elif datatype == "xsd:int" or datatype == "xsd:integer":
-                self._properties[key] = Property(key, int, is_list)
+                self._properties[key] = Property(key, int)
                 if value is not None:
                     self._properties[key].setValues(int(value))
             elif datatype == "xsd:boolean":
-                self._properties[key] = Property(key, bool, is_list)
+                self._properties[key] = Property(key, bool)
                 if value is not None:
                     self._properties[key].setValues(value)
             elif datatype == "xsd:string":
-                self._properties[key] = Property(key, str, is_list)
+                self._properties[key] = Property(key, str)
                 if value is not None:
                     self._properties[key].setValues(str(value))
             else:
                 log.warn("[Element]", "Datatype {} not recognized. Set default".format(datatype))
-                self._properties[key] = Property(key, value, is_list)
+                self._properties[key] = Property(key, value)
         else:
             if self.hasProperty(key):
                 if force_convertion:
-                    value = self._properties[key].dataType()(value)
+                    if isinstance(value, list):
+                        value = [self._properties[key].dataType()(v) for v in value]
+                    else:
+                        value = self._properties[key].dataType()(value)
+                elif ispy2unicode(value):
+                    value = str(value)
                 self._properties[key].setValues(value)
             else:
-                if isinstance(value, unicode):
+                if ispy2unicode(value):
                     value = str(value)
-                self._properties[key] = Property(key, value, is_list)
+                self._properties[key] = Property(key, value)
 
         if key == 'skiros:DiscreteReasoner':
             new_reasoners = self._properties[key].values
@@ -341,7 +383,7 @@ class Element(object):
         if self.hasProperty(key):
             self._properties[key].addValue(value)
         else:
-            self.setProperty(key, value, is_list=True)
+            self.setProperty(key, value)
 
     def getProperty(self, key):
         """
@@ -361,7 +403,7 @@ class Element(object):
         if not (abstract._label == "" or abstract._label == "Unknown" or self._label == abstract._label):
             return False
         # Filter by properties
-        for k, p in abstract._properties.iteritems():
+        for k, p in abstract._properties.items():
             if not self.hasProperty(k):
                 return False
             for v in p.getValues():

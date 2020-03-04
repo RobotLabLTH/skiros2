@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>skiros2_world_model</name>
-  <version>1.0.3</version>
+  <version>1.0.4</version>
   <description>SkiROS semantic database</description>
 
   <maintainer email="francesco@m-tech.aau.dk">Francesco Rovida</maintainer>
