@@ -2,8 +2,8 @@
 Changelog for package skiros2_task
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.4 (2020-03-04)
+------------------
 * Merge pull request `#23 <https://github.com/RVMI/skiros2/issues/23>`_ from RVMI/py3-fixes
   Py3 fixes
 * Change name of method iteritems in param handler

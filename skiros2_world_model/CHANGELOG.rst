@@ -2,8 +2,8 @@
 Changelog for package skiros2_world_model
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.4 (2020-03-04)
+------------------
 * Keeping the order in get_recursive, so that root is first and children come afterward.
 * Merge pull request `#23 <https://github.com/RVMI/skiros2/issues/23>`_ from RVMI/py3-fixes
   Py3 fixes

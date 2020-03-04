@@ -2,8 +2,8 @@
 Changelog for package skiros2_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.4 (2020-03-04)
+------------------
 * Finish improved-debugging-tools
 * 1.0.3
 * Updated changelog
