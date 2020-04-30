@@ -51,6 +51,10 @@ To generate the documentation, first install Doxygen:
 
 > sudo apt-get install -y doxygen
 
+Install doxypypy for better compatibility with python doc-strings:
+
+> pip install doxypypy
+
 Then, in the top level directory, generate the documentation:
 
 > doxygen Doxyfile
