@@ -47,7 +47,18 @@ See the *skiros2_template_lib* for a minimal example on how to launch the system
 See the *skiros2_test_lib* for more elaborated examples.
 
 ### Doxygen documentation
+To generate the documentation, first install Doxygen:
 
-TODO
+> sudo apt-get install -y doxygen
 
+Install doxypypy for better compatibility with python doc-strings:
 
+> pip install doxypypy --user
+
+Then, in the top level directory, generate the documentation:
+
+> doxygen Doxyfile
+
+Finally, you can view it with for example firefox:
+
+> firefox skiros2_doc/html/index.html
