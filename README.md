@@ -20,15 +20,15 @@ For detailed info refer to the [wiki](https://git.cs.lth.se/robotlab/rvmi/skiros
 
 ### Dependencies
 
-> roscd skiros2/..\
-> pip install -r requirements.txt --user
+> roscd skiros2/..  
+> pip install -r requirements.txt --user  
 
 ### Task planning
 
 To run the task planning you should install the fast downward planner:
 
-> roscd skiros2/scripts\
-> ./install_fd_task_planner.sh
+> roscd skiros2/scripts  
+> ./install_fd_task_planner.sh  
 
 When asked for the install folder, you can insert a location of your preference or just leave the default.
 
@@ -47,7 +47,18 @@ See the *skiros2_template_lib* for a minimal example on how to launch the system
 See the *skiros2_test_lib* for more elaborated examples.
 
 ### Doxygen documentation
+To generate the documentation, first install Doxygen:
 
-TODO
+> sudo apt-get install -y doxygen
 
+Install doxypypy for better compatibility with python doc-strings:
 
+> pip install doxypypy --user
+
+Then, in the top level directory, generate the documentation:
+
+> doxygen Doxyfile
+
+Finally, you can view it with for example firefox:
+
+> firefox skiros2_doc/html/index.html

@@ -293,7 +293,7 @@ class OntologyInterface(OntologyAbstractInterface):
         """
         @brief Returns the property datatype restriction
         """
-        answer = self.query_ontology("SELECT ?z WHERE {?x ?t " + property + ". ?x rdf:type owl:Restriction. ?x owl:onDataRange ?z.}")
+        answer = self.query_ontology("SELECT ?x WHERE {" + self.add_prefix(property) + " rdfs:range ?x.}")
         return answer[0] if answer else None
 
     def _call(self, service, msg):
