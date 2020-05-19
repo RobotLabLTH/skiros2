@@ -558,7 +558,6 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
             self.logs_file_lineEdit.setText(instance_settings.value("logs_file_name"))
         if instance_settings.value("save_logs") is not None:
             self.save_logs_checkBox.setChecked(instance_settings.value("save_logs") == 'true')
-            self.on_save_logs_checkBox_clicked()
         if instance_settings.value("last_executed_skill") is not None:
             self.last_executed_skill = instance_settings.value("last_executed_skill")
             print(self.last_executed_skill)
@@ -622,6 +621,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         else:
             self.robot_rate_info.setText("No robot connected.")
             self.robot_output.setText("")
+            self.stop_task_tracking()
 
     def simplify_tree_hierarchy(self, root):
         i = 0
@@ -788,7 +788,6 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
                 items = self.wm_tree_widget.findItems(cur_item_id, Qt.MatchRecursive | Qt.MatchFixedString, 1)
                 if items:
                     self.wm_tree_widget.setCurrentItem(items[0])
-                #self._save_log(data, "wm_edit")
             elif data.stamp > self._snapshot_stamp or self._snapshot_id == "":  # Ignores obsolete msgs
                 log.info("[wm_update]", "Wm not in sync, querying wm scene")
                 self.create_wm_tree()
@@ -1128,10 +1127,11 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
                 for manager in self._sli.agents.values():
                     manager.reset_tick_rate()
             elif abs(msg.progress_code) == 1:
+                self._save_log(msg)
                 self._toggle_task_active()
         self.update_task_tree(msg)
+        self._save_log(msg)
         # self.update_progress_table(msg)
-        self._save_log(msg, "skill")
 
     def get_icon(self, skill_type):
         if not skill_type in self.icons:
@@ -1232,13 +1232,18 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
 
     def _toggle_task_active(self):
         if self.skill_stop_button.isEnabled():
-            self.skill_stop_button.setEnabled(False)
-            self.skill_pause_button.setEnabled(False)
-            self.skill_exe_button.setEnabled(True)
+            self.stop_task_tracking()
         else:
+            self.start_logging()
             self.skill_stop_button.setEnabled(True)
             self.skill_pause_button.setEnabled(True)
             self.skill_exe_button.setEnabled(False)
+
+    def stop_task_tracking(self):
+        self.end_logging()
+        self.skill_stop_button.setEnabled(False)
+        self.skill_pause_button.setEnabled(False)
+        self.skill_exe_button.setEnabled(True)
 
     @Slot()
     def on_debug_checkBox_clicked(self):
@@ -1313,9 +1318,6 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         if skill is None:
             return None
         self._add_frequently_used_skill(self.skill_tree_widget.currentItem().data(2, 0))
-        # Start logger
-        if not self._sli.has_active_agents:
-            self.on_save_logs_checkBox_clicked()
         # Send command
         if not self._get_parameters(skill.ph):
             return None
@@ -1324,51 +1326,51 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
 # ==============================================================================
 # Logs
 # ==============================================================================
-    @Slot()
-    def on_logs_file_lineEdit_editingFinished(self):
-        self.on_save_logs_checkBox_clicked()
-
-    def on_save_logs_checkBox_clicked(self):
+    def start_logging(self):
+        self.end_logging()
+        self.logs_textEdit.clear()
         try:
-            # Close old log file
-            if self.log_file is not None:
-                self.logs_textEdit.clear()
-                self.log_file.close()
-                self.log_file = None
             # Open new log file
             if self.save_logs_checkBox.isChecked():
-                directory, file_name = self._get_new_log_filename()
-                self.log_file = open("{}/{}".format(directory, file_name), "a")
+                directory, self.file_name = self._get_new_log_filename()
+                self.log_file = open("{}/{}.log".format(directory, self.file_name), "a")
         except (IOError) as e:
             log.error("[IOError]", str(e))
             self.save_logs_checkBox.setChecked(False)
         except (AttributeError) as e:
             pass
 
+    def end_logging(self):
+        # Close old log file
+        if self.log_file is not None:
+            self.log_file.close()
+            self.log_file = None
+
+    @property
+    def log_directory(self):
+        directory = self.logs_file_lineEdit.text().strip()
+        directory = directory if directory[-1] != "/" else directory[:-1]
+        return os.path.expanduser(directory)
+
     def _get_new_log_filename(self):
         skill = self.skill_tree_widget.currentItem().data(2, 0)
-        directory = self.logs_file_lineEdit.text()
-        directory = os.path.expanduser(directory[0:directory.rfind("/")])
         file_name = "{}_{}".format(datetime.now().strftime("%Y-%m-%d:%H:%M:%S"), skill.name)
+        directory = self.log_directory
         if not os.path.exists(directory):
             os.makedirs(directory)
         elif os.path.exists(file_name):
             with open(file_name, "r") as f:
                 self.logs_textEdit.setText(f.read())
-        self.logs_file_lineEdit.setText("{}/{}".format(directory, file_name))
         return directory, file_name
 
-    def _save_log(self, msg, log_type):
-        if log_type == "skill":
-            string = "{};{:0.4f};{};{};{};{};{};{};{}".format(datetime.now().strftime("%H:%M:%S"), msg.progress_time, msg.parent_label, msg.parent_id,
-                                                              msg.label, msg.id, State(msg.state).name, msg.progress_code, msg.progress_message)
-        elif log_type == "wm_edit":
-            if not msg.relation:
-                string = "{} {} {} {}".format(datetime.now(), "WM", msg.action, [e.id for e in msg.elements])
-            else:
-                relation = rosutils.msg2relation(msg.relation[0])
-                string = "{} {} {}_relation {}-{}-{}".format(datetime.now().strftime("%H:%M:%S"), "WM", msg.action,
-                                                             relation['src'], relation['type'], relation['dst'])
+    def _save_log(self, msg):
+        if self.log_file is None:
+            #log.error("save_log", "Can't save log, file is not open.")
+            return
+        string = "{};{:0.4f};{};{};{};{};{};{};{}".format(datetime.now().strftime("%H:%M:%S"),
+                                                          msg.progress_time, msg.parent_label, msg.parent_id,
+                                                          msg.label, msg.id, State(msg.state).name,
+                                                          msg.progress_code, msg.progress_message)
         if self.save_logs_checkBox.isChecked():
             self.logs_textEdit.append(string)
             self.log_file.write(string + "\n")
