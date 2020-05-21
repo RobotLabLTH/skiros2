@@ -232,7 +232,7 @@ class SkillManager:
         """
         Load definitions from a package
         """
-        self._instanciator.load_library(package)
+        self._instanciator.load_library(package, self._verbose)
 
     def add_skill(self, name, subclass="skiros:CompoundSkill"):
         """
