@@ -547,6 +547,8 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         instance_settings.set_value("last_executed_skill", self.last_executed_skill)
         instance_settings.set_value("debug_info", self.debug_checkBox.isChecked())
         instance_settings.set_value("skill_info", self.skill_info_checkBox.isChecked())
+        instance_settings.set_value("include_filters", self.include_filters_lineEdit.text())
+        instance_settings.set_value("exclude_filters", self.exclude_filters_lineEdit.text())
 
     def restore_settings(self, plugin_settings, instance_settings):
         # TODO restore intrinsic configuration, usually using:
@@ -556,6 +558,10 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
             self.scene_file_lineEdit.setText(instance_settings.value("scene_name"))
         if instance_settings.value("logs_file_name") is not None:
             self.logs_file_lineEdit.setText(instance_settings.value("logs_file_name"))
+        if instance_settings.value("include_filters") is not None:
+            self.include_filters_lineEdit.setText(instance_settings.value("include_filters"))
+        if instance_settings.value("exclude_filters") is not None:
+            self.exclude_filters_lineEdit.setText(instance_settings.value("exclude_filters"))
         if instance_settings.value("save_logs") is not None:
             self.save_logs_checkBox.setChecked(instance_settings.value("save_logs") == 'true')
         if instance_settings.value("last_executed_skill") is not None:
@@ -1328,6 +1334,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
 # ==============================================================================
     def start_logging(self):
         self.end_logging()
+        self.set_log_filters()
         self.logs_textEdit.clear()
         try:
             # Open new log file
@@ -1345,6 +1352,29 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         if self.log_file is not None:
             self.log_file.close()
             self.log_file = None
+
+    def set_log_filters(self):
+        self.include_filters = list()
+        self.exclude_filters = list()
+        tokens = self.include_filters_lineEdit.text().split(",")
+        for t in tokens:
+            if t.strip():
+                self.include_filters.append(t.strip())
+        tokens = self.exclude_filters_lineEdit.text().split(",")
+        for t in tokens:
+            if t.strip():
+                self.exclude_filters.append(t.strip())
+
+    def in_filters(self, names):
+        for m in self.exclude_filters:
+            for n in names:
+                if n.find(m)>=0:
+                    return False
+        for m in self.include_filters:
+            for n in names:
+                if n.find(m)>=0:
+                    return True
+        return not bool(self.include_filters)
 
     @property
     def log_directory(self):
@@ -1366,6 +1396,8 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
     def _save_log(self, msg):
         if self.log_file is None:
             #log.error("save_log", "Can't save log, file is not open.")
+            return
+        if not self.in_filters([msg.label, msg.progress_message, State(msg.state).name]):
             return
         string = "{};{:0.4f};{};{};{};{};{};{};{}".format(datetime.now().strftime("%H:%M:%S"),
                                                           msg.progress_time, msg.parent_label, msg.parent_id,
