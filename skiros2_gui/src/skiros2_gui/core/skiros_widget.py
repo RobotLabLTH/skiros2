@@ -1401,7 +1401,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
                                                           msg.progress_time, msg.parent_label, msg.parent_id,
                                                           msg.label, msg.id, State(msg.state).name,
                                                           msg.progress_code, msg.progress_message)
-        self.log_file.write(string + "\n")
+        self.logs_textEdit.append(string)
 
         if self.save_logs_checkBox.isChecked() and self.log_file is not None:
-            self.logs_textEdit.append(string)
+            self.log_file.write(string + "\n")
