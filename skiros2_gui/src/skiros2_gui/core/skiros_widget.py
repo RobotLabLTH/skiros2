@@ -1394,15 +1394,14 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         return directory, file_name
 
     def _save_log(self, msg):
-        if self.log_file is None:
-            #log.error("save_log", "Can't save log, file is not open.")
-            return
         if not self.in_filters([msg.label, msg.progress_message, State(msg.state).name]):
             return
+
         string = "{};{:0.4f};{};{};{};{};{};{};{}".format(datetime.now().strftime("%H:%M:%S"),
                                                           msg.progress_time, msg.parent_label, msg.parent_id,
                                                           msg.label, msg.id, State(msg.state).name,
                                                           msg.progress_code, msg.progress_message)
-        if self.save_logs_checkBox.isChecked():
+        self.log_file.write(string + "\n")
+
+        if self.save_logs_checkBox.isChecked() and self.log_file is not None:
             self.logs_textEdit.append(string)
-            self.log_file.write(string + "\n")
