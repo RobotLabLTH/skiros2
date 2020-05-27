@@ -618,6 +618,12 @@
     </owl:DatatypeProperty>
 
 
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#CadModel -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#CadModel">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#PhysicalObjectProperty"/>
+        <rdfs:comment>Path to a CAD model.</rdfs:comment>
+    </owl:DatatypeProperty>
 
     <!--
     ///////////////////////////////////////////////////////////////////////////////////////
