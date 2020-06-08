@@ -20,3 +20,9 @@ install(DIRECTORY owl launch DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
 install(PROGRAMS scripts/install_fd_task_planner.sh
         DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}/scripts)
+
+
+if (CATKIN_ENABLE_TESTING)
+  find_package(roslaunch REQUIRED)
+  roslaunch_add_file_check(tests/roslaunch_test.xml)
+endif()
