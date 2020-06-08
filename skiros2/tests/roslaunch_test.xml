@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<launch>
+
+<group ns="skill_mgr__">
+  <include file="$(find skiros2)/launch/skill_mgr.launch/">
+</group>
+
+<group ns="skiros__">
+  <include file="$(find skiros2)/launch/skiros.launch/">
+</group>
+
+<group ns="task_mgr__">
+  <include file="$(find skiros2)/launch/task_mgr.launch/">
+</group>
+
+<group ns="world_model_server__">
+  <include file="$(find skiros2)/launch/world_model_server.launch/">
+</group>
+
+</launch>
