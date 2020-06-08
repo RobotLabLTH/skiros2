@@ -268,7 +268,7 @@ class Element(object):
 
     def hasRelation(self, subj, predicate, obj, value=True, abstract=False):
         """
-        @brief Return true if element has the relation
+        @brief      Return true if element has the relation
 
         @param      subj       An element or an element id
         @param      predicate  The predicate
@@ -279,6 +279,8 @@ class Element(object):
 
         @return     True if relation, False otherwise.
         """
+        if {'src': subj, 'type': predicate, 'dst': obj, 'state': value, 'abstract': abstract} in self._relations:
+            return True
         if not subj or subj == "-1":
             subj = self.id
         elif not obj or obj == "-1":
