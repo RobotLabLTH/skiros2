@@ -44,7 +44,7 @@ All the OWL files found in the specified path are loaded from the system at boot
 
 See the *skiros2_template_lib* for a minimal example on how to launch the system (also useful to create a new library from scratch).
 
-See the *skiros2_test_lib* for more elaborated examples.
+See the *skiros2_examples* for more elaborated examples.
 
 ### Doxygen documentation
 To generate the documentation, first install Doxygen:
