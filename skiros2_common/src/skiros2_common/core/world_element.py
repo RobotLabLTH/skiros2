@@ -268,7 +268,7 @@ class Element(object):
 
     def hasRelation(self, subj, predicate, obj, value=True, abstract=False):
         """
-        @brief Return true if element has the relation
+        @brief      Return true if element has the relation
 
         @param      subj       An element or an element id
         @param      predicate  The predicate
@@ -279,6 +279,8 @@ class Element(object):
 
         @return     True if relation, False otherwise.
         """
+        if {'src': subj, 'type': predicate, 'dst': obj, 'state': value, 'abstract': abstract} in self._relations:
+            return True
         if not subj or subj == "-1":
             subj = self.id
         elif not obj or obj == "-1":
@@ -317,37 +319,28 @@ class Element(object):
         if datatype:
             if datatype == "xsd:double" or datatype == "xsd:float":
                 self._properties[key] = Property(key, float)
-                if value is not None:
-                    self._properties[key].setValues(value)
             elif datatype == "xsd:int" or datatype == "xsd:integer":
                 self._properties[key] = Property(key, int)
-                if value is not None:
-                    self._properties[key].setValues(int(value))
             elif datatype == "xsd:boolean":
                 self._properties[key] = Property(key, bool)
-                if value is not None:
-                    self._properties[key].setValues(value)
             elif datatype == "xsd:string":
                 self._properties[key] = Property(key, str)
-                if value is not None:
-                    self._properties[key].setValues(str(value))
             else:
-                log.warn("[Element]", "Datatype {} not recognized. Set default".format(datatype))
+                log.warn("[Element]", "Datatype {} not recognized. Set default.".format(datatype))
                 self._properties[key] = Property(key, value)
+
+        if ispy2unicode(value):
+            value = str(value)
+
+        if self.hasProperty(key):
+            if force_convertion:
+                if isinstance(value, list):
+                    value = [self._properties[key].dataType()(v) for v in value]
+                else:
+                    value = self._properties[key].dataType()(value)
+            self._properties[key].setValues(value)
         else:
-            if self.hasProperty(key):
-                if force_convertion:
-                    if isinstance(value, list):
-                        value = [self._properties[key].dataType()(v) for v in value]
-                    else:
-                        value = self._properties[key].dataType()(value)
-                elif ispy2unicode(value):
-                    value = str(value)
-                self._properties[key].setValues(value)
-            else:
-                if ispy2unicode(value):
-                    value = str(value)
-                self._properties[key] = Property(key, value)
+            self._properties[key] = Property(key, value)
 
         if key == 'skiros:DiscreteReasoner':
             new_reasoners = self._properties[key].values

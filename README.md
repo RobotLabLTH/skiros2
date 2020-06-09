@@ -16,7 +16,7 @@ In a nutshell, SkiROS provides:
 
 The development process consist of two steps: specify the domain knowledge in a OWL ontology and develop the plug-ins.
 
-For detailed info refer to the [wiki](https://github.com/RVMI/skiros2/wiki)
+For detailed info refer to the [wiki](https://git.cs.lth.se/robotlab/rvmi/skiros2/wikis/home)
 
 ### Dependencies
 
@@ -44,10 +44,21 @@ All the OWL files found in the specified path are loaded from the system at boot
 
 See the *skiros2_template_lib* for a minimal example on how to launch the system (also useful to create a new library from scratch).
 
-See the *skiros2_test_lib* for more elaborated examples.
+See the *skiros2_examples* for more elaborated examples.
 
 ### Doxygen documentation
+To generate the documentation, first install Doxygen:
 
-TODO
+> sudo apt-get install -y doxygen
 
+Install doxypypy for better compatibility with python doc-strings:
 
+> pip install doxypypy --user
+
+Then, in the top level directory, generate the documentation:
+
+> doxygen Doxyfile
+
+Finally, you can view it with for example firefox:
+
+> firefox skiros2_doc/html/index.html

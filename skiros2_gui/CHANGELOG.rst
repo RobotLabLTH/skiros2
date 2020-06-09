@@ -2,6 +2,24 @@
 Changelog for package skiros2_gui
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.5 (2020-06-09)
+------------------
+* Fix mistake in previous commit
+* Printing output log also when not saving
+* Added possibility to filter log output.
+* Releasing buttons and log if skill mgr crashes.
+* Merge remote-tracking branch 'origin/rvmi/develop' into develop
+* Merge pull request `#26 <https://github.com/RVMI/skiros2/issues/26>`_ from RVMI/modifyRelation-labels
+  Fix: labels not showing up in modify relation dialog
+* Fix to `#24 <https://github.com/RVMI/skiros2/issues/24>`_
+* fix labels not showing up in modify relation dialog
+* Merge remote-tracking branch 'rvmi/develop' into develop
+* Merge branch 'develop' into develop-rss
+  # Conflicts:
+  #	skiros2/scripts/install_fd_task_planner.sh
+* Merge remote-tracking branch 'origin/rvmi/develop' into develop
+* Contributors: Francesco Rovida, Matthias Mayr, emmanuelkring, francesco
+
 1.0.4 (2020-03-04)
 ------------------
 * Merge pull request `#23 <https://github.com/RVMI/skiros2/issues/23>`_ from RVMI/py3-fixes

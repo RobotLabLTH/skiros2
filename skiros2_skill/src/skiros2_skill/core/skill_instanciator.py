@@ -12,11 +12,13 @@ class SkillInstanciator:
         self._available_instances = defaultdict(list)
         self._wm = wmi
 
-    def load_library(self, package):
+    def load_library(self, package, verbose):
         """
         @brief Load definitions from a package
         """
         self._plugin_manager.load(package, SkillDescription)
+        if verbose:
+            self._plugin_manager.list()
 
     def get_description(self, skill_type):
         if not skill_type in self._available_descriptions:

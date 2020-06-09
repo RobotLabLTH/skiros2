@@ -835,9 +835,16 @@
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_6">
            <item>
+            <widget class="QLabel" name="label">
+             <property name="text">
+              <string>Folder</string>
+             </property>
+            </widget>
+           </item>
+           <item>
             <widget class="QLineEdit" name="logs_file_lineEdit">
              <property name="text">
-              <string>~/.skiros/logs/logs.txt</string>
+              <string>~/.skiros/logs</string>
              </property>
             </widget>
            </item>
@@ -845,6 +852,38 @@
             <widget class="QCheckBox" name="save_logs_checkBox">
              <property name="text">
               <string>Save logs</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_10">
+           <item>
+            <widget class="QLabel" name="label_2">
+             <property name="text">
+              <string>Filters Include</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="include_filters_lineEdit">
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Patterns to appear in skill name, state or progress. Divided by commas.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_3">
+             <property name="text">
+              <string>Exclude</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="exclude_filters_lineEdit">
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Patterns to NOT appear in skill name, state or progress. Divided by commas.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
             </widget>
            </item>

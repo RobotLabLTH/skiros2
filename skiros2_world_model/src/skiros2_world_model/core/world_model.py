@@ -1,4 +1,4 @@
-from os import path
+from os import path, makedirs
 import skiros2_common.tools.logger as log
 import skiros2_common.ros.utils as utils
 from skiros2_common.core.world_element import Element
@@ -179,6 +179,9 @@ class IndividualsDataset(Ontology):
         """
         if filename:
             self._filename = filename
+        directory = self.filedir[0:self.filedir.rfind("/")]
+        if not path.exists(directory):
+            makedirs(directory)
         self.context.serialize(self.filedir, format='turtle')
 
     @synchronized

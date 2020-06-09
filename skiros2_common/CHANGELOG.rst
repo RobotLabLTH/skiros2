@@ -2,6 +2,18 @@
 Changelog for package skiros2_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.5 (2020-06-09)
+------------------
+* hasRelation also checking without replacing -1
+* Merge remote-tracking branch 'origin/rvmi/develop' into develop
+* Fix to `#24 <https://github.com/RVMI/skiros2/issues/24>`_
+* Merge remote-tracking branch 'rvmi/develop' into develop
+* Merge branch 'develop' into develop-rss
+  # Conflicts:
+  #	skiros2/scripts/install_fd_task_planner.sh
+* Merge remote-tracking branch 'origin/rvmi/develop' into develop
+* Contributors: Matthias Mayr, francesco
+
 1.0.4 (2020-03-04)
 ------------------
 * Merge pull request `#23 <https://github.com/RVMI/skiros2/issues/23>`_ from RVMI/py3-fixes
