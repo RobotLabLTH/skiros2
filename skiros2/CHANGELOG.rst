@@ -2,6 +2,27 @@
 Changelog for package skiros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge pull request `#31 <https://github.com/RVMI/skiros2/issues/31>`_ from ipa-led/launch_test
+  added simple launch test to skiros2 package
+* added simple launch test to skiros2 package
+* Added CadModel data property.
+* Merge remote-tracking branch 'origin/rvmi/develop' into develop
+* Fix to `#24 <https://github.com/RVMI/skiros2/issues/24>`_
+* Merge branch 'develop' into develop-rss
+  # Conflicts:
+  #	skiros2/scripts/install_fd_task_planner.sh
+* Merge remote-tracking branch 'origin/rvmi/develop' into develop
+* Removes installation of g++ and make from install script.
+* Fix: Adds # to a comment that will be put in bashrc.
+* Enhancement: Adds installation of build dependencies when installing planner.
+* Fix: Puts correct TDF variables in bashrc even when installation was skipped.
+* Merge remote-tracking branch 'origin/rvmi/develop' into develop
+* Install script: Adds missing exit statement.
+* Install script: Changed suggested folder and check if it's already existent.
+* Contributors: Francesco Rovida, Ludovic Delval, Matthias Mayr, francesco
+
 1.0.4 (2020-03-04)
 ------------------
 * Added more documentation. Removed obsolete files. Moved generated files (e.g. logs and plans) into ~/.skiros folder. Simplified planner installation, that now doesn't modify system path.

@@ -2,6 +2,21 @@
 Changelog for package skiros2_world_model
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge remote-tracking branch 'origin/rvmi/develop' into develop
+* Merge pull request `#30 <https://github.com/RVMI/skiros2/issues/30>`_ from RVMI/python3-rdflib
+  Conditional dependencies for rdflib
+* add conditional dependencies for rdflib and port to format 3
+* Fix crash when saving scene to new folder (issue `#28 <https://github.com/RVMI/skiros2/issues/28>`_)
+* Fix to `#24 <https://github.com/RVMI/skiros2/issues/24>`_
+* Merge remote-tracking branch 'rvmi/develop' into develop
+* Merge branch 'develop' into develop-rss
+  # Conflicts:
+  #	skiros2/scripts/install_fd_task_planner.sh
+* Merge remote-tracking branch 'origin/rvmi/develop' into develop
+* Contributors: Francesco Rovida, Matthias Mayr, emmanuelkring, francesco
+
 1.0.4 (2020-03-04)
 ------------------
 * Keeping the order in get_recursive, so that root is first and children come afterward.
