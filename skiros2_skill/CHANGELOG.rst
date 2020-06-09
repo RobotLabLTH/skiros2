@@ -2,8 +2,8 @@
 Changelog for package skiros2_skill
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.5 (2020-06-09)
+------------------
 * Skill manager prints out available skills from packages in verbose mode.
 * Merge remote-tracking branch 'origin/rvmi/develop' into develop
 * Merge remote-tracking branch 'rvmi/develop' into develop

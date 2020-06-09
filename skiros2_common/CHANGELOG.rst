@@ -2,8 +2,8 @@
 Changelog for package skiros2_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.5 (2020-06-09)
+------------------
 * hasRelation also checking without replacing -1
 * Merge remote-tracking branch 'origin/rvmi/develop' into develop
 * Fix to `#24 <https://github.com/RVMI/skiros2/issues/24>`_

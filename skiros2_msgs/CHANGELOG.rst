@@ -2,8 +2,8 @@
 Changelog for package skiros2_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.5 (2020-06-09)
+------------------
 * Merge remote-tracking branch 'origin/rvmi/develop' into develop
 * Merge remote-tracking branch 'origin/rvmi/develop' into develop
 * Contributors: Matthias Mayr

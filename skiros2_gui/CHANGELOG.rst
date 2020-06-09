@@ -2,8 +2,8 @@
 Changelog for package skiros2_gui
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.5 (2020-06-09)
+------------------
 * Fix mistake in previous commit
 * Printing output log also when not saving
 * Added possibility to filter log output.
