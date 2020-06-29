@@ -1,0 +1,11 @@
+<launch>
+    <param name="test_module" value="qt_test"/>
+    <include file="$(find skiros2)/launch/skiros.launch">
+        <arg name="libraries_list" value="[skiros2_test_lib]"/>
+        <arg name="primitive_list" value="[test_primitive]"/>
+        <arg name="skill_list" value="[test_skill_parallel, test_skill_sequence, test_skill_sequence_of_parallels]" />
+        <arg name="deploy" value="true" />
+        <arg name="gui" value="false"/>
+    </include>
+    <test test-name="gui_test" pkg="skiros2_gui" type="pytest_runner.py" />
+</launch>
