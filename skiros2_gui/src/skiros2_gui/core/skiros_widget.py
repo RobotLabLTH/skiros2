@@ -566,7 +566,6 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
             self.save_logs_checkBox.setChecked(instance_settings.value("save_logs") == 'true')
         if instance_settings.value("last_executed_skill") is not None:
             self.last_executed_skill = instance_settings.value("last_executed_skill")
-            print(self.last_executed_skill)
         if instance_settings.value("debug_info") is not None:
             self.debug_checkBox.setChecked(instance_settings.value("debug_info") == 'true')
         if instance_settings.value("skill_info") is not None:
@@ -594,28 +593,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         """
         # Update skill list
         if self._sli.has_changes:
-            self.skill_tree_widget.setSortingEnabled(False)
-            self.skill_tree_widget.sortByColumn(0, Qt.AscendingOrder)
-            self.skill_tree_widget.clear()
-            self.skill_tree_widget.setColumnCount(3)
-            self.skill_tree_widget.hideColumn(2)
-            self.skill_tree_widget.hideColumn(1)
-            fu = QTreeWidgetItem(self.skill_tree_widget, ["Frequently used", "fu"])
-            fu.setExpanded(True)
-            root = QTreeWidgetItem(self.skill_tree_widget, ["All", "All"])
-            root.setExpanded(True)
-            for ak, e in self._sli._agents.items():
-                for s in e._skill_list.values():
-                    s.manager = ak
-                    self._add_available_skill(s)
-            # simplifies hierarchy
-            self.simplify_tree_hierarchy(root)
-            self.skill_tree_widget.setSortingEnabled(True)
-            # select last skill
-            s = self.skill_tree_widget.findItems(self.last_executed_skill, Qt.MatchRecursive | Qt.MatchFixedString, 1)
-            self.skill_params_table.setRowCount(0)
-            if s:
-                self.skill_tree_widget.setCurrentItem(s[0])
+            self.create_skill_tree()
             self._sli.set_debug(self.debug_checkBox.isChecked())
         # Update robot BT rate
         if self._sli.agents:
@@ -628,6 +606,30 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
             self.robot_rate_info.setText("No robot connected.")
             self.robot_output.setText("")
             self.stop_task_tracking()
+
+    def create_skill_tree(self):
+        self.skill_tree_widget.setSortingEnabled(False)
+        self.skill_tree_widget.sortByColumn(0, Qt.AscendingOrder)
+        self.skill_tree_widget.clear()
+        self.skill_tree_widget.setColumnCount(3)
+        self.skill_tree_widget.hideColumn(2)
+        self.skill_tree_widget.hideColumn(1)
+        fu = QTreeWidgetItem(self.skill_tree_widget, ["Frequently used", "fu"])
+        fu.setExpanded(True)
+        root = QTreeWidgetItem(self.skill_tree_widget, ["All", "All"])
+        root.setExpanded(True)
+        for ak, e in self._sli._agents.items():
+            for s in e._skill_list.values():
+                s.manager = ak
+                self._add_available_skill(s)
+        # simplifies hierarchy
+        self.simplify_tree_hierarchy(root)
+        self.skill_tree_widget.setSortingEnabled(True)
+        # select last skill
+        s = self.skill_tree_widget.findItems(self.last_executed_skill, Qt.MatchRecursive | Qt.MatchFixedString, 1)
+        self.skill_params_table.setRowCount(0)
+        if s:
+            self.skill_tree_widget.setCurrentItem(s[0])
 
     def simplify_tree_hierarchy(self, root):
         i = 0
