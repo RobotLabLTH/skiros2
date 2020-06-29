@@ -23,6 +23,9 @@
   <!-- GUI -->
   <run_depend>rqt_gui_py</run_depend>
   <run_depend>rqt_py_common</run_depend>
+  <!--<test_depend>skiros2_test_lib</test_depend>-->
+  <test_depend>rostest</test_depend>
+  <test_depend>python-pytest</test_depend>
   <export>
     <rqt_gui plugin="${prefix}/plugin.xml"/>
   </export>
