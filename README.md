@@ -1,53 +1,51 @@
-###  Skill based framework for ROS 2.0 (SkiROS2) from the RVMI lab, Aalborg University Copenhagen, Denmark
+#  Skill-based robot control platform for ROS V2.0 (SkiROS2)
 
-[RVMI webpage](http://www.rvmi.aau.dk/)
-
-**Compatibility**: Has been tested with Ubuntu 16.04/ROS Kinetic and Ubuntu 18.04/ROS Melodic, with python 2.7.
-
-The Skill-based platform for ROS V2 (SkiROS2) is a software designed to support programming of complex coordination schemes on robots equipped with several sensing and actuation functionalities.
+SkiROS V2.0 is a platform to create complex robot behaviors by composing _skills_ - modular software blocks - into [behavior trees](https://en.wikipedia.org/wiki/Behavior_tree_(artificial_intelligence,_robotics_and_control)).
 
 Robots coordinated with SkiROS can be used in partially structured environments, where the robot has a good initial understanding of the environment, but it is also expected to find discrepancies, fail using initial plans and react accordingly.
 
-In a nutshell, SkiROS provides:
-* A framework to program skills with the extended Behavior Tree model
-* A framework for automatically concatenate skills using PDDL task planning
-* Services to manage the knowledge integration with the support of a semantic world model.
-* The *discrete reasoners* to embed in the code qualitative conditions grounded on quantitative data.
+SkiROS offers the following features:  
 
-The development process consist of two steps: specify the domain knowledge in a OWL ontology and develop the plug-ins.
+* A framework to organize the robot behaviors within modular skill libraries
+* A reactive execution engine based on Behavior trees
+* An integration point for PDDL task planning using the "task planning" skill
+* A semantic database to manage environmental knowledge
 
-For detailed info refer to the [wiki](https://git.cs.lth.se/robotlab/rvmi/skiros2/wikis/home)
+For a full introduction and tutorials refer to the [wiki](https://github.com/RVMI/skiros2/wiki)
 
-### Dependencies
+### Acknowledgements
 
-> roscd skiros2/..  
+This platform has been developed at the [RVMI lab](http://www.rvmi.aau.dk/), with the support of the European Horizon2020 project [Scalable4.0](https://www.scalable40.eu/).
+
+## Install
+
+To use SkiROS you must have [ROS](https://wiki.ros.org/ROS/Installation) installed on your machine.  
+
+Also, it is highly recommended to download the [standard skill library](https://github.com/RVMI/skiros2_std_lib).
+
+SkiROS is compatible with Ubuntu 16.04/ROS Kinetic, Ubuntu 18.04/ROS Melodic and Ubuntu 20.04/ROS Noetic, python 2 and 3.
+  
+Dependencies can be installed with the python tool:  
+
+> cd skiros2  
 > pip install -r requirements.txt --user  
 
-### Task planning
-
-To run the task planning you should install the fast downward planner:
+Optionally, if you want to use the task planning skill provided in the standard library, install the fast downward planner with the following script:
 
 > roscd skiros2/scripts  
 > ./install_fd_task_planner.sh  
 
 When asked for the install folder, you can insert a location of your preference or just leave the default.
 
-### Explore ontology
+## Launching the system
 
-To create and edit ontologies, we suggest to use the GUI [**Protege_5.0**](http://protege.stanford.edu/download/protege/5.0/snapshots/).
-The ontology, coded in one or more .owl file, defines which data, concepts, relations and individuals are possible to store to and retrieve from the world model.
-The core ontology can be found in the folder skiros2/owl. The knowledge base can be extended from the developer with custom OWL ontologies.
-It is possible to specify the workspace, by specifying the parameter ”wm/workspace_dir". (see world_model_servel launch file)
-All the OWL files found in the specified path are loaded from the system at boot.
+See the [skiros2_template_lib](https://github.com/RVMI/skiros2_template_lib) for a minimal example on how to launch the system (also useful to create a new library from scratch).
 
-### Launching the system
+See the [skiros2_examples](https://github.com/RVMI/skiros2_examples) for more elaborated examples.
 
-See the *skiros2_template_lib* for a minimal example on how to launch the system (also useful to create a new library from scratch).
+## Doxygen documentation
 
-See the *skiros2_examples* for more elaborated examples.
-
-### Doxygen documentation
-To generate the documentation, first install Doxygen:
+To generate the doxygen documentation, first install Doxygen:
 
 > sudo apt-get install -y doxygen
 
