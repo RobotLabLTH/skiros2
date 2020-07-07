@@ -21,7 +21,7 @@ This platform has been developed at the [RVMI lab](http://www.rvmi.aau.dk/), wit
 
 To use SkiROS you must have [ROS](https://wiki.ros.org/ROS/Installation) installed on your machine.  
 
-Also, it is highly recommended to download the [standard skill library](https://github.com/RVMI/skiros2_std_lib).
+You must include this package in your catkin workspace and compile with catkin. Also, it is highly recommended to include in the catkin workspace the [base skill set](https://github.com/RVMI/skiros2_std_lib).
 
 SkiROS is compatible with Ubuntu 16.04/ROS Kinetic, Ubuntu 18.04/ROS Melodic and Ubuntu 20.04/ROS Noetic, python 2 and 3.
   
@@ -32,7 +32,7 @@ Dependencies can be installed with the python tool:
 
 Optionally, if you want to use the task planning skill provided in the standard library, install the fast downward planner with the following script:
 
-> roscd skiros2/scripts  
+> cd skiros2/scripts  
 > ./install_fd_task_planner.sh  
 
 When asked for the install folder, you can insert a location of your preference or just leave the default.
