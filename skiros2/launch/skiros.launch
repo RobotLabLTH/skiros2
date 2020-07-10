@@ -1,7 +1,5 @@
 <launch>
   <arg name="libraries_list" default="[]"/>
-  <arg name="primitive_list" default="[
-                                      ]"/>
   <arg name="skill_list" default="[
                                   ]"/>
   <arg name="memory_contexts" default="[
@@ -35,7 +33,6 @@
       <arg name="verbose" value="$(arg verbose)"/>
       <arg name="debug" value="$(arg debug)"/>
       <arg name="libraries_list" value="$(arg libraries_list)"/>
-      <arg name="primitive_list" value="$(arg primitive_list)"/>
       <arg name="skill_list" value="$(arg skill_list)" />
       <arg name="robot_ontology_prefix" value="$(arg robot_ontology_prefix)"/>
       <arg name="robot_name" value="$(arg robot_name)"/>
