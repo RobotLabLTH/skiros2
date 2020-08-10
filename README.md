@@ -16,9 +16,6 @@ For a full introduction and tutorials refer to the [wiki](https://github.com/RVM
 ### Acknowledgements
      
 This platform has been developed at the [RVMI lab](http://www.rvmi.aau.dk/). 
-
-<img src="https://www.scalable40.eu/wp-content/uploads/2017/07/logo-scalable-color.png" 
-     alt="Scalable logo" height="45" align="left" >  
      
 This project has received funding from the European Union’s Horizon 2020
 research and innovation programme under grant agreement no. 723658, [Scalable4.0](https://www.scalable40.eu/).
