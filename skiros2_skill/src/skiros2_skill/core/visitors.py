@@ -93,8 +93,8 @@ class VisitorPrint(VisitorInterface, NodePrinter, NodeExecutor, NodeMemorizer):
         self._verbose = verbose
 
     def processNode(self, procedure):
-        self.init(procedure)
-        procedure.wrapper_expand()
+        #self.init(procedure)
+        #procedure.wrapper_expand()
         if self._verbose:
             self.printTree(procedure, self._verbose)
         self.indend()
@@ -191,18 +191,17 @@ class VisitorExecutor(VisitorInterface, NodeExecutor, NodeMemorizer):
         return True
 
     def memorizeProgress(self, procedure):
-        if procedure.progress_msg:
-            self.memorize(procedure.id, {"type": procedure.type,
-                                         "label": procedure.label,
-                                         "params": procedure.params,
-                                         "processor": procedure._children_processor.printType(),
-                                         "parent_id": procedure.parent.id if procedure.parent is not None else -1,
-                                         "parent_label": procedure.parent.label if procedure.parent is not None else "",
-                                         "state": procedure.state,
-                                         "msg": procedure.progress_msg,
-                                         "code": procedure.progress_code,
-                                         "period": procedure.progress_period if procedure.progress_period is not None else 0.0,
-                                         "time": procedure.progress_time})
+        self.memorize(procedure.id, {"type": procedure.type,
+                                     "label": procedure.label,
+                                     "params": procedure.params,
+                                     "processor": procedure._children_processor.printType(),
+                                     "parent_id": procedure.parent.id if procedure.parent is not None else -1,
+                                     "parent_label": procedure.parent.label if procedure.parent is not None else "",
+                                     "state": procedure.state,
+                                     "msg": procedure.progress_msg,
+                                     "code": procedure.progress_code,
+                                     "period": procedure.progress_period if procedure.progress_period is not None else 0.0,
+                                     "time": procedure.progress_time})
 
 
 class VisitorReversibleSimulator(VisitorInterface, NodePrinter, NodeReversibleSimulator):

@@ -72,14 +72,12 @@ class SkillLayerInterface(DiscoveryInterface):
         self._new_changes = True
 
     def _progress_cb(self, msg):
-        if msg.type.find("Root") >= 0:
-            if abs(msg.progress_code) == 0:
-                self._active_sm.add(msg.robot)
-            else:
-                try:
-                    self._active_sm.remove(msg.robot)
-                except Exception:
-                    pass
+        root = [r for r in msg.progress if r.type.find("Root") >= 0]
+
+        if root:
+            self._active_sm.add(int(root[-1].task_id))
+            if abs(root[-1].progress_code) == 1:
+                self._active_sm.remove(int(root[-1].task_id))
         if self._monitor_cb:
             self._monitor_cb(msg)
 

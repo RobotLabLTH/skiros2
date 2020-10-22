@@ -425,7 +425,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
     widget_id = 'skiros_gui'
 
     wm_update_signal = pyqtSignal(msgs.WmMonitor)
-    task_progress_signal = pyqtSignal(msgs.SkillProgress)
+    task_progress_signal = pyqtSignal(msgs.TreeProgress)
 
     def __init__(self):
         super(SkirosWidget, self).__init__()
@@ -1089,37 +1089,46 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
             to_ret += "\n{}".format(v.printState())
         return to_ret
 
-    def update_task_tree(self, msg):
+    def update_task_tree(self, msgs):
         with self._task_mutex:
-            if msg.id not in self.skill_item:
-                if msg.parent_id not in self.skill_item:
-                    log.error("[UpdateTaskTree]", "No parent found for skill: {}. Parent: {}".format(
-                        msg.label, msg.parent_label))
-                    return
-                parent = self.skill_item[msg.parent_id]
+            current_ids = set(self.skill_item.keys())
+
+            create = [m for m in msgs.progress if m.id not in current_ids]
+            for m in create:
+                parent = self.skill_item[m.parent_id]
                 item = QTreeWidgetItem(parent, [""])
-                item.setIcon(0, self.get_icon(msg.processor))
+                item.setIcon(0, self.get_icon(m.processor))
                 item.setExpanded(True)
                 item.setFont(0, self.bold_font)
-                self.skill_item[msg.id] = item
-                self.skills_msgs[msg.id] = [msg]
-            item = self.skill_item[msg.id]
-            item.setData(0, 0, "{}".format(msg.label))  # , "! SLOW !" if msg.progress_period>0.04 else ""))
-            item.setToolTip(0, self._format_skill_tooltip(msg))
-            item.setData(1, 0, "{:0.3f}".format(msg.progress_time))
-            item.setData(2, 0, "{}".format(msg.progress_message))
-            item.setToolTip(2, str(msg.progress_message))
-            item.setData(3, 0, msg)
-            if State(msg.state) == State.Success:
-                item.setForeground(0, QtGui.QBrush(QtGui.QColor("#009933")))
-            elif State(msg.state) == State.Failure:
-                item.setForeground(0, QtGui.QBrush(QtGui.QColor("#cc0000")))
-            elif State(msg.state) == State.Running:
-                item.setForeground(0, QtGui.QBrush(QtGui.QColor("#ffbe00")))
-            elif State(msg.state) == State.Idle:
-                item.setForeground(0, QtGui.QBrush(QtGui.QColor("#aaaaaa")))
-            if item == self.task_tree_widget.currentItem():
-                self.on_task_tree_widget_item_selection_changed(item)
+                self.skill_item[m.id] = item
+                self.skills_msgs[m.id] = [m]
+
+            update = create + [m for m in msgs.progress if m.id in current_ids]
+            for m in update:
+                item = self.skill_item[m.id]
+                item.setData(0, 0, "{}".format(m.label))  # , "! SLOW !" if m.progress_period>0.04 else ""))
+                item.setToolTip(0, self._format_skill_tooltip(m))
+                item.setData(2, 0, "{}".format(m.progress_message))
+                item.setToolTip(2, str(m.progress_message))
+                item.setData(3, 0, m)
+                if State(m.state) == State.Success:
+                    item.setForeground(0, QtGui.QBrush(QtGui.QColor("#009933")))
+                elif State(m.state) == State.Failure:
+                    item.setForeground(0, QtGui.QBrush(QtGui.QColor("#cc0000")))
+                elif State(m.state) == State.Running:
+                    item.setForeground(0, QtGui.QBrush(QtGui.QColor("#ffbe00")))
+                elif State(m.state) == State.Idle:
+                    item.setForeground(0, QtGui.QBrush(QtGui.QColor("#aaaaaa")))
+                if item == self.task_tree_widget.currentItem():
+                    self.on_task_tree_widget_item_selection_changed(item)
+
+            remove = current_ids.difference(set([m.id for m in msgs.progress]))
+            for idd in remove:
+                parent_id = self.skills_msgs[idd][-1].parent_id
+                self.skill_item[parent_id].removeChild(self.skill_item[idd])
+                del self.skill_item[idd]
+                del self.skills_msgs[idd]
+
 
     @Slot()
     def on_task_tree_widget_item_selection_changed(self, item):
@@ -1128,14 +1137,14 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
     @Slot()
     def on_progress_update(self, msg):
         # Update buttons
-        if msg.type.find("Root") >= 0:
+        root = [r for r in msg.progress if r.type.find("Root") >= 0]
+        if root:
             if not self.skill_stop_button.isEnabled():
-                self.create_task_tree(msg)
+                self.create_task_tree(root[-1])
                 self._toggle_task_active()
                 for manager in self._sli.agents.values():
                     manager.reset_tick_rate()
-            elif abs(msg.progress_code) == 1:
-                self._save_log(msg)
+            if abs(root[-1].progress_code) == 1:
                 self._toggle_task_active()
         self.update_task_tree(msg)
         self._save_log(msg)
@@ -1395,15 +1404,16 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
                 self.logs_textEdit.setText(f.read())
         return directory, file_name
 
-    def _save_log(self, msg):
-        if not self.in_filters([msg.label, msg.progress_message, State(msg.state).name]):
-            return
+    def _save_log(self, msgs):
+        for msg in msgs.progress:
+            if not self.in_filters([msg.label, msg.progress_message, State(msg.state).name]):
+                return
 
-        string = "{};{:0.4f};{};{};{};{};{};{};{}".format(datetime.now().strftime("%H:%M:%S"),
-                                                          msg.progress_time, msg.parent_label, msg.parent_id,
-                                                          msg.label, msg.id, State(msg.state).name,
-                                                          msg.progress_code, msg.progress_message)
-        self.logs_textEdit.append(string)
+            string = "{};{:0.4f};{};{};{};{};{};{};{}".format(datetime.now().strftime("%H:%M:%S"),
+                                                              msg.progress_time, msg.parent_label, msg.parent_id,
+                                                              msg.label, msg.id, State(msg.state).name,
+                                                              msg.progress_code, msg.progress_message)
+            self.logs_textEdit.append(string)
 
-        if self.save_logs_checkBox.isChecked() and self.log_file is not None:
-            self.log_file.write(string + "\n")
+            if self.save_logs_checkBox.isChecked() and self.log_file is not None:
+                self.log_file.write(string + "\n")

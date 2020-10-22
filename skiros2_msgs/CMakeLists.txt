@@ -21,6 +21,7 @@ add_message_files(
   Statement.msg
   Condition.msg
   SkillProgress.msg
+  TreeProgress.msg
   ResourceDescription.msg
   WmElement.msg
   WmMonitor.msg

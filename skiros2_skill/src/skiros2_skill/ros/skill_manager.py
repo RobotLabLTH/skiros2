@@ -55,11 +55,6 @@ class BtTicker:
         BtTicker._finished_skill_ids = dict()
         rate = rospy.Rate(25)
         log.info("[BtTicker]", "Execution starts.")
-        for uid in list(BtTicker._tasks.keys()):
-            t = BtTicker._tasks[uid]
-            printer = visitors.VisitorPrint(BtTicker._visitor._wm, BtTicker._visitor._instanciator)
-            printer.traverse(t)
-            self.publish_progress(uid, printer)
         while BtTicker._tasks:
             self._tick()
             rate.sleep()
@@ -79,7 +74,9 @@ class BtTicker:
                     continue
             t = BtTicker._tasks[uid]
             result = visitor.traverse(t)
-            self.publish_progress(uid, visitor)
+            printer = visitors.VisitorPrint(BtTicker._visitor._wm, BtTicker._visitor._instanciator)
+            printer.traverse(t)
+            self.publish_progress(uid, printer)
             if result != State.Running and result != State.Idle:
                 self.remove_task(uid)
 
@@ -96,13 +93,13 @@ class BtTicker:
 
     def publish_progress(self, uid, visitor):
         finished_skill_ids = BtTicker._finished_skill_ids
-        for (id, desc) in visitor.snapshot():
+        # for (id, desc) in visitor.snapshot():
             #TODO: check timings when removing the filtering
             # if id in finished_skill_ids:
             #     if finished_skill_ids[id]['state'] == desc['state'] and finished_skill_ids[id]['msg'] == desc['msg']:
             #         continue
             # finished_skill_ids[id] = desc
-            self._progress_cb(task_id=uid, id=id, **desc)
+        self._progress_cb(task_id=uid, tree=visitor.snapshot())
 
     def observe_progress(self, func):
         self._progress_cb = func
@@ -385,7 +382,7 @@ class SkillManagerNode(DiscoverableNode):
 
         # Start communications
         self._command = rospy.Service('~command', srvs.SkillCommand, self._command_cb)
-        self._monitor = rospy.Publisher("~monitor", msgs.SkillProgress, queue_size=20)
+        self._monitor = rospy.Publisher("~monitor", msgs.TreeProgress, queue_size=20)
         self._tick_rate = rospy.Publisher("~tick_rate", Empty, queue_size=20)
         self._set_debug = rospy.Subscriber('~set_debug', Bool, self._set_debug_cb)
         rospy.on_shutdown(self.shutdown)
@@ -447,28 +444,57 @@ class SkillManagerNode(DiscoverableNode):
         """
         self._tick_rate.publish(Empty())
 
+    # def _on_progress_update(self, *args, **kwargs):
+    #     """
+    #     @brief Publish skill progress
+    #     """
+    #     log.debug("[{}]".format(self.__class__.__name__), "{}:Task[{task_id}]{type}:{label}[{id}]: Message[{code}]: {msg} ({state})".format(self.sm._agent_name[1:], **kwargs))
+    #     msg = msgs.SkillProgress()
+    #     msg.robot = rospy.get_name()
+    #     msg.task_id = kwargs['task_id']
+    #     msg.id = kwargs['id']
+    #     msg.type = kwargs['type']
+    #     msg.label = kwargs['label']
+    #     if self.publish_runtime_parameters:
+    #         msg.params = utils.serializeParamMap(kwargs['params'])
+    #     msg.state = kwargs['state'].value
+    #     msg.processor = kwargs['processor']
+    #     msg.parent_label = kwargs['parent_label']
+    #     msg.parent_id = kwargs['parent_id']
+    #     msg.progress_code = kwargs['code']
+    #     msg.progress_period = kwargs['period']
+    #     msg.progress_time = kwargs['time']
+    #     msg.progress_message = kwargs['msg']
+    #     self._monitor.publish(msg)
+
     def _on_progress_update(self, *args, **kwargs):
         """
-        @brief Publish skill progress
+        @brief Publish all skill progress
         """
-        log.debug("[{}]".format(self.__class__.__name__), "{}:Task[{task_id}]{type}:{label}[{id}]: Message[{code}]: {msg} ({state})".format(self.sm._agent_name[1:], **kwargs))
-        msg = msgs.SkillProgress()
-        msg.robot = rospy.get_name()
-        msg.task_id = kwargs['task_id']
-        msg.id = kwargs['id']
-        msg.type = kwargs['type']
-        msg.label = kwargs['label']
-        if self.publish_runtime_parameters:
-            msg.params = utils.serializeParamMap(kwargs['params'])
-        msg.state = kwargs['state'].value
-        msg.processor = kwargs['processor']
-        msg.parent_label = kwargs['parent_label']
-        msg.parent_id = kwargs['parent_id']
-        msg.progress_code = kwargs['code']
-        msg.progress_period = kwargs['period']
-        msg.progress_time = kwargs['time']
-        msg.progress_message = kwargs['msg']
-        self._monitor.publish(msg)
+        task_id = kwargs['task_id']
+        tree = kwargs['tree']
+        messages = msgs.TreeProgress()
+        for (idd, desc) in tree:
+            log.debug("[{}]".format(self.__class__.__name__), "{}:Task[{task_id}]{type}:{label}[{id}]: Message[{code}]: {msg} ({state})".format(self.sm._agent_name[1:], task_id=task_id, id=idd, **desc))
+            msg = msgs.SkillProgress()
+            msg.robot = rospy.get_name()
+            msg.task_id = task_id
+            msg.id = idd
+            msg.type = desc['type']
+            msg.label = desc['label']
+            if self.publish_runtime_parameters:
+                msg.params = utils.serializeParamMap(desc['params'])
+            msg.state = desc['state'].value
+            msg.processor = desc['processor']
+            msg.parent_label = desc['parent_label']
+            msg.parent_id = desc['parent_id']
+            msg.progress_code = desc['code']
+            msg.progress_period = desc['period']
+            msg.progress_time = desc['time']
+            msg.progress_message = desc['msg']
+
+            messages.progress.append(msg)
+        self._monitor.publish(messages)
 
     def _get_descriptions_cb(self, msg):
         """

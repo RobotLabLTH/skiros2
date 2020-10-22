@@ -21,7 +21,7 @@ class SkillManagerInterface:
         rospy.wait_for_service(self._skill_mgr_name + '/get_skills')
         self._skill_exe_client = rospy.ServiceProxy(self._skill_mgr_name + '/command', srvs.SkillCommand)
         self._get_skills = rospy.ServiceProxy(self._skill_mgr_name + '/get_skills', srvs.ResourceGetDescriptions)
-        self._monitor_sub = rospy.Subscriber(self._skill_mgr_name + '/monitor', msgs.SkillProgress, self._progress_cb)
+        self._monitor_sub = rospy.Subscriber(self._skill_mgr_name + '/monitor', msgs.TreeProgress, self._progress_cb)
         self._tick_rate = rostopic.ROSTopicHz(50)
         self._tick_rate_sub = rospy.Subscriber(self._skill_mgr_name + '/tick_rate', Empty, self._tick_rate.callback_hz)
         self._set_debug = rospy.Publisher(self._skill_mgr_name + "/set_debug", Bool, queue_size=1, latch=True)
@@ -183,14 +183,11 @@ class SkillManagerInterface:
         pass  # self._tick_rate.set_msg_t0(rospy.get_rostime().to_sec())
 
     def _progress_cb(self, msg):
-        if msg.type.find("Root") >= 0:
-            if abs(msg.progress_code) == 0:
-                self._active_tasks.add(int(msg.task_id))
-            else:
-                try:
-                    self._active_tasks.remove(int(msg.task_id))
-                except Exception:
-                    pass
+        root = [r for r in msg.progress if r.type.find("Root") >= 0]
+        if root:
+            self._active_tasks.add(int(root[-1].task_id))
+            if abs(root[-1].progress_code) == 1:
+                self._active_tasks.remove(int(root[-1].task_id))
         if self._monitor_cb:
             self._monitor_cb(msg)
 
