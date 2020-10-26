@@ -14,7 +14,7 @@ from skiros2_common.tools.id_generator import IdGen
 from multiprocessing.dummy import Process
 import skiros2_skill.core.visitors as visitors
 from std_msgs.msg import Empty, Bool
-import inflection #For camel-snake case conversion
+import inflection  # For camel-snake case conversion
 
 log.setLevel(log.INFO)
 
@@ -63,25 +63,25 @@ class BtTicker:
 
     def _tick(self):
         visitor = BtTicker._visitor
+        printer = visitors.VisitorPrint(BtTicker._visitor._wm, BtTicker._visitor._instanciator)
         for uid in list(BtTicker._tasks.keys()):
             if uid in BtTicker._tasks_to_preempt:
                 BtTicker._tasks_to_preempt.remove(uid)
                 visitor.preempt()
             if uid in BtTicker._tasks_to_pause.keys():
-                if BtTicker._tasks_to_pause[uid]>0:
-                    BtTicker._tasks_to_pause[uid]-=1
+                if BtTicker._tasks_to_pause[uid] > 0:
+                    BtTicker._tasks_to_pause[uid] -= 1
                 else:
                     continue
             t = BtTicker._tasks[uid]
             result = visitor.traverse(t)
-            printer = visitors.VisitorPrint(BtTicker._visitor._wm, BtTicker._visitor._instanciator)
             printer.traverse(t)
             self.publish_progress(uid, printer)
             if result != State.Running and result != State.Idle:
                 self.remove_task(uid)
 
     def kill(self):
-        if not BtTicker._process is None:
+        if BtTicker._process is not None:
             del BtTicker._process
             BtTicker._process = None
             self._tick()
@@ -92,13 +92,6 @@ class BtTicker:
         return BtTicker._process.is_alive()
 
     def publish_progress(self, uid, visitor):
-        finished_skill_ids = BtTicker._finished_skill_ids
-        # for (id, desc) in visitor.snapshot():
-            #TODO: check timings when removing the filtering
-            # if id in finished_skill_ids:
-            #     if finished_skill_ids[id]['state'] == desc['state'] and finished_skill_ids[id]['msg'] == desc['msg']:
-            #         continue
-            # finished_skill_ids[id] = desc
         self._progress_cb(task_id=uid, tree=visitor.snapshot())
 
     def observe_progress(self, func):
@@ -174,10 +167,12 @@ class BtTicker:
         for uid in list(BtTicker._tasks.keys()):
             self.tick_once(uid)
 
+
 class SkillManager:
     """
     @brief The skill manager manage a sub-system of the robot
     """
+
     def __init__(self, prefix, agent_name, verbose=True):
         self._agent_name = agent_name
         self._wmi = wmi.WorldModelInterface(agent_name, make_cache=True)
@@ -238,7 +233,7 @@ class SkillManager:
         skill = self._instanciator.add_instance(name)
         e = skill.toElement()
         e.addRelation(self._robot._id, "skiros:hasSkill", "-1")
-        #print skill.printInfo(True)
+        # print skill.printInfo(True)
         hierarchy = skill.__module__.split(".") + [e.type]
         for c1, c2 in zip([None] + hierarchy[:-1], hierarchy):
             if c1 is None:
@@ -272,7 +267,7 @@ class SkillManager:
         """
         @brief Preempt a task
         """
-        if uid==-1:
+        if uid == -1:
             self._ticker.preempt_all()
         else:
             self._ticker.preempt(uid)
@@ -281,7 +276,7 @@ class SkillManager:
         """
         @brief Stop ticking a task, but do not preempt it
         """
-        if uid==-1:
+        if uid == -1:
             self._ticker.pause_all()
         else:
             self._ticker.pause(uid)
@@ -290,7 +285,7 @@ class SkillManager:
         """
         @brief Set a task to go in pause state after 1 tick
         """
-        if uid==-1:
+        if uid == -1:
             self._ticker.tick_once_all()
         else:
             self._ticker.tick_once(uid)
@@ -421,7 +416,7 @@ class SkillManagerNode(DiscoverableNode):
         """
         task_id = msg.execution_id
         if msg.action == msg.START:
-            if task_id==-1:
+            if task_id == -1:
                 task_id = self.sm.add_task(self._make_task(msg.skills))
             self.sm.execute_task(task_id)
         elif msg.action == msg.PREEMPT:
@@ -429,7 +424,7 @@ class SkillManagerNode(DiscoverableNode):
         elif msg.action == msg.PAUSE:
             task_id = self.sm.pause(msg.execution_id)
         elif msg.action == msg.TICK_ONCE:
-            if task_id==-1:
+            if task_id == -1:
                 task_id = self.sm.add_task(self._make_task(msg.skills))
                 self.sm.execute_task(task_id)
             self.sm.tick_once(task_id)
@@ -444,29 +439,6 @@ class SkillManagerNode(DiscoverableNode):
         """
         self._tick_rate.publish(Empty())
 
-    # def _on_progress_update(self, *args, **kwargs):
-    #     """
-    #     @brief Publish skill progress
-    #     """
-    #     log.debug("[{}]".format(self.__class__.__name__), "{}:Task[{task_id}]{type}:{label}[{id}]: Message[{code}]: {msg} ({state})".format(self.sm._agent_name[1:], **kwargs))
-    #     msg = msgs.SkillProgress()
-    #     msg.robot = rospy.get_name()
-    #     msg.task_id = kwargs['task_id']
-    #     msg.id = kwargs['id']
-    #     msg.type = kwargs['type']
-    #     msg.label = kwargs['label']
-    #     if self.publish_runtime_parameters:
-    #         msg.params = utils.serializeParamMap(kwargs['params'])
-    #     msg.state = kwargs['state'].value
-    #     msg.processor = kwargs['processor']
-    #     msg.parent_label = kwargs['parent_label']
-    #     msg.parent_id = kwargs['parent_id']
-    #     msg.progress_code = kwargs['code']
-    #     msg.progress_period = kwargs['period']
-    #     msg.progress_time = kwargs['time']
-    #     msg.progress_message = kwargs['msg']
-    #     self._monitor.publish(msg)
-
     def _on_progress_update(self, *args, **kwargs):
         """
         @brief Publish all skill progress
@@ -475,7 +447,9 @@ class SkillManagerNode(DiscoverableNode):
         tree = kwargs['tree']
         messages = msgs.TreeProgress()
         for (idd, desc) in tree:
-            log.debug("[{}]".format(self.__class__.__name__), "{}:Task[{task_id}]{type}:{label}[{id}]: Message[{code}]: {msg} ({state})".format(self.sm._agent_name[1:], task_id=task_id, id=idd, **desc))
+            log.debug("[{}]".format(self.__class__.__name__),
+                      "{}:Task[{task_id}]{type}:{label}[{id}]: Message[{code}]: {msg} ({state})".format(
+                      self.sm._agent_name[1:], task_id=task_id, id=idd, **desc))
             msg = msgs.SkillProgress()
             msg.robot = rospy.get_name()
             msg.task_id = task_id

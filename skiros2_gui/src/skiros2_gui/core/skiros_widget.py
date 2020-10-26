@@ -8,9 +8,8 @@ from collections import OrderedDict
 
 from python_qt_binding import loadUi
 from python_qt_binding.QtCore import Qt, QTimer, Slot, pyqtSignal
-import python_qt_binding.QtCore as QtCore
 import python_qt_binding.QtGui as QtGui
-from python_qt_binding.QtWidgets import QLabel, QTableWidgetItem, QTreeWidgetItem, QWidget, QCheckBox, QComboBox, QLineEdit, QDialog, QSizePolicy, QShortcut
+from python_qt_binding.QtWidgets import QTableWidgetItem, QTreeWidgetItem, QWidget, QCheckBox, QComboBox, QLineEdit, QDialog, QSizePolicy, QShortcut
 
 import skiros2_common.tools.logger as log
 import skiros2_common.core.utils as utils
@@ -30,6 +29,7 @@ from visualization_msgs.msg import InteractiveMarker, InteractiveMarkerControl, 
 from numpy.linalg import norm
 from threading import Lock
 from datetime import datetime
+from collections import OrderedDict
 
 
 class SkirosSkillInfo(QDialog):
@@ -777,7 +777,8 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
     @Slot()
     def on_wm_update(self, data):
         with self._wm_mutex:
-            if self._snapshot_id == data.prev_snapshot_id and data.action != "reset":  # Discard msgs not in sync with local wm version
+            # Discard msgs not in sync with local wm version
+            if self._snapshot_id == data.prev_snapshot_id and data.action != "reset":
                 self._snapshot_id = data.snapshot_id
                 cur_item = self.wm_tree_widget.currentItem()
                 cur_item_id = cur_item.text(1)
@@ -1085,17 +1086,20 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
 
 
     def _format_skill_tooltip(self, msg):
-        params = rosutils.deserializeParamMap(msg.params)
-        to_ret = "{}\n---".format(msg.label)
-        for v in params.values():
-            to_ret += "\n{}".format(v.printState())
+        to_ret = "{}".format(msg.label)
         return to_ret
 
     def update_task_tree(self, msgs):
         with self._task_mutex:
             current_ids = self.skill_item.keys()
 
-            create = [m for m in msgs.progress if m.id not in current_ids]
+            # Removes the nodes duplicates, keeping only the postprocess msg
+            progress = OrderedDict()
+            for m in msgs.progress:
+                progress[m.id] = m
+            progress = progress.values()
+
+            create = [m for m in progress if m.id not in current_ids]
             for m in create:
                 parent = self.skill_item[m.parent_id]
                 item = QTreeWidgetItem(parent, [""])
@@ -1105,7 +1109,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
                 self.skill_item[m.id] = item
                 self.skills_msgs[m.id] = [m]
 
-            update = create + [m for m in msgs.progress if m.id in current_ids]
+            update = create + [m for m in progress if m.id in current_ids]
             for m in update:
                 item = self.skill_item[m.id]
                 item.setData(0, 0, "{}".format(m.label))  # , "! SLOW !" if m.progress_period>0.04 else ""))
@@ -1124,17 +1128,13 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
                 if item == self.task_tree_widget.currentItem():
                     self.on_task_tree_widget_item_selection_changed(item)
 
-            remove = [idd for idd in current_ids if idd not in [m.id for m in msgs.progress]]
+            remove = [idd for idd in current_ids if idd not in [m.id for m in progress]]
             for idd in reversed(remove):
                 parent_id = self.skills_msgs[idd][-1].parent_id
-                # print(parent_id)
-                # print(self.skill_item.keys())
                 parent = self.skill_item[parent_id]
-                # print(parent)
                 parent.removeChild(self.skill_item[idd])
                 del self.skill_item[idd]
                 del self.skills_msgs[idd]
-
 
     @Slot()
     def on_task_tree_widget_item_selection_changed(self, item):
@@ -1157,7 +1157,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         # self.update_progress_table(msg)
 
     def get_icon(self, skill_type):
-        if not skill_type in self.icons:
+        if skill_type not in self.icons:
             file_name = os.path.join(rospkg.RosPack().get_path("skiros2_gui"), "src/skiros2_gui/core/imgs/",
                                      "{}.png".format(skill_type if skill_type else "skill"))
             self.icons[skill_type] = QtGui.QIcon(file_name)
