@@ -351,6 +351,7 @@ class SkillCore(SkillDescription):
                 log.assertInfo(verbose, c.getDescription(), "ConditionCheck failed")
                 return False
         self._setProgress("Postconditions reached.", 1)
+        self._setState(State.Success)
         return True
     # -------- Control functions--------
 

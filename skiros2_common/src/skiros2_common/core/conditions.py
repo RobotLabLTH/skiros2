@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 from . import params
 from .world_element import Element
+import skiros2_common.tools.logger as log
 from copy import deepcopy
 import operator
 
@@ -300,7 +301,6 @@ class ConditionRelation(ConditionBase):
     def hasConflict(self, other):
         if isinstance(other, ConditionRelation):
             if self._owl_label == other._owl_label and self._desired_state != other._desired_state:
-                # print "{}=={} and {}=={}".format(self.getParamId(self._keys[0]), other.getParamId(other._keys[0]), self.getParamId(self._keys[1]), other.getParamId(other._keys[1]))
                 return (self.getParamId(self._keys[0]) == other.getParamId(other._keys[0]) and self.getParamId(self._keys[1]) ==
                         other.getParamId(other._keys[1])) or (self._keys[0] == other._keys[0] and self._keys[1] == other._keys[1])
         return False
@@ -335,7 +335,6 @@ class ConditionRelation(ConditionBase):
                 "SELECT * WHERE {" + "{} {} {}".format(subj, self._owl_label, obj) + additional + ".}")
         self._description = "[{}] {}({})-{}-{}({}) ({})".format(self._label, self._keys[0],
                                                                 subj, self._owl_label, self._keys[1], obj, self._desired_state)
-        # print "{} {} {} {}".format(subj, self._owl_label, obj, v)
         if v:
             return self._desired_state
         else:
@@ -348,10 +347,8 @@ class ConditionRelation(ConditionBase):
         obj = self._params.getParamValue(self._keys[1])
         if subj.getIdNumber() < 0 or obj.getIdNumber() < 0:
             return False
-        # print self._description + "{} {}".format(subj.printState(), obj.printState())
         self._has_cache = True
         self._cache = self._wm.get_relations("-1", "", obj.id)
-        # print self._description + "{} {}".format(subj.printState(), obj.printState())
         if not self._wm.set_relation(subj.id, self._owl_label, obj.id, self._desired_state):
             return False
         return True
@@ -362,7 +359,6 @@ class ConditionRelation(ConditionBase):
             self._wm = wmi
             subj = self._params.getParamValue(self._keys[0])
             obj = self._params.getParamValue(self._keys[1])
-            # print self._description + "{} {}".format(subj.printState(), obj.printState())
             self._wm.set_relation(subj._id, self._owl_label, obj._id, not self._desired_state)
             for edge in self._cache:
                 self._wm.set_relation(edge['src'], edge['type'], edge['dst'], True)
@@ -417,7 +413,6 @@ class AbstractConditionRelation(ConditionBase):
     def hasConflict(self, other):
         if isinstance(other, ConditionRelation):
             if self._owl_label == other._owl_label and self._desired_state != other._desired_state:
-                # print "{}=={} and {}=={}".format(self.getParamId(self._keys[0]), other.getParamId(other._keys[0]), self.getParamId(self._keys[1]), other.getParamId(other._keys[1]))
                 return (self.getParamId(self._keys[0]) == other.getParamId(other._keys[0]) and self.getParamId(self._keys[1]) ==
                         other.getParamId(other._keys[1])) or (self._keys[0] == other._keys[0] and self._keys[1] == other._keys[1])
         return False
@@ -441,7 +436,6 @@ class AbstractConditionRelation(ConditionBase):
                                        ?xtypes rdfs:subClassOf ?restriction . ?restriction owl:onProperty {relation}. ?restriction ?quantity ?ytypes.
                                     }}
                                """.format(subj=subj, relation=self._owl_label, obj=obj))
-        # print "{} {} {}".format(subj, self._owl_label, v)
         self._description = "[{}] {}-{}-{} ({})".format(self._label, subj, self._owl_label, obj, self._desired_state)
         if v:
             return self._desired_state
@@ -504,7 +498,6 @@ class ConditionHasProperty(ConditionBase):
         self._params = ph
         self._wm = wmi
         subj = self._params.getParamValue(self._keys[0])
-        # print self._description + "\n{}".format(subj.printState(True))
         if subj.getIdNumber() < 0:
             # If optional return true, else return false
             if self._params.getParam(self._keys[0]).paramType == params.ParamTypes.Optional:
@@ -541,7 +534,6 @@ class ConditionHasProperty(ConditionBase):
             self._params = ph
             self._wm = wmi
             self._params.specify(self._keys[0], self._cache)
-            # print self._description + " {}".format(self._cache.printState())
             self._wm.update_element(self._cache)
             self._has_cache = False
             return True
@@ -624,7 +616,6 @@ class ConditionIsSpecified(ConditionBase):
         if self._has_cache:
             self._params = ph
             self._wm = wmi
-            # print self._description + " {}".format(self._cache.printState())
             self._params.specify(self._keys[0], self._cache)
             self._has_cache = False
             return True
@@ -683,11 +674,9 @@ class ConditionGenerate(ConditionBase):
         subj = self._params.getParamValue(self._keys[0])
         self._has_cache = True
         self._cache = deepcopy(subj)
-        # print subj.printState(True)
         if subj.getIdNumber() < 0 and self._desired_state:
             self._cache_new = Element(subj._type, "==FAKE==")
             self._wm.add_element(self._cache_new, ":Scene-0", "contain")
-            # print self._wm.printModel()
             self._params.specify(self._keys[0], self._cache_new)
             self._cache_new = deepcopy(self._cache_new)
         elif subj.getIdNumber() >= 0 and not self._desired_state:
@@ -703,7 +692,6 @@ class ConditionGenerate(ConditionBase):
         if self._has_cache:
             self._params = ph
             self._wm = wmi
-            # print self._description + " {}".format(self._cache_new.printState())
             if self._cache_new.getIdNumber() >= 0 and self._cache.getIdNumber() < 0:
                 self._wm.remove_element(self._cache_new._id)
             elif self._cache_new.getIdNumber() < 0 and self._cache.getIdNumber() >= 0:
@@ -817,8 +805,7 @@ class ConditionFunction(ConditionBase):
         self._params = ph
         self._wm = wmi
         params = [self._params[k].value for k in self._keys]
-        print(params)
-        print(self._f(*params))
+        log.debug("{} Evaluate: {} = {}".format(self._label, params, self._f(*params)))
         return self._f(*params) == self._desired_state
 
     def setTrue(self, ph, wmi):
