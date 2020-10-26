@@ -1192,7 +1192,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
             else:
                 try:
                     if widget.text():
-                        params[key].setValueFromStr(widget.text())
+                        params[key].setValuesFromStr(widget.text())
                 except ValueError:
                     log.error("getParameters", "Failed to set param {}".format(params[key].key))
                     return False
@@ -1203,7 +1203,6 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         key.setFlags(key.flags() & ~Qt.ItemIsEditable)
         row = self.skill_params_table.rowCount()
         self.skill_params_table.insertRow(row)
-        #row = row-1
         self.skill_params_table.setItem(row, 0, key)
         if param.dataTypeIs(bool):
             cbox = QCheckBox()
@@ -1217,12 +1216,12 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
             if param.paramTypeIs(ParamTypes.Optional):
                 combobox.addItem("", None)
             for e in matches:
-                combobox.addItem(e.id.split(':')[-1]+" {}".format(e.label), e._id)
+                combobox.addItem(e.id.split(':')[-1] + " {}".format(e.label), e._id)
             combobox.model().sort(0)
         else:
             lineedit = QLineEdit()
             if param.isSpecified():
-                lineedit.setText(str(param.value))
+                lineedit.setText(param.getValuesStr())
             self.skill_params_table.setCellWidget(row, 1, lineedit)
 
     def _add_available_skill(self, s):

@@ -95,7 +95,7 @@ class Property(object):
         @brief Set the value at the index
         """
         if isinstance(value, self._data_type):
-            if self.isSpecified():
+            if index < len(self._values):
                 self._values[index] = value
             else:
                 self._values.append(value)
@@ -111,6 +111,15 @@ class Property(object):
             self.setValue(ast.literal_eval(value), index)
         else:
             self.setValue(self._data_type(value), index)
+
+    def setValuesFromStr(self, values):
+        """
+        @brief Try to convert a string into the property datatype
+        """
+        tokens = values.split(",")
+        self.unset()
+        for i, t in enumerate(tokens):
+            self.setValueFromStr(t, i)
 
     def setValues(self, value):
         """
@@ -174,7 +183,7 @@ class Property(object):
         """
         @brief Get values as string
         """
-        return str(self._values)
+        return ",".join([str(v) for v in self._values])
 
     def printState(self):
         """
@@ -184,8 +193,15 @@ class Property(object):
         max_lenght = 500
         return "{}:{}".format(self._key, v) if len(v) < max_lenght else "{}:{} ...]".format(self._key, v[0:max_lenght])
 
-    #check that the elements of a list have expected type
     def _isListOfType(self, value_list, expected_type):
+        """
+        @brief      Check that the elements of a list have expected type
+
+        @param      value_list     The value list
+        @param      expected_type  The expected type
+
+        @return     True if list of type, False otherwise.
+        """
         for v in value_list:
             if not isinstance(v, expected_type):
                 return False
