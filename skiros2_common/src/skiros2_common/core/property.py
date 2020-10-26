@@ -116,7 +116,7 @@ class Property(object):
         """
         @brief Try to convert a string into the property datatype
         """
-        tokens = values.split(",")
+        tokens = values.split(";")
         self.unset()
         for i, t in enumerate(tokens):
             self.setValueFromStr(t, i)
@@ -183,7 +183,7 @@ class Property(object):
         """
         @brief Get values as string
         """
-        return ",".join([str(v) for v in self._values])
+        return ";".join([str(v) for v in self._values])
 
     def printState(self):
         """
