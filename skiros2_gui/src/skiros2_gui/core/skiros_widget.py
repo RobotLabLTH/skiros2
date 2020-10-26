@@ -4,6 +4,8 @@ import rospkg
 
 from functools import partial
 
+from collections import OrderedDict
+
 from python_qt_binding import loadUi
 from python_qt_binding.QtCore import Qt, QTimer, Slot, pyqtSignal
 import python_qt_binding.QtCore as QtCore
@@ -482,7 +484,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         self.plus_shortcut.activated.connect(self.skill_start_stop)
         self.task_tree_widget.setColumnWidth(0, 480)
         self.task_tree_widget.setColumnWidth(1, 60)
-        self.skill_item = dict()
+        self.skill_item = OrderedDict()
         # self.space_shortcut.setContext(QtCore.Qt.WidgetWithChildrenShortcut)
         # Log tab
         self.log_file = None
@@ -1091,7 +1093,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
 
     def update_task_tree(self, msgs):
         with self._task_mutex:
-            current_ids = set(self.skill_item.keys())
+            current_ids = self.skill_item.keys()
 
             create = [m for m in msgs.progress if m.id not in current_ids]
             for m in create:
@@ -1122,10 +1124,14 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
                 if item == self.task_tree_widget.currentItem():
                     self.on_task_tree_widget_item_selection_changed(item)
 
-            remove = current_ids.difference(set([m.id for m in msgs.progress]))
-            for idd in remove:
+            remove = [idd for idd in current_ids if idd not in [m.id for m in msgs.progress]]
+            for idd in reversed(remove):
                 parent_id = self.skills_msgs[idd][-1].parent_id
-                self.skill_item[parent_id].removeChild(self.skill_item[idd])
+                # print(parent_id)
+                # print(self.skill_item.keys())
+                parent = self.skill_item[parent_id]
+                # print(parent)
+                parent.removeChild(self.skill_item[idd])
                 del self.skill_item[idd]
                 del self.skills_msgs[idd]
 
@@ -1161,7 +1167,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         self.bold_font = QtGui.QFont()
         self.bold_font.setBold(True)
         self.skills_msgs = dict()
-        self.skill_item = dict()
+        self.skill_item = OrderedDict()
         self.task_tree_widget.clear()
         self.task_tree_widget.setUniformRowHeights(True)
         item = QTreeWidgetItem(self.task_tree_widget, ["Task {}".format(msg.id)])
