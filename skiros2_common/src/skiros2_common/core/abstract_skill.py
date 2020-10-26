@@ -149,30 +149,6 @@ class SkillDescription(object):
     def addPostCondition(self, condition):
         self._post_conditions.append(condition)
 
-    def getOrCond(self, desired_state):
-        return cond.ConditionOr(desired_state)
-
-    def getIsSpecifiedCond(self, clabel, subj, desired_state):
-        return cond.ConditionIsSpecified(clabel, subj, desired_state)
-
-    def getGenerateCond(self, clabel, subj, desired_state):
-        return cond.ConditionGenerate(clabel, subj, desired_state)
-
-    def getHasPropCond(self, clabel, olabel, subj, desired_state):
-        return cond.ConditionHasProperty(clabel, olabel, subj, desired_state)
-
-    def getPropCond(self, clabel, olabel, subj, operator, value, desired_state):
-        return cond.ConditionProperty(clabel, olabel, subj, operator, value, desired_state)
-
-    def getAbstractRelationCond(self, clabel, olabel, subj, obj, desired_state):
-        return cond.AbstractConditionRelation(clabel, olabel, subj, obj, desired_state)
-
-    def getRelationCond(self, clabel, olabel, subj, obj, desired_state):
-        return cond.ConditionRelation(clabel, olabel, subj, obj, desired_state)
-
-    def getOnTypeCond(self, clabel, subj, value):
-        return cond.ConditionOnType(clabel, subj, value)
-
     def getModifiedParams(self):
         param_list = set([])
         for c in self._post_conditions:
@@ -333,10 +309,10 @@ class SkillCore(SkillDescription):
         for c in self._pre_conditions:
             if not c.evaluate(self._params, self._wmi):
                 err_msg += "{} Check failed. \n".format(c.getDescription())
-                if verbose:
-                    log.error(c.getDescription(), "ConditionCheck failed")
+                log.assertError(verbose, c.getDescription(), "ConditionCheck failed")
                 to_ret += c.getKeys()
-        self._setProgress(err_msg, -1)
+        if to_ret:
+            self._setProgress(err_msg, -1)
         return list(set(to_ret))
 
     def checkHoldCond(self, verbose=False):
@@ -353,10 +329,10 @@ class SkillCore(SkillDescription):
         for c in self._hold_conditions:
             if not c.evaluate(self._params, self._wmi):
                 err_msg += "{} Check failed. \n".format(c.getDescription())
-                if verbose:
-                    log.error("HoldConditionCheck failed", c.getDescription())
+                log.assertError(verbose, c.getDescription(), "ConditionCheck failed")
                 to_ret += c.getKeys()
-        self._setProgress(err_msg, -2)
+        if to_ret:
+            self._setProgress(err_msg, -2)
         return list(set(to_ret))
 
     def hasPostCond(self):
@@ -368,16 +344,14 @@ class SkillCore(SkillDescription):
 
         @param      verbose  (bool) Print error message when check fail
 
-        @return     A list of parameters that breaks the conditions, or an empty
-                    list if all are satisfied
+        @return     True if met, False otherwise
         """
-        to_ret = list()
         for c in self._post_conditions:
             if not c.evaluate(self._params, self._wmi):
-                if verbose:
-                    log.error(c.getDescription(), "ConditionCheck failed")
-                to_ret += c.getKeys()
-        return list(set(to_ret))
+                log.assertInfo(verbose, c.getDescription(), "ConditionCheck failed")
+                return False
+        self._setProgress("Postconditions reached.", 1)
+        return True
     # -------- Control functions--------
 
     def preempt(self):

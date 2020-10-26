@@ -229,6 +229,9 @@ class NodeExecutor():
         if not self._ground(skill):
             if not self.tryOther(skill):
                 return State.Idle
+        if skill.checkPostCond(self._verbose) and skill.hasPostCond():
+            log.assertInfo(self._verbose, "[ground] Postconditions met for skill {}".format(skill.printInfo()))
+            return State.Success
         skill.wrapper_expand()
         state = self._execute(skill)
         if self._verbose:
@@ -250,6 +253,9 @@ class NodeExecutor():
         skill.specifyParams(self._params)  # Re-apply parameters.... Important!
         self.syncParams(skill.params)
         self._printTracked(skill._params, "[{}:SetParams] ".format(skill.type))
+        if skill.checkPostCond(self._verbose) and skill.hasPostCond():
+            log.assertInfo(self._verbose, "[ground] Postconditions met for skill {}".format(skill.printInfo()))
+            return State.Success
         state = self._postExecute(skill)
         if self._verbose:
             log.info("[VisitorExecute]", "{}".format(skill.printState(self._verbose)))
