@@ -65,6 +65,8 @@ class SkirosSkillInfo(QDialog):
             key.setFlags(key.flags() & ~Qt.ItemIsEditable)
             value = QTableWidgetItem(str(v.values))
             value.setFlags(value.flags() & ~Qt.ItemIsEditable)
+            if v.dataType() == Element:
+                value.setToolTip("\n".join([v2.printState(True) for v2 in v.values]))
             self.params_table.setItem(i, 0, key)
             self.params_table.setItem(i, 1, value)
         self.params_table.setSortingEnabled(True)
@@ -1384,11 +1386,11 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
     def in_filters(self, names):
         for m in self.exclude_filters:
             for n in names:
-                if n.find(m)>=0:
+                if n.find(m) >= 0:
                     return False
         for m in self.include_filters:
             for n in names:
-                if n.find(m)>=0:
+                if n.find(m) >= 0:
                     return True
         return not bool(self.include_filters)
 

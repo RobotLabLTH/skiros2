@@ -3,7 +3,6 @@ from skiros2_world_model.core.world_model_abstract_interface import WmException
 import skiros2_common.core.params as params
 from skiros2_skill.core.processors import Serial, ParallelFf, State
 import skiros2_common.tools.logger as log
-import numpy as np
 from copy import deepcopy
 
 
@@ -23,7 +22,6 @@ class NodePrinter():
 
     def printTree(self, skill, verbose=True):
         s = "-" * self._indend + self._prefix + skill.printState(verbose)
-        #s = "-"*self._indend + self._prefix + skill.printInfo(verbose)
         print(s)
 
     def printParams(self, params):
@@ -90,17 +88,13 @@ class NodeExecutor():
     def setSimulate(self, sim=True):
         self._simulate = sim
 
-#    def specifyParams(self, input_params):
-#        self._params.reset(input_params)
-#        self._printTracked(self._params, "[specifyParams] ")
-
     def mergeParams(self, skill):
         self._params.reset(self._params.merge(skill._params))
         self._printTracked(self._params, "[{}:mergeParams] ".format(skill.type))
-        #print "Merge: {}".format(self._params.printState())
+        # print "Merge: {}".format(self._params.printState())
 
     def inferUnvalidParams(self, skill):
-        #print '{}: {} '.format(skill._label, self.printParams(skill._params))
+        # print '{}: {} '.format(skill._label, self.printParams(skill._params))
         unvalid_params = skill.checkPreCond(self._verbose)
         if unvalid_params:
             log.info("[{}] Reset unvalid params {}".format(skill._label, unvalid_params))
@@ -141,56 +135,21 @@ class NodeExecutor():
         """
         @brief ground undefined parameters with parameters in the Black Board
         """
-        to_resolve = [key for key, param in skill._params.getParamMap().items() if param.paramType != params.ParamTypes.Optional and param.dataTypeIs(Element) and param.getValue().getIdNumber() < 0]
+        missing_params = [key for key, param in skill.params.getParamMap().items()
+                          if param.paramType != params.ParamTypes.Optional and not param.isSpecified() and not param.dataTypeIs(Element)]
+        to_resolve = [key for key, param in skill.params.getParamMap().items()
+                      if param.paramType != params.ParamTypes.Optional and param.dataTypeIs(Element) and param.getValue().getIdNumber() < 0]
+        if missing_params:
+            raise Exception("Missing required parameter(s): {}".format(missing_params))
         if not to_resolve:
             return True
         log.assertInfo(self._verbose, "[Autoparametrize]", "Resolving {}:{}".format(skill.type, to_resolve))
-        #self._importParentsConditions(skill, to_resolve)
-        remap = {}
+        # self._importParentsConditions(skill, to_resolve)
         cp = params.ParamHandler()
         cp.reset(skill._params.getCopy())
         for c in skill._pre_conditions:
             c.setDesiredState(cp)
-        for key in to_resolve:
-            remap[key] = []
-            for k, p in self._params._params.items():
-                if p.dataTypeIs(Element()):
-                    if p.getValue().isInstance(cp.getParamValue(key), self._wm):
-                        remap[key].append(k)
-                    else:
-                        pass # log.info("Not instance", "{} Model: {} Match: {}".format(key, cp.getParamValue(key).printState(True), p.getValue().printState(True)))
         return self._autoParametrizeWm(skill, to_resolve, cp)
-
-#        l = np.zeros(len(to_resolve), dtype=int)
-#        unvalid_params = to_resolve
-#        loop = True
-#        while loop:
-#            loop = False
-#            #Set params and check preCond
-#            for index, key in enumerate(to_resolve):
-#                #print '{}: {}'.format(key, remap[key])
-#                if not remap[key]:
-#                    return self._autoParametrizeWm(skill, to_resolve, cp)
-#                skill._params.specify(key, self._params.getParamValues(remap[key][l[index]]))
-#            unvalid_params = skill.checkPreCond()
-#            #If there are unvalid params, increment 1 of the counters. Loop breaks when all counters are at last element
-#            for key in unvalid_params:
-#                if key in to_resolve:
-#                    if l[to_resolve.index(key)]<len(remap[key])-1:
-#                        l[to_resolve.index(key)] += 1
-#                        loop = True
-#                        break
-#                    else:
-#                        l[to_resolve.index(key)] = 0
-#        if unvalid_params:
-#            return self._autoParametrizeWm(skill, to_resolve, cp)
-#        remapped = ''
-#        for index, key in enumerate(to_resolve):
-#            if key != remap[key][l[index]]:
-#                skill.remap(key, remap[key][l[index]])
-#                remapped += "[{}={}]".format(key, remap[key][l[index]])
-#        log.info("MatchBB","{}: {}".format(skill.type, remapped))
-#        return True
 
     def _autoParametrizeWm(self, skill, to_resolve, cp):
         """
@@ -208,8 +167,8 @@ class NodeExecutor():
                     skill.params.specify(key, match[0])
                     _grounded += '[{}={}]'.format(key, match[0].printState())
             else:
-                #print '{}: {}'.format(skill._label, to_resolve)
-                log.error("_autoParametrizeWm", "Can t autoparametrize param {}.".format(key))
+                # print '{}: {}'.format(skill._label, to_resolve)
+                log.error("AutoParametrizeWm", "Can t autoparametrize param {}.".format(key))
                 return False
         log.info("MatchWm", "{}:{}".format(skill.type, _grounded))
         return True
@@ -288,7 +247,7 @@ class NodeExecutor():
         """
         @brief Tick a skill
         """
-        skill.specifyParams(self._params)#Re-apply parameters.... Important!
+        skill.specifyParams(self._params)  # Re-apply parameters.... Important!
         self.syncParams(skill.params)
         self._printTracked(skill._params, "[{}:SetParams] ".format(skill.type))
         state = self._postExecute(skill)
@@ -305,7 +264,7 @@ class NodeExecutor():
             if self._verbose:
                 log.info("[ground]", "Hold-conditions fail for skill {}".format(skill.printInfo()))
             self.processPreempt(skill)
-            skill.checkHoldCond()#This ensure the skill ends printing the failed conditions
+            skill.checkHoldCond()  # This ensure the skill ends printing the failed conditions
             return skill.state
         else:
             return State.Running
@@ -319,10 +278,10 @@ class NodeExecutor():
             self.syncParams(skill.params)
             if self._verbose:
                 log.info("[Preempt]", "{}".format(skill.printState(self._verbose)))
-            #Preempt children
+            # Preempt children
             for c in skill._children:
                 c.visitPreempt(self)
-            #Preempt skill
+            # Preempt skill
             skill.preempt()
             self.mergeParams(skill)
 
@@ -404,7 +363,8 @@ class TreeBuilder:
 
     def makeParentStatic(self, parent_name, static=False):
         if self._execution_branch[-1]._label != parent_name and self._forget_branch[-1]._label != parent_name and static:
-            log.error("makeParentStatic", "Exe: {} Forgot: {} Looking for: {}".format(self._execution_branch[-1]._label, self._forget_branch[-1]._label, parent_name))
+            log.error("makeParentStatic", "Exe: {} Forgot: {} Looking for: {}".format(
+                self._execution_branch[-1]._label, self._forget_branch[-1]._label, parent_name))
             return
 
         if static:
@@ -495,7 +455,8 @@ class NodeReversibleSimulator(NodeExecutor, TreeBuilder):
         skill = self.forward.recall()[0]._label
         log.warn("makeStaticPrevious", "skill {}".format(skill))
         if not isinstance(self.getExecutionParent()._children_processor, ParallelFf):
-            log.warn("makeStaticPrevious", "skill {} has a serial parent. Reverting till {}".format(skill, self.getExecutionParent()._label))
+            log.warn("makeStaticPrevious", "skill {} has a serial parent. Reverting till {}".format(
+                skill, self.getExecutionParent()._label))
             skill = self.getExecutionParent()._label
         self.makeStatic(True)
         while skill != self.forward.recall()[0]._label:
@@ -610,7 +571,8 @@ class NodeReversibleSimulator(NodeExecutor, TreeBuilder):
         return True
 
     def postExecute(self, skill, remember=True):
-        skill.specifyParams(self._params)  # Re-apply parameters, after processing the sub-tree.... Important, thay have been modified by the subtree!
+        # Re-apply parameters, after processing the sub-tree.... Important, thay have been modified by the subtree!
+        skill.specifyParams(self._params)
         if self._verbose:
             log.info("postExecute {}.".format(skill._label))
         if not self._postExecute(skill):
@@ -618,7 +580,8 @@ class NodeReversibleSimulator(NodeExecutor, TreeBuilder):
         self.mergeParams(skill)  # Update params
         self.forward.memorize(skill, "postExecute")
         if skill._label != self.getExecutionParent()._label:
-            log.error("postExecution", "{} trying to close before the parent {}".format(skill._label, self.getExecutionParent()._label))
+            log.error("postExecution", "{} trying to close before the parent {}".format(
+                skill._label, self.getExecutionParent()._label))
             raise KeyError()
         self.popParentNode()
         if id(skill) in self._bound:
@@ -631,5 +594,5 @@ class NodeReversibleSimulator(NodeExecutor, TreeBuilder):
             return False
         self.specifyParams(skill.revertInput())
         self.restoreParentNode()
-        #print 'miei ' + self.printParams(skill._params)
+        # print 'miei ' + self.printParams(skill._params)
         return True
