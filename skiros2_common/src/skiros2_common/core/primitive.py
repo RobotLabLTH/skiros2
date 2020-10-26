@@ -48,8 +48,6 @@ class PrimitiveBase(SkillCore):
                 for i, e in enumerate(vs):
                     if not e.isAbstract():
                         self._wmi.update_element(e)
-                    else:
-                        vs[i] = self._wmi.add_element(e)
 
     # --------Virtual functions--------
 

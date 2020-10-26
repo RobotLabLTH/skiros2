@@ -250,11 +250,7 @@ class ParamHandler(object):
         for key, param in other._params.items():
             if self.hasParam(key):
                 t = self._params[key]
-                if keep_default and t.hasSpecifiedDefault():
-                    if t.dataTypeIs(Element):
-                        if t.getDefaultValue().getIdNumber() < 0 or set(v.getIdNumber() for v in t.getDefaultValues()) == set(v.getIdNumber() for v in param.values):
-                            t.values = param.values
-                else:
+                if not (keep_default and t.hasSpecifiedDefault()) or t.dataTypeIs(Element):
                     t.values = param.values
 
     def specifyParamsDefault(self, other):
