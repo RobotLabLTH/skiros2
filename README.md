@@ -11,7 +11,7 @@ SkiROS offers the following features:
 * An integration point for PDDL task planning using the "task planning" skill
 * A semantic database to manage environmental knowledge
 
-For a full introduction and tutorials refer to the [wiki](https://github.com/RVMI/skiros2/wiki)
+For a full introduction and tutorials refer to the [wiki](https://github.com/RVMI/skiros2/wiki).
 
 ### Acknowledgements
      
@@ -20,17 +20,29 @@ This platform has been developed at the [RVMI lab](http://www.rvmi.aau.dk/).
 This project has received funding from the European Union’s Horizon 2020
 research and innovation programme under grant agreement no. 723658, [Scalable4.0](https://www.scalable40.eu/).
 
+## Compatibility
+
+SkiROS is compatible with Ubuntu 16.04/ROS Kinetic, Ubuntu 18.04/ROS Melodic and Ubuntu 20.04/ROS Noetic, python 2 and 3.
+
 ## Install
 
 To use SkiROS you must have [ROS](https://wiki.ros.org/ROS/Installation) installed on your machine.  
+You also need [pip](https://pip.pypa.io/en/stable/installing/) to install python dependencies.
 
-You must include this package in your catkin workspace and compile with catkin. Also, it is highly recommended to include in the catkin workspace the [base skill set](https://github.com/RVMI/skiros2_std_lib).
+Install xterm
+> sudo apt install xterm  
 
-SkiROS is compatible with Ubuntu 16.04/ROS Kinetic, Ubuntu 18.04/ROS Melodic and Ubuntu 20.04/ROS Noetic, python 2 and 3.
-  
-Dependencies can be installed with the python tool:  
+Clone this repository into your catkin workspace src directory. 
+> cd /path/to/your/catkin_ws/src  
+> git clone https://github.com/RVMI/skiros2
 
+Clone the [base skill set](https://github.com/RVMI/skiros2_std_lib) into the skiros2 directory in your catkin workspace.
 > cd skiros2  
+> git clone https://github.com/RVMI/skiros2_std_lib
+
+Optionally, you can clone the [skiros2_template_lib](https://github.com/RVMI/skiros2_template_lib) or [skiros2_examples](https://github.com/RVMI/skiros2_examples) repositories here as well.
+
+Install Python dependencies
 > pip install -r requirements.txt --user  
 
 Optionally, if you want to use the task planning skill provided in the standard library, install the fast downward planner with the following script:
@@ -39,6 +51,14 @@ Optionally, if you want to use the task planning skill provided in the standard 
 > ./install_fd_task_planner.sh  
 
 When asked for the install folder, you can insert a location of your preference or just leave the default.
+
+Build with catkin
+> cd /path/to/your/catkin_ws
+> catkin_make
+> source ./devel/setup.bash
+
+Launch
+> roslaunch skiros2 skiros.launch
 
 ## Launching the system
 
