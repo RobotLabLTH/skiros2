@@ -881,7 +881,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
             try:
                 scene_tuple = self._wmi.get_scene()
             except wmi.WmException:
-                log.warn("[create_wm_tree]", "Failed to retrive scene, will try again.")
+                log.warn("[create_wm_tree]", "Failed to retrieve scene, will try again.")
         # print "GOT SCENE {}".format([e.id for e in scene_tuple[0]])
         self._snapshot_id = scene_tuple[1]
         self._snapshot_stamp = rospy.Time.now()
