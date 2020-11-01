@@ -53,8 +53,8 @@ Optionally, if you want to use the task planning skill provided in the standard 
 When asked for the install folder, you can insert a location of your preference or just leave the default.
 
 Build with catkin
-> cd /path/to/your/catkin_ws
-> catkin_make
+> cd /path/to/your/catkin_ws  
+> catkin_make  
 > source ./devel/setup.bash
 
 Launch
