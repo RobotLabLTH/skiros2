@@ -29,9 +29,6 @@ SkiROS is compatible with Ubuntu 16.04/ROS Kinetic, Ubuntu 18.04/ROS Melodic and
 To use SkiROS you must have [ROS](https://wiki.ros.org/ROS/Installation) installed on your machine.  
 You also need [pip](https://pip.pypa.io/en/stable/installing/) to install python dependencies.
 
-Install xterm
-> sudo apt install xterm  
-
 Clone this repository into your catkin workspace src directory. 
 > cd /path/to/your/catkin_ws/src  
 > git clone https://github.com/RVMI/skiros2
@@ -41,6 +38,11 @@ Clone the [base skill set](https://github.com/RVMI/skiros2_std_lib) into the ski
 > git clone https://github.com/RVMI/skiros2_std_lib
 
 Optionally, you can clone the [skiros2_template_lib](https://github.com/RVMI/skiros2_template_lib) or [skiros2_examples](https://github.com/RVMI/skiros2_examples) repositories here as well.
+
+Install dependencies defined in each `package.xml` using [rosdep](http://wiki.ros.org/rosdep)
+> rosdep install --from-paths . --ignore-src --rosdistro=$ROS_DISTRO -y  
+
+Where `$ROS_DISTRO` should be defined or replaced with your ROS distro (e.g. melodic).
 
 Install Python dependencies
 > pip install -r requirements.txt --user  
