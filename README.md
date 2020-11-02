@@ -34,8 +34,7 @@ Clone this repository into your catkin workspace src directory.
 > git clone https://github.com/RVMI/skiros2
 
 Clone the [base skill set](https://github.com/RVMI/skiros2_std_lib) into the skiros2 directory in your catkin workspace.
-> cd skiros2  
-> git clone https://github.com/RVMI/skiros2_std_lib
+> git clone https://github.com/RVMI/skiros2_std_lib  
 
 Optionally, you can clone the [skiros2_template_lib](https://github.com/RVMI/skiros2_template_lib) or [skiros2_examples](https://github.com/RVMI/skiros2_examples) repositories here as well.
 
