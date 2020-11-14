@@ -1,3 +1,3 @@
 string key
-string dataValue
-string dataType
+string data_value
+string data_type

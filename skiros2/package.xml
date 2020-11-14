@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
-<package format="2">
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
   <name>skiros2</name>
   <version>1.0.5</version>
   <description>
@@ -13,8 +14,6 @@
   <author email="francesco@m-tech.aau.dk">Francesco Rovida</author>
   <author>Francesco Rovida</author>
 
-  <buildtool_depend>catkin</buildtool_depend>
-  <test_depend>roslaunch</test_depend>
   <exec_depend>skiros2_common</exec_depend>
   <exec_depend>tf</exec_depend>
   <exec_depend>rqt_gui</exec_depend>
@@ -25,7 +24,9 @@
   <exec_depend>cmake_modules</exec_depend>
   <exec_depend>xterm</exec_depend>
 
+  <test_depend>roslaunch</test_depend>
 
-   <export>
+  <export>
+    <build_type>ament_python</build_type>
   </export>
 </package>

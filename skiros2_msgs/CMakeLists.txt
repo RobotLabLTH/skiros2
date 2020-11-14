@@ -1,54 +1,42 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5)
 
 project(skiros2_msgs)
 
-find_package(catkin REQUIRED COMPONENTS
-genmsg
-message_generation
-actionlib
-std_msgs
-actionlib_msgs
-trajectory_msgs
-sensor_msgs
-control_msgs
-)
+find_package(ament_cmake REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
 
-add_message_files(
-  FILES
-  Param.msg
-  Property.msg
-  Relation.msg
-  Statement.msg
-  Condition.msg
-  SkillProgress.msg
-  TreeProgress.msg
-  ResourceDescription.msg
-  WmElement.msg
-  WmMonitor.msg
-  )
+rosidl_generate_interfaces(${PROJECT_NAME}
+  msg/Param.msg
+  msg/Property.msg
+  msg/Relation.msg
+  msg/Statement.msg
+  msg/Condition.msg
+  msg/SkillProgress.msg
+  msg/TreeProgress.msg
+  msg/ResourceDescription.msg
+  msg/WmElement.msg
+  msg/WmMonitor.msg
+  srv/ResourceGetDescriptions.srv
+  srv/WoQuery.srv
+  srv/WoModify.srv
+  srv/WmGet.srv
+  srv/WoLoadAndSave.srv
+  srv/WmSetRelation.srv
+  srv/WmQueryRelations.srv
+  srv/WmModify.srv
+  srv/SkillCommand.srv
+  action/AssignTask.action
+ )
 
-add_service_files(
-  FILES
-  ResourceGetDescriptions.srv
-  WoQuery.srv
-  WoModify.srv
-  WmGet.srv
-  WoLoadAndSave.srv
-  WmSetRelation.srv
-  WmQueryRelations.srv
-  WmModify.srv
-  SkillCommand.srv
-  )
+if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
+  # the following line skips the linter which checks for copyrights
+  # uncomment the line when a copyright and license is not present in all source files
+  #set(ament_cmake_copyright_FOUND TRUE)
+  # the following line skips cpplint (only works in a git repo)
+  # uncomment the line when this package is not in a git repo
+  #set(ament_cmake_cpplint_FOUND TRUE)
+  ament_lint_auto_find_test_dependencies()
+endif()
 
-add_action_files(
-  FILES
-  AssignTask.action
-  )
-
-generate_messages(
-  DEPENDENCIES std_msgs actionlib_msgs
-)
-
-catkin_package(
-    CATKIN_DEPENDS message_runtime genmsg actionlib std_msgs actionlib_msgs trajectory_msgs sensor_msgs control_msgs
-)
+ament_package()

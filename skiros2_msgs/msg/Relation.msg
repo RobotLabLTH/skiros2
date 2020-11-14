@@ -1,3 +1,3 @@
-string subjectId
+string subject_id
 string predicate
-string objectId
+string object_id

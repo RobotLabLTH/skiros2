@@ -1,0 +1,7 @@
+wm:
+    topic_name: "/joint_states"
+    workspace_dir: get_package_share_directory('skiros2') + "/owl"
+    init_scene: ""
+    verbose: false
+    reasoners_pkgs: ["skiros2_std_reasoners"]
+    load_contexts: []

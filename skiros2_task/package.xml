@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
-<package>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
   <name>skiros2_task</name>
   <version>1.0.5</version>
   <description>SkiROS task planner</description>
@@ -11,11 +12,19 @@
   <author>Francesco Rovida</author>
 
 
-  <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>rospy</build_depend>
-  <build_depend>skiros2_msgs</build_depend>
-  <run_depend>rospy</run_depend>
-  <run_depend>skiros2_msgs</run_depend>
-  <run_depend>skiros2_world_model</run_depend>
-  <run_depend>skiros2_skill</run_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>skiros2_msgs</exec_depend>
+  <exec_depend>skiros2_world_model</exec_depend>
+  <exec_depend>skiros2_skill</exec_depend>
+
+  <!-- These test dependencies are optional
+  Their purpose is to make sure that the code passes the linters -->
+  <test_depend>ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_pep257</test_depend>
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
 </package>

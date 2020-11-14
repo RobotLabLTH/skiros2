@@ -1,12 +1,21 @@
-# ! DO NOT MANUALLY INVOKE THIS setup.py, USE CATKIN INSTEAD
+from setuptools import setup
+from glob import glob
 
-from distutils.core import setup
-from catkin_pkg.python_setup import generate_distutils_setup
+package_name = 'skiros2_gui'
 
-# fetch values from package.xml
-setup_args = generate_distutils_setup(
-    packages=['skiros2_gui'],
-    package_dir={'': 'src'},
+setup(
+    name=package_name,
+    version='1.0.5',
+    packages=[package_name],
+    data_files=[
+        ('share/ament_index/resource_index/packages',
+            ['resource/' + package_name]),
+        ('share/' + package_name, ['package.xml']),
+        ('share/' + package_name, ['plugin.xml']),
+        ('share/' + package_name + "/core/imgs", glob(f'{package_name}/core/imgs/*.png')),
+        ('share/' + package_name + "/core", glob(f'{package_name}/core/*.ui')),
+    ],
+    install_requires=['setuptools'],
+    zip_safe=True,
+    tests_require=['pytest'],
 )
-
-setup(**setup_args)

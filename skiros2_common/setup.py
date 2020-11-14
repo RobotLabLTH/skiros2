@@ -1,13 +1,16 @@
-# ! DO NOT MANUALLY INVOKE THIS setup.py, USE CATKIN INSTEAD
+from setuptools import setup
 
-from distutils.core import setup
-from catkin_pkg.python_setup import generate_distutils_setup
+package_name = 'skiros2_common'
 
-# fetch values from package.xml
-setup_args = generate_distutils_setup(
-    packages=['skiros2_common'],
-    package_dir={'': 'src'},
-    install_requires=[],
+setup(
+    name=package_name,
+    version='1.0.5',
+    packages=[package_name],
+    data_files=[
+        ('share/ament_index/resource_index/packages', ['resource/' + package_name]),
+        ('share/' + package_name, ['package.xml']),
+    ],
+    install_requires=['setuptools'],
+    zip_safe=True,
+    tests_require=['pytest'],
 )
-
-setup(**setup_args)

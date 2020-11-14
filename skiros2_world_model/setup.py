@@ -1,15 +1,25 @@
-# ! DO NOT MANUALLY INVOKE THIS setup.py, USE CATKIN INSTEAD
+from setuptools import setup
 
-from distutils.core import setup
-from catkin_pkg.python_setup import generate_distutils_setup
+package_name = 'skiros2_world_model'
 
-# fetch values from package.xml
-setup_args = generate_distutils_setup(
-    packages=['skiros2_world_model'],
-    package_dir={'': 'src'},
-    install_requires=[
-        'rdflib', 'wrapt'
+setup(
+    name=package_name,
+    version='1.0.5',
+    packages=[package_name],
+    data_files=[
+        ('share/ament_index/resource_index/packages', ['resource/' + package_name]),
+        ('share/' + package_name, ['package.xml']),
     ],
+    install_requires=['setuptools'],
+    zip_safe=True,
+    tests_require=['pytest'],
+    entry_points={
+        'console_scripts': [
+            f'ontology_server_node = {package_name}.nodes.ontology_server_node:main',
+            f'world_model_server_node = {package_name}.nodes.world_model_server_node:main',
+            f'view_scene = {package_name}.nodes.utils.view_scene:main',
+            f'edit_scene = {package_name}.nodes.utils.edit_scene:main',
+            f'simple_query = {package_name}.nodes.utils.simple_query:main',
+        ],
+    },
 )
-
-setup(**setup_args)
