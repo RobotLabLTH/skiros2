@@ -808,7 +808,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
                 items = self.wm_tree_widget.findItems(cur_item_id, Qt.MatchRecursive | Qt.MatchFixedString, 1)
                 if items:
                     self.wm_tree_widget.setCurrentItem(items[0])
-            elif data.stamp > self._snapshot_stamp or self._snapshot_id == "":  # Ignores obsolete msgs
+            elif Time.from_msg(data.stamp) > self._snapshot_stamp or self._snapshot_id == "":  # Ignores obsolete msgs
                 log.info("[wm_update]", "Wm not in sync, querying wm scene")
                 self.create_wm_tree()
 

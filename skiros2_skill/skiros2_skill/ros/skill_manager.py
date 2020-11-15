@@ -175,9 +175,9 @@ class SkillManager:
     @brief The skill manager manage a sub-system of the robot
     """
 
-    def __init__(self, prefix, agent_name, verbose=True):
+    def __init__(self, node, prefix, agent_name, verbose=True):
         self._agent_name = agent_name
-        self._wmi = wmi.WorldModelInterface(agent_name, make_cache=True)
+        self._wmi = wmi.WorldModelInterface(node, agent_name, make_cache=True)
         self._wmi.set_default_prefix(prefix)
         self._local_wm = self._wmi
         self._instanciator = SkillInstanciator(self._local_wm)
@@ -360,7 +360,7 @@ class SkillManagerNode(DiscoverableNode):
     """
 
     def __init__(self):
-        super().__init__("skill_mgr", namespace="skill_managers")
+        super().__init__("skill_mgr")
         self.declare_parameter("prefix", "")
         self.declare_parameter("verbose", False)
         self.declare_parameter("libraries_list", [])
@@ -369,7 +369,7 @@ class SkillManagerNode(DiscoverableNode):
         self.publish_runtime_parameters = False
         robot_name = self.get_name()
         full_name = self.get_parameter('prefix').value + ':' + robot_name[robot_name.rfind("/") + 1:]
-        self.sm = SkillManager(self.get_parameter('prefix').value, full_name, verbose=self.get_parameter('verbose').value)
+        self.sm = SkillManager(self, self.get_parameter('prefix').value, full_name, verbose=self.get_parameter('verbose').value)
         self.sm.observe_task_progress(self._on_progress_update)
         self.sm.observe_tick(self._on_tick)
 

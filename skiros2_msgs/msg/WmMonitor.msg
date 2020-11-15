@@ -5,6 +5,7 @@ string REMOVE=remove
 string RESET=reset
 
 #Metadata
+builtin_interfaces/Time stamp
 string prev_snapshot_id
 string snapshot_id
 #Change

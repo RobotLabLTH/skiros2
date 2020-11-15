@@ -12,6 +12,12 @@ class DiscreteReasoner(object):
         self._stop_requested = False
         self._thread = None
         self._wmi = wmi
+        self.init_ros(node)
+
+    def init_ros(self, node):
+        """
+        Set an interface to the ROS2 network
+        """
         self._node = node
 
     def parse(self, element, action):

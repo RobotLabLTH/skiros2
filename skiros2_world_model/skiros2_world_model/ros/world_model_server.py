@@ -100,6 +100,7 @@ class WorldModelServer(OntologyServer):
             msg.prev_snapshot_id = self._curr_snapshot.hex
             self._curr_snapshot = uuid.uuid4()  # random UUID
             msg.snapshot_id = self._curr_snapshot.hex
+            msg.stamp = self.get_clock().now().to_msg()
             msg.author = author
             msg.action = action
             if elements:

@@ -6,7 +6,7 @@
 # Copyright 2013 - ZooMoo Ltd
 
 import re
-
+import rclpy.logging as logging
 
 class logMode:
     ALWAYS  = -1
@@ -16,6 +16,16 @@ class logMode:
     INFO    = 3
     DEBUG   = 4
     TRACE   = 5
+
+logToLoggingMode = {
+    logMode.ERROR: logging.LoggingSeverity.ERROR,
+    logMode.WARN: logging.LoggingSeverity.WARN,
+    logMode.INFO: logging.LoggingSeverity.INFO,
+    logMode.DEBUG: logging.LoggingSeverity.DEBUG,
+    logMode.TRACE: logging.LoggingSeverity.DEBUG,
+    logMode.ALWAYS: logging.LoggingSeverity.DEBUG,
+    logMode.OK: logging.LoggingSeverity.INFO,
+}
 
 class logColor:
     UNDERLINE   = '\x1b[4m'
@@ -34,6 +44,8 @@ class Log:
     __indent = 0
     __buffered = False
     __useColor = True
+
+    __log = logging.get_logger("skiros")
 
     # colored messages
     def msgMode(self, mode, msg):
@@ -165,7 +177,7 @@ class Log:
             msg = msg.rjust(len(msg) + self.__indent)
             self.__LOG.append((mode, msg, desc))
             if not self.__buffered:
-                print(self.msgToString(self.__LOG[-1]))
+                self.__log.log(self.msgToString(self.__LOG[-1]), logToLoggingMode[mode])
 
     # has log message with mode
     def hasMode(self, mode):

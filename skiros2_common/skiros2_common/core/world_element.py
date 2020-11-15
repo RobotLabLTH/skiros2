@@ -102,11 +102,14 @@ class Element(object):
         Element._plug_loader = PluginLoader()
         Element._property_reasoner_map = {}
         # TODO: remove dependency from ROSpy
-        node = rclpy.create_node('element_get_parameter')
-        for package in node.get_parameter('wm/reasoners_pkgs').value:
+        # TODO: pass the node
+        Element._node = rclpy.create_node('skiros_element')
+        Element._node.declare_parameter('reasoners_pkgs', [])
+        for package in Element._node.get_parameter('reasoners_pkgs').value:
             Element._plug_loader.load(package, DiscreteReasoner)
         for plugin in Element._plug_loader:
             r = plugin()
+            r.init_ros(Element._node)
             Element._property_reasoner_map[r.__class__.__name__] = r
             for p in r.getAssociatedProperties():
                 Element._property_reasoner_map[p] = r
@@ -335,7 +338,7 @@ class Element(object):
                 [self._getReasoner(r).removeProperties(self) for r in old_reasoners if r not in new_reasoners]
                 [self._getReasoner(r).addProperties(self) for r in new_reasoners if r not in old_reasoners]
             except KeyError as e:
-                log.error("WorldElement", e.message)
+                log.error("WorldElement", str(e))
 
     def removeProperty(self, key):
         """
