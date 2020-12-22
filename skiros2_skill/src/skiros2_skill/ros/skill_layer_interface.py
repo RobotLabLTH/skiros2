@@ -83,4 +83,4 @@ class SkillLayerInterface(DiscoveryInterface):
 
     def print_state(self):
         for k, a in self._agents.items():
-            print(k + ":" + a.printState())
+            print(k + ":" + a.print_state())
