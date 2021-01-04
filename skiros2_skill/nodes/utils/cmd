@@ -16,9 +16,9 @@ if __name__ == '__main__':
             wait = True
         wmi = wmi.WorldModelInterface()
         sli = sli.SkillLayerInterface()
-        agent = sli.getAgent(mgr)
+        agent = sli.get_agent(mgr)
         if action == "start":
-            eid = agent.execute([agent.getSkill(skill)], "cmd_line_tool")
+            eid = agent.execute([agent.get_skill(skill)], "cmd_line_tool")
             if wait:
                 agent.waitResult(eid)  # Bugged
             else:
