@@ -596,11 +596,11 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         # Merge the tuples with an overlapping key
         if overlap_keys:
             loop = True
-            iters = 5
+            iters = 15
             while loop:  # Iterate until no shared keys are found
                 iters -= 1
                 if iters == 0:
-                    raise
+                    raise BaseException("Reached maximum number of iterations when merging keys")
                 loop = False
                 coupled_keys2 = []
                 merged = {}
