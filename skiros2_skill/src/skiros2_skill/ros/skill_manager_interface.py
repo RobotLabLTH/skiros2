@@ -5,7 +5,6 @@ from std_msgs.msg import Empty, Bool
 import skiros2_common.ros.utils as utils
 from skiros2_skill.ros.utils import SkillHolder
 import skiros2_common.tools.logger as log
-from multiprocessing import Lock, Event
 import rostopic
 
 
@@ -16,8 +15,6 @@ class SkillManagerInterface:
         self._active_tasks = set()
         self._module_list = dict()
         self._skill_list = dict()
-        self._msg_lock = Lock()
-        self._msg_rec = Event()
         rospy.wait_for_service(self._skill_mgr_name + '/get_skills')
         self._skill_exe_client = rospy.ServiceProxy(self._skill_mgr_name + '/command', srvs.SkillCommand)
         self._get_skills = rospy.ServiceProxy(self._skill_mgr_name + '/get_skills', srvs.ResourceGetDescriptions)
