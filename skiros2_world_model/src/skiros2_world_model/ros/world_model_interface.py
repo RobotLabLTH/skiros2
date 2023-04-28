@@ -443,7 +443,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
 
     def get_relations(self, subj, pred, obj):
         """
-        @brief      Get all relations matchin the input.
+        @brief      Get all relations matching the input.
 
         @param      subj  (string) The relation subject
         @param      pred  (string) The relation predicate
