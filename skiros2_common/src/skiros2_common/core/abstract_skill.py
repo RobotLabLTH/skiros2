@@ -265,6 +265,12 @@ class SkillCore(SkillDescription):
 
     def _setState(self, state):
         self._state = state
+        if type(state) is bool:
+            log.error("Expected 'State' enum with 'success', 'step' or 'fail', but got a bool.")
+            if state:
+                self._state = self.success("Fixme: Set success for wrong return type bool.")
+            else:
+                self._state = self.fail("Fixme: Set failure for wrong return type bool.", -99)
         self._state_change.set()
 
     def _setProgress(self, msg, code=None):
