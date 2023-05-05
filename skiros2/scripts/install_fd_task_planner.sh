@@ -28,7 +28,7 @@ if [ ! -d "$folder/${tfd}" ]; then
     cd -
     rm -r "${tfd}.tgz"
 else
-	echo "Folder $folder/${tfd} already exists. Skipping installation."
+    echo "Folder $folder/${tfd} already exists. Skipping installation."
     cd $folder
 fi
 
@@ -37,10 +37,10 @@ string="export TFD_HOME=$(pwd)/${tfd}/downward"
 temp=$(cat ~/.bashrc | grep "$string")
 if [ -z "$temp" ]; then
     echo "# TDF Planner for SkiROS" >> ~/.bashrc
-	echo $string >> ~/.bashrc
-	echo "Printing string in .bashrc: $string"
+    echo $string >> ~/.bashrc
+    echo "Printing string in .bashrc: $string"
 else
-	echo "No export string added to bashrc (it is already there)"
+    echo "No export string added to bashrc (it is already there)"
 fi
 
 source ~/.bashrc
