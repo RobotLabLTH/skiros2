@@ -29,6 +29,7 @@ if [ ! -d "$folder/${tfd}" ]; then
     rm -r "${tfd}.tgz"
 else
 	echo "Folder $folder/${tfd} already exists. Skipping installation."
+    cd $folder
 fi
 
 echo "Add environment variable to bashrc"
