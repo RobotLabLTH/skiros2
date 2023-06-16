@@ -429,6 +429,7 @@ class SkillCore(SkillDescription):
             self._setState(State.Running)
             self._setProgress("Start", 0)
         else:
+            log.warn("start", "onStart function of skill {} did not succeed.".format(self.label))
             self._setState(State.Failure)
         return self._state
 
