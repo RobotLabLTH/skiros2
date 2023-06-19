@@ -482,7 +482,6 @@ class SkillManagerNode(DiscoverableNode):
         return to_ret
 
     def shutdown(self):
-        self.shutdown_discovery()
         self.sm.shutdown()
 
     def run(self):
