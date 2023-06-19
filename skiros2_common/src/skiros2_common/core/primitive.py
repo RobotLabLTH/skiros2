@@ -20,6 +20,8 @@ class PrimitiveBase(SkillCore):
             start_time = datetime.now()
             with self._avg_time_keeper:
                 return_state = self.execute()
+                if return_state is not State:
+                    raise ValueError("The return type of the 'execute' function must be one of {}: running, success, failure.".format(State))
                 assert type(return_state) == State
                 self._setState(return_state)
                 self._updateRoutine(start_time)
