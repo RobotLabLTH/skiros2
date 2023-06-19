@@ -131,7 +131,7 @@ class Element(object):
         if not isinstance(Element._plug_loader, PluginLoader):
             self._initPluginLoader()
         if get_code not in Element._property_reasoner_map:
-            raise KeyError("No reasoner associated to data {}. Debug: {}".format(get_code, Element._property_reasoner_map))
+            raise KeyError("No reasoner associated to key {}. Debug: {}".format(get_code, Element._property_reasoner_map))
         return Element._property_reasoner_map[get_code]
 
     def getAssociatedReasonerId(self, key):
@@ -349,7 +349,7 @@ class Element(object):
                 [self._getReasoner(r).removeProperties(self) for r in old_reasoners if r not in new_reasoners]
                 [self._getReasoner(r).addProperties(self) for r in new_reasoners if r not in old_reasoners]
             except KeyError as e:
-                log.error("WorldElement", e.message)
+                log.error("WorldElement", str(e.args))
 
     def removeProperty(self, key):
         """
