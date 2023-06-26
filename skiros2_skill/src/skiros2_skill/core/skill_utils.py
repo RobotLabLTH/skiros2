@@ -269,7 +269,7 @@ class NodeExecutor():
         self.init(skill)
         if not self._ground(skill):
             if not self.tryOther(skill):
-                return State.Idle
+                return State.Failure
         skill.wrapper_expand()
         state = self._execute(skill)
         if self._verbose:
