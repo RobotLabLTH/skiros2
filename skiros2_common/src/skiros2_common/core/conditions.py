@@ -754,7 +754,7 @@ class ConditionOnType(ConditionBase):
 
     def setDesiredState(self, ph):
         e = ph.getParamValue(self._subject_key)
-        if e.id >= 0:
+        if e.getIdNumber() >= 0:
             return
         else:
             e._type = self._value
