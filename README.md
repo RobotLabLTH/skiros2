@@ -95,7 +95,7 @@ firefox skiros2_doc/html/index.html
 ```
 
 ## Citation
-A preprint of the SkiROS2 paper is [available here](https://arxiv.org/abs/2306.17030). If you are using it in your work, we would be please if you would cite it:
+A preprint of the SkiROS2 paper is [available here](https://arxiv.org/abs/2306.17030). If you are using it in your work, we would be pleased if you would cite it:
 ```bibtex
 @misc{mayr2023skiros2,
       title={SkiROS2: A skill-based Robot Control Platform for ROS}, 
