@@ -284,7 +284,11 @@
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#ArmProperty"/>
     </owl:DatatypeProperty>
 
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#NavigationExe -->
 
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#NavigationExe">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#RobotProperty"/>
+    </owl:DatatypeProperty>
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#MotionPlanner -->
 
@@ -300,6 +304,68 @@
         <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#ArmProperty"/>
     </owl:DatatypeProperty>
 
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#MoveItReferenceFrame -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#MoveItReferenceFrame">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#ArmProperty"/>
+    </owl:DatatypeProperty>
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#MoveItEELink -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#MoveItTCPLink">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#ArmProperty"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#MoveItWristJoint">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#ArmProperty"/>
+    </owl:DatatypeProperty>
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#JointConfigurationController -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#JointConfigurationController">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#ArmProperty"/>
+        <rdfs:comment>Name of the controller that accepts joint position references</rdfs:comment>
+    </owl:DatatypeProperty>
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#CompliantController -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#CompliantController">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#ArmProperty"/>
+        <rdfs:comment>Name of the compliant controller that accepts end-effector reference poses</rdfs:comment>
+    </owl:DatatypeProperty>
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#CartesianStiffnessTopic -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#CartesianStiffnessTopic">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#ArmProperty"/>
+        <rdfs:comment>A topic that accepts geometry_msgs::Wrench to change the Cartesian stiffness</rdfs:comment>
+    </owl:DatatypeProperty>
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#CartesianWrenchTopic -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#CartesianWrenchTopic">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#ArmProperty"/>
+        <rdfs:comment>A topic that accepts geometry_msgs::Wrench to apply a Cartesian wrench</rdfs:comment>
+    </owl:DatatypeProperty>
+
+
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#CartesianGoalAction -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#CartesianGoalAction">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#ArmProperty"/>
+        <rdfs:comment>A topic that accepts an action for a new Cartesian end-effector goal</rdfs:comment>
+    </owl:DatatypeProperty>
+
+
+<!-- http://rvmi.aau.dk/ontologies/skiros.owl#CartesianGoalAction -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#OverlayMotionService">
+        <rdfs:subPropertyOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#ArmProperty"/>
+        <rdfs:comment>The service address for overlay motions</rdfs:comment>
+    </owl:DatatypeProperty>
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#Orientation -->
@@ -678,6 +744,11 @@
         <rdfs:subClassOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#TransformationPose"/>
     </owl:Class>
 
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#ApproachPose -->
+
+    <owl:Class rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#ApproachPose">
+        <rdfs:subClassOf rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#TransformationPose"/>
+    </owl:Class>
 
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#Location -->
