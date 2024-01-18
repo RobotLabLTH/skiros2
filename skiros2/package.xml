@@ -24,7 +24,8 @@
   <exec_depend>skiros2_skill</exec_depend>
   <exec_depend>cmake_modules</exec_depend>
   <exec_depend>xterm</exec_depend>
-
+  <exec_depend>interactive_markers</exec_depend>
+  <exec_depend>python-is-python3</exec_depend>
 
    <export>
   </export>
