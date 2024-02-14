@@ -445,7 +445,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
 
     def get_relations(self, subj, pred, obj):
         """
-        @brief      Get all relations matchin the input.
+        @brief      Get all relations matching the input.
 
         @param      subj  (string) The relation subject
         @param      pred  (string) The relation predicate
@@ -598,11 +598,11 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         # Merge the tuples with an overlapping key
         if overlap_keys:
             loop = True
-            iters = 5
+            iters = 15
             while loop:  # Iterate until no shared keys are found
                 iters -= 1
                 if iters == 0:
-                    raise
+                    raise BaseException("Reached maximum number of iterations when merging keys")
                 loop = False
                 coupled_keys2 = []
                 merged = {}

@@ -228,7 +228,7 @@ class NodeExecutor():
         self.init(skill)
         if not self._ground(skill):
             if not self.tryOther(skill):
-                return State.Idle
+                return State.Failure
         skill.wrapper_expand()
         state = self._execute(skill)
         if self._verbose:
@@ -251,6 +251,12 @@ class NodeExecutor():
         self.syncParams(skill.params)
         self._printTracked(skill._params, "[{}:SetParams] ".format(skill.type))
         state = self._postExecute(skill)
+        # Check postconditions if the node succeeded and fail if they fail
+        if state == State.Success and skill.checkPostCond(self._verbose):
+            if self._verbose:
+                log.info("[PostCondition]", "Post-condition fail for skill {}".format(skill.printInfo()))
+            state = State.Failure
+            skill._setState(State.Failure)
         if self._verbose:
             log.info("[VisitorExecute]", "{}".format(skill.printState(self._verbose)))
         self.mergeParams(skill)  # Update params

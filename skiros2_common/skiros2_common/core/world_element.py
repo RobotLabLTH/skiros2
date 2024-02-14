@@ -5,6 +5,17 @@ from skiros2_common.core.property import Property
 from datetime import datetime
 import rclpy
 
+try:
+    unicode
+    def ispy2unicode(value):
+        return isinstance(value, unicode)
+except NameError:
+    def ispy2unicode(value):
+        return False
+try:
+    basestring
+except NameError:
+    basestring = str
 
 class Element(object):
     """
@@ -27,7 +38,7 @@ class Element(object):
     >>> e.getProperty("Hello").values
     [2.0]
     """
-    __slots__ = ['_last_update', '_type', '_label', '_id', '_properties', '_local_relations', '_relations']
+    __slots__ = ['_last_update', '_type', '_label', '_id', '_properties', '_local_relations', '_relations', '_last_tf_timestamp']
     _plug_loader = None
     _property_reasoner_map = None
 
@@ -53,6 +64,7 @@ class Element(object):
         self._properties = dict()
         self._local_relations = list()  # Reference to Elements
         self._relations = list()  # Reference to IDs
+        self._last_tf_timestamp = 0
         self._setLastUpdate()
 
     def __repr__(self):
@@ -123,7 +135,7 @@ class Element(object):
         if not isinstance(Element._plug_loader, PluginLoader):
             self._initPluginLoader()
         if get_code not in Element._property_reasoner_map:
-            raise KeyError("No reasoner associated to data {}. Debug: {}".format(get_code, Element._property_reasoner_map))
+            raise KeyError("No reasoner associated to key {}. Debug: {}".format(get_code, Element._property_reasoner_map))
         return Element._property_reasoner_map[get_code]
 
     def getAssociatedReasonerId(self, key):
@@ -321,6 +333,9 @@ class Element(object):
             else:
                 log.warn("[Element]", "Datatype {} not recognized. Set default.".format(datatype))
                 self._properties[key] = Property(key, value)
+
+        if ispy2unicode(value):
+            value = str(value)
 
         if self.hasProperty(key):
             if force_convertion:
