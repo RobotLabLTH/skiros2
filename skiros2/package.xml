@@ -15,18 +15,15 @@
   <author>Francesco Rovida</author>
 
   <exec_depend>skiros2_common</exec_depend>
-  <exec_depend>tf</exec_depend>
+  <exec_depend>tf2</exec_depend>
   <exec_depend>rqt_gui</exec_depend>
   <exec_depend>skiros2_task</exec_depend>
   <exec_depend>skiros2_msgs</exec_depend>
   <exec_depend>skiros2_world_model</exec_depend>
   <exec_depend>skiros2_skill</exec_depend>
-  <exec_depend>cmake_modules</exec_depend>
   <exec_depend>xterm</exec_depend>
   <exec_depend>interactive_markers</exec_depend>
   <exec_depend>python-is-python3</exec_depend>
-
-  <test_depend>roslaunch</test_depend>
 
   <export>
     <build_type>ament_python</build_type>
