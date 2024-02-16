@@ -882,7 +882,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         width = self.wm_relations_widget.size().width() - 2
         cols = self.wm_relations_widget.columnCount()
         for i in range(cols):
-            self.wm_relations_widget.setColumnWidth(i, float(width) / cols)
+            self.wm_relations_widget.setColumnWidth(i, width // cols)
 
     def create_wm_tree(self):
         scene_tuple = None
