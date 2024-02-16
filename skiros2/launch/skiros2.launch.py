@@ -55,13 +55,7 @@ def generate_launch_description():
 
     gui = Node(package='rqt_gui',
                executable='rqt_gui',
-               arguments=["-s gui.skiros"],
+               # arguments=["-s skiros2_gui.gui.Skiros"], # does not find the plugin. Not sure why - it appears in the list and can be selected with "ros2 run"
                output='screen')
-
-    # driver = Node(
-    #             package='ur_driver_test',
-    #             executable='example_driver',
-    #             name='example_driver',
-    #             output='screen')
 
     return LaunchDescription([static_tf, wm, gui])
