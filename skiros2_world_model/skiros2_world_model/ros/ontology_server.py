@@ -71,7 +71,8 @@ class OntologyServer(Node):
                 else:
                     self._ontology.remove_relation(utils.msg2relation(s.relation), msg.context, msg.author)
         log.assertInfo(self._verbose, "[WoModify]", "Done in {} sec".format(self._times.get_last()))
-        return resp(True)
+        resp.ok = True
+        return resp
 
     def run(self):
         rclpy.spin(self)

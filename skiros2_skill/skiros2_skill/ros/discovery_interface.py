@@ -12,13 +12,13 @@ class DiscoverableNode(Node):
     def init_discovery(self, namespace):
         self._ns = namespace
         self._sub_discovery = self.create_subscription(
-            Empty, '/{}/discovery'.format(self._ns), self._on_discovery)
+            Empty, '/{}/discovery'.format(self._ns), self._on_discovery, 10)
         self._pub_description = self.create_publisher(String, '/{}/description'.format(self._ns), 10)
-        Duration(nanoseconds=5 * (10**8)).sleep()  # Give time to ROS connection to initialize
+        # Duration(nanoseconds=5 * (10**8)).sleep()  # Give time to ROS connection to initialize
         self.publish_description()
 
     def publish_description(self):
-        self._pub_description.publish(String(self.get_name()))
+        self._pub_description.publish(String(data=self.get_name()))
 
     def _on_discovery(self, msg):
         self.publish_description()

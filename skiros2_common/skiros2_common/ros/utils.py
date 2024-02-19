@@ -353,7 +353,7 @@ def makeRelation(subj, pred, obj):
 
 
 def makeRelationMsg(subj, pred, obj):
-    return msgs.Relation(subj, pred, obj)
+    return msgs.Relation(subject_id=subj, predicate=pred, object_id=obj)
 
 
 def makeStatementMsg(subj, pred, obj, value):
