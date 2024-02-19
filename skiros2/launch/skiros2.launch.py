@@ -72,7 +72,8 @@ def generate_launch_description():
 
     wm = Node(package='skiros2_world_model',
               executable='world_model_server_node',
-              name='wm',
+              # Note: the name can not be set! The WM initializes two nodes "/wm" and "/skiros_element". If this is set, these names are overwritten and both are called "wm"
+              # name='wm',
               parameters=[wm_config],
               output='screen')
 
