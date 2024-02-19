@@ -283,9 +283,9 @@ def deserializePropertyMap(msg):
     for p in msg:
         data_value = json_loads_byteified(p.data_value)
         if len(data_value) > 0:
-            p_map[p.key] = param.Property(p.key, decode(data_value, p.dataType))
+            p_map[p.key] = param.Property(p.key, decode(data_value, p.data_type))
         else:
-            p_map[p.key] = param.Property(p.key, getTypeFromStr(p.dataType).__class__)
+            p_map[p.key] = param.Property(p.key, getTypeFromStr(p.data_type).__class__)
     return p_map
 
 
