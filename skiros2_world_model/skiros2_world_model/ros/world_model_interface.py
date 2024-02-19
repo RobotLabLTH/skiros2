@@ -33,6 +33,9 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         self._get = self._node.create_client(srvs.WmGet, 'wm/get')
         self._modify = self._node.create_client(srvs.WmModify, 'wm/modify')
         self._query_relations = self._node.create_client(srvs.WmQueryRelations, 'wm/scene/query_relations')
+        for s in [self._get, self._set_relations, self._modify, self._query_relations]:
+            while not s.wait_for_service(timeout_sec=1.0):
+                log.info("WorldModelInterface", "Service {} not yet available, waiting...".format(s.srv_name))
         self._last_snapshot_id = ""
         self._make_cache = make_cache
         self._external_monitor_cb = None
