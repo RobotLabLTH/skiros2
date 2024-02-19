@@ -378,7 +378,7 @@ class SkillManagerNode(DiscoverableNode):
         self._initialized = False
         self._getskills = self.create_service(srvs.ResourceGetDescriptions, 'get_skills', self._get_descriptions_cb)
         self._init_skills()
-        Duration(nanoseconds=5 * (10**8)).sleep()
+        # Duration(nanoseconds=5 * (10**8)).sleep()
         self._initialized = True
 
         # Start communications
