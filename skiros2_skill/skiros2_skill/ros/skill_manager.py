@@ -1,6 +1,7 @@
 import rclpy
 from rclpy.duration import Duration
 from rclpy.time import Time
+from rclpy.parameter import Parameter
 import skiros2_msgs.msg as msgs
 import skiros2_msgs.srv as srvs
 import skiros2_common.ros.utils as utils
@@ -363,9 +364,9 @@ class SkillManagerNode(DiscoverableNode):
         super().__init__("skill_mgr")
         self.declare_parameter("prefix", "")
         self.declare_parameter("verbose", False)
-        self.declare_parameter("libraries_list", [])
-        self.declare_parameter("primitive_list", [])
-        self.declare_parameter("skill_list", [])
+        self.declare_parameter("libraries_list", Parameter.Type.STRING_ARRAY)
+        self.declare_parameter("primitive_list", Parameter.Type.STRING_ARRAY)
+        self.declare_parameter("skill_list", Parameter.Type.STRING_ARRAY)
         self.publish_runtime_parameters = False
         robot_name = self.get_name()
         full_name = self.get_parameter('prefix').value + ':' + robot_name[robot_name.rfind("/") + 1:]

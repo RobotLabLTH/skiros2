@@ -11,6 +11,7 @@ import uuid
 from time import sleep
 
 import rclpy
+from rclpy.parameter import Parameter
 from ament_index_python.packages import get_package_share_directory
 
 
@@ -19,8 +20,8 @@ class WorldModelServer(OntologyServer):
         super().__init__(name)
         self.declare_parameter("init_scene", "")
         self.declare_parameter("workspace_dir", "")
-        self.declare_parameter("load_contexts", [])
-        self.declare_parameter("reasoners_pkgs", [])
+        self.declare_parameter("load_contexts", [""])
+        self.declare_parameter("reasoners_pkgs", Parameter.Type.STRING_ARRAY)
         self._monitor = None
         self.contexts = dict()
         self._ontology = WorldModel(self._verbose, 'scene', self._wm_change_cb)

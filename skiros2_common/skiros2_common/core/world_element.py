@@ -4,6 +4,7 @@ from skiros2_common.core.discrete_reasoner import DiscreteReasoner
 from skiros2_common.core.property import Property
 from datetime import datetime
 import rclpy
+from rclpy.parameter import Parameter
 
 try:
     unicode
@@ -116,7 +117,7 @@ class Element(object):
         # TODO: remove dependency from ROSpy
         # TODO: pass the node
         Element._node = rclpy.create_node('skiros_element')
-        Element._node.declare_parameter('reasoners_pkgs', [])
+        Element._node.declare_parameter('reasoners_pkgs', [""])
         for package in Element._node.get_parameter('reasoners_pkgs').value:
             Element._plug_loader.load(package, DiscreteReasoner)
         for plugin in Element._plug_loader:
