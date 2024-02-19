@@ -367,9 +367,9 @@ class SkillManagerNode(DiscoverableNode):
         self.declare_parameter("libraries_list", Parameter.Type.STRING_ARRAY)
         self.declare_parameter("primitive_list", Parameter.Type.STRING_ARRAY)
         self.declare_parameter("skill_list", Parameter.Type.STRING_ARRAY)
+        self.declare_parameter("robot_name", "test_robot")
         self.publish_runtime_parameters = False
-        robot_name = self.get_name()
-        full_name = self.get_parameter('prefix').value + ':' + robot_name[robot_name.rfind("/") + 1:]
+        full_name = self.get_parameter('prefix').value + ':' + self.get_parameter('robot_name').value
         self.sm = SkillManager(self, self.get_parameter('prefix').value, full_name, verbose=self.get_parameter('verbose').value)
         self.sm.observe_task_progress(self._on_progress_update)
         self.sm.observe_tick(self._on_tick)
