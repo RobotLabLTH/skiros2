@@ -18,21 +18,29 @@ SkiROS offers the following features:
 * **ROS**, **RViz** and **tf integration**
 * **Python APIs** for skill handling, the world model and task planning
 
-<img src="./skiros/docs/../../skiros2/doc/SkiROS2-Architecture.svg">
+<img width="700" alt="A figure of the SkiROS2 architecture" src="./skiros/docs/../../skiros2/doc/SkiROS2-Architecture.svg">
 
 ## Getting Started
 
 * **A full introduction and the tutorials are located in the [wiki](https://github.com/RVMI/skiros2/wiki)**
+* Watch a video from the [video section below](#Videos)
 * Executable skill examples are in the [skiros2_examples repository](https://github.com/RVMI/skiros2_examples)
 * The [SkiROS2 paper](https://arxiv.org/abs/2306.17030) provides an overview and background information
 * The [skiros2_template_lib](https://github.com/RVMI/skiros2_template_lib) provides a skeleton for new skill  library
 * Installation instructions are below
 
+## Videos
+We have video introductions to the platform with varying lengths. Feel free to choose depending on your time budget. The longer ones always include the content of the short ones.
+| 1min Pitch  | 5min Short Introduction  | 20min ROSCon 2023  |
+|---|---|---|
+| <a href="https://www.youtube.com/watch?v=0ejGWLx94a8"><img width="300" alt="Screenshot of the 1 minute introduction" src="./skiros/docs/../../skiros2/res/screenshot_1min.png"></a>  | <a href="https://www.youtube.com/watch?v=jy-LlNn3e58"><img width="300" alt="Screenshot of the 5 minute introduction" src="./skiros/docs/../../skiros2/res/screenshot_5min.png"></a>  | <a href="https://vimeo.com/879001825/2a0e9d5412"><img width="300" alt="Screenshot of the ROSCon 2023 talk" src="./skiros/docs/../../skiros2/res/screenshot_roscon.png"></a>  |
+| [1min URL](https://www.youtube.com/watch?v=0ejGWLx94a8)  | [5min URL](https://www.youtube.com/watch?v=jy-LlNn3e58)  | [ROSCon Talk URL](https://vimeo.com/879001825/2a0e9d5412)  |
+
 ## Installation
 
 ### Compatibility
 
-SkiROS is compatible with Ubuntu 18.04/ROS Melodic and Ubuntu 20.04/ROS Noetic, Python 2 and 3.
+SkiROS is compatible with Ubuntu 18.04/ROS Melodic and Ubuntu 20.04/ROS Noetic, Python 2 and 3. We are also working on a ROS 2 port for Humble.
 
 ### Installation Instructions
 
@@ -95,23 +103,21 @@ firefox skiros2_doc/html/index.html
 ```
 
 ## Citation
-A preprint of the SkiROS2 paper is [available here](https://arxiv.org/abs/2306.17030). If you are using it in your work, we would be pleased if you would cite it:
+The SkiROS2 paper is [available on IEEE Xplore here](https://ieeexplore.ieee.org/abstract/document/10342216) ([arXiv preprint](https://arxiv.org/abs/2306.17030)). If you are using it in your work, we would be pleased if you would cite it:
 ```bibtex
-@misc{mayr2023skiros2,
-      title={SkiROS2: A skill-based Robot Control Platform for ROS}, 
-      author={Matthias Mayr and Francesco Rovida and Volker Krueger},
-      year={2023},
-      eprint={2306.17030},
-      archivePrefix={arXiv},
-      primaryClass={cs.RO}
+@inproceedings{mayr2023skiros2,
+  title={SkiROS2: A Skill-Based Robot Control Platform for ROS},
+  author={Mayr, Matthias and Rovida, Francesco and Krueger, Volker},
+  booktitle={2023 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)},
+  pages={6273--6280},
+  year={2023},
+  organization={IEEE}
 }
 ```
 
 ## Acknowledgements
 
-This platform has been developed at the [RVMI lab](http://www.rvmi.aau.dk/).
+This platform has been developed in the RVMI lab at Aalborg University.
 
-This project has received funding from the European Union’s Horizon 2020
-research and innovation programme under grant agreement no. 723658, [Scalable4.0](https://www.scalable40.eu/).
-
+During its creation it has received funding from the European Union’s Horizon 2020 research and innovation programme under grant agreement no. 723658, [Scalable4.0](https://web.archive.org/web/20210618215726/https://www.scalable40.eu/).<br>
 This work was partially supported by the [Wallenberg AI, Autonomous Systems and Software Program (WASP)](https://wasp-sweden.org) funded by Knut and Alice Wallenberg Foundation
