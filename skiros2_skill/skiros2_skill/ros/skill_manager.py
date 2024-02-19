@@ -376,16 +376,16 @@ class SkillManagerNode(DiscoverableNode):
 
         # Init skills
         self._initialized = False
-        self._getskills = self.create_service(srvs.ResourceGetDescriptions, '~get_skills', self._get_descriptions_cb)
+        self._getskills = self.create_service(srvs.ResourceGetDescriptions, 'get_skills', self._get_descriptions_cb)
         self._init_skills()
         Duration(nanoseconds=5 * (10**8)).sleep()
         self._initialized = True
 
         # Start communications
-        self._command = self.create_service(srvs.SkillCommand, '~command', self._command_cb)
-        self._monitor = self.create_publisher("~monitor", msgs.TreeProgress, queue_size=20)
-        self._tick_rate = self.create_publisher("~tick_rate", Empty, queue_size=20)
-        self._set_debug = self.create_subscription('~set_debug', Bool, self._set_debug_cb)
+        self._command = self.create_service(srvs.SkillCommand, 'command', self._command_cb)
+        self._monitor = self.create_publisher("monitor", msgs.TreeProgress, queue_size=20)
+        self._tick_rate = self.create_publisher("tick_rate", Empty, queue_size=20)
+        self._set_debug = self.create_subscription('set_debug', Bool, self._set_debug_cb)
         self.init_discovery("skill_managers")
         log.info("[{}]".format(self.get_name()), "Skill manager ready.")
 
