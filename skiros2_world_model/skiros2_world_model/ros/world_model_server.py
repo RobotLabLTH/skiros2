@@ -12,6 +12,8 @@ from time import sleep
 
 import rclpy
 from rclpy.parameter import Parameter
+from rcl_interfaces.msg import ParameterDescriptor
+from rcl_interfaces.msg import ParameterType
 from ament_index_python.packages import get_package_share_directory
 
 
@@ -20,7 +22,7 @@ class WorldModelServer(OntologyServer):
         super().__init__(name)
         self.declare_parameter("init_scene", "")
         self.declare_parameter("workspace_dir", "")
-        self.declare_parameter("load_contexts", [""])
+        self.declare_parameter("load_contexts", [], descriptor=ParameterDescriptor(description='List of contexts to load (optional)', type=ParameterType.PARAMETER_STRING_ARRAY))
         self.declare_parameter("reasoners_pkgs", Parameter.Type.STRING_ARRAY)
         self._monitor = None
         self.contexts = dict()

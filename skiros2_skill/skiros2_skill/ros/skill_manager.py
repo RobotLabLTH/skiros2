@@ -2,6 +2,8 @@ import rclpy
 from rclpy.duration import Duration
 from rclpy.time import Time
 from rclpy.parameter import Parameter
+from rcl_interfaces.msg import ParameterDescriptor
+from rcl_interfaces.msg import ParameterType
 import skiros2_msgs.msg as msgs
 import skiros2_msgs.srv as srvs
 import skiros2_common.ros.utils as utils
@@ -365,7 +367,7 @@ class SkillManagerNode(DiscoverableNode):
         self.declare_parameter("prefix", "")
         self.declare_parameter("verbose", False)
         self.declare_parameter("libraries_list", Parameter.Type.STRING_ARRAY)
-        self.declare_parameter("primitive_list", [""])
+        self.declare_parameter("primitive_list", [], descriptor=ParameterDescriptor(description='List of primitives (optional)', type=ParameterType.PARAMETER_STRING_ARRAY))
         self.declare_parameter("skill_list", Parameter.Type.STRING_ARRAY)
         self.declare_parameter("robot_name", "test_robot")
         self.publish_runtime_parameters = False
@@ -401,12 +403,10 @@ class SkillManagerNode(DiscoverableNode):
             self.sm.load_skills(r)
 
         for r in self.get_parameter('primitive_list').value:
-            if len(r) > 0:  # The default parameter definition is an array of one empty string
-                log.info("[LoadPrimitive]", str(r))
-                self.sm.add_primitive(r)
+            log.info("[LoadPrimitive]", str(r))
+            self.sm.add_primitive(r)
 
-        sl = self.get_parameter('skill_list').value
-        for r in sl:
+        for r in self.get_parameter('skill_list').value:
             log.info("[LoadSkill]", str(r))
             self.sm.add_skill(r)
 
