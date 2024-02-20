@@ -177,7 +177,8 @@ class Log:
             msg = msg.rjust(len(msg) + self.__indent)
             self.__LOG.append((mode, msg, desc))
             if not self.__buffered:
-                self.__log.log(self.msgToString(self.__LOG[-1]), logToLoggingMode[mode])
+                # TODO: HACK! This is a temporary fix to make the logger work with ROS2. Should be "logToLoggingMode[mode]" instead of "logToLoggingMode[logMode.INFO]".
+                self.__log.log(self.msgToString(self.__LOG[-1]), logToLoggingMode[logMode.INFO])
 
     # has log message with mode
     def hasMode(self, mode):
