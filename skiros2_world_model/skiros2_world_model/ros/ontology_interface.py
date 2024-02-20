@@ -180,11 +180,11 @@ class OntologyInterface(OntologyAbstractInterface):
 
         @return     (string) Formatted uri
         """
-        if uri.find("#") is -1 and uri.find(":") is -1:
+        if uri.find("#") == -1 and uri.find(":") == -1:
             uri = self._def_prefix + ":" + uri
-        elif not uri.find("#") is -1 and uri.find("<") is -1:
+        elif not uri.find("#") == -1 and uri.find("<") == -1:
             uri = "<" + uri + ">"
-        elif not uri.find(":") is -1 and uri.find(":") is 0:
+        elif not uri.find(":") == -1 and uri.find(":") == 0:
             uri = self._def_prefix + uri
         return uri
 
