@@ -438,8 +438,12 @@ class SkillManagerNode(DiscoverableNode):
             self.sm.tick_once(task_id)
         else:
             log.error("[{}]".format(self.__class__.__name__), "Unrecognized command.")
-            return to_ret(False, -1)
-        return to_ret(True, task_id)
+            to_ret.ok = False
+            to_ret.execution_id = -1
+            return to_ret
+        to_ret.ok = True
+        to_ret.execution_id = task_id
+        return to_ret
 
     def _on_tick(self):
         """
