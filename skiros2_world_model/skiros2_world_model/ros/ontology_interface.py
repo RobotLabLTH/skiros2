@@ -26,6 +26,9 @@ class OntologyInterface(OntologyAbstractInterface):
         self._load_and_save = self._node.create_client(srvs.WoLoadAndSave, 'wm/load_and_save')
         log.info("[{}] ".format(self.__class__.__name__), "Waiting wm communications...")
         self._ontology_modify.wait_for_service()
+        for s in [self._lock, self._ontology_query, self._ontology_modify, self._load_and_save]:
+            while not s.wait_for_service(timeout_sec=1.0):
+                log.warn("[{}]".format(self.__class__.__name__), "Service {} not available, waiting again ...".format(s.srv_name))
         log.info("[{}] ".format(self.__class__.__name__), "Wm communications active.")
         self._def_prefix = ":"
         self._sub_classes_cache = {}

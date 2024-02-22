@@ -26,7 +26,9 @@ class SkillManagerInterface:
         # self._tick_rate_sub = self._node.create_subscription(Empty, self._skill_mgr_name + '/tick_rate', self._tick_rate.callback_hz)
         self._set_debug = self._node.create_publisher(Bool, self._skill_mgr_name + "/set_debug", 1)
         self._monitor_cb = None
-        self._get_skills.wait_for_service()
+        for s in [self._skill_exe_client, self._get_skills]:
+            while not s.wait_for_service(timeout_sec=1.0):
+                log.warn("[{}]".format(self.__class__.__name__), "Service {} not available, waiting again ...".format(s.srv_name))
         self.get_skill_list(True)
 
     @property
