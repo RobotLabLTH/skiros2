@@ -2,6 +2,7 @@ from std_msgs.msg import Empty, String
 from rclpy.duration import Duration
 from rclpy.time import Time
 from rclpy.node import Node
+from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 
 
 class DiscoverableNode(Node):
@@ -37,13 +38,14 @@ class DiscoveryInterface(object):
         @param on_inactive pointer to function expecting as input (string name). Called when a node gets inactive
         """
         self._node = node
+        self._discovery_callback_group = MutuallyExclusiveCallbackGroup() # Needed, so (service) calls from "on_activate()" do not cause deadlocks
         self._ns = namespace
         self._active_nodes = dict()
         self.on_active = on_active
         self.on_inactive = on_inactive
         self._pub_discovery = self._node.create_publisher(Empty, '/{}/discovery'.format(self._ns), 10)
         self._sub_description = self._node.create_subscription(
-            String, '/{}/description'.format(self._ns), self._description_cb, 10)
+            String, '/{}/description'.format(self._ns), self._description_cb, 10, callback_group=self._discovery_callback_group)
         self._node.create_timer(discovery_period, self.discover)
         self._active_timeout = discovery_period * 2  # Period before considering a node inactive
 
