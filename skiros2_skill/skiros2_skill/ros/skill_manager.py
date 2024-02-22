@@ -363,7 +363,9 @@ class SkillManagerNode(DiscoverableNode):
     """
 
     def __init__(self):
-        super().__init__("skill_mgr")
+        # TODO: Eventually the node name must not be hard-coded, but robot specific. Question: How to fetch name from the param before creating the node
+        self._node_name = "skill_mgr"
+        super().__init__(self._node_name)
         self.declare_parameter("prefix", "")
         self.declare_parameter("verbose", False)
         self.declare_parameter("libraries_list", Parameter.Type.STRING_ARRAY)
@@ -378,16 +380,16 @@ class SkillManagerNode(DiscoverableNode):
 
         # Init skills
         self._initialized = False
-        self._getskills = self.create_service(srvs.ResourceGetDescriptions, 'get_skills', self._get_descriptions_cb)
+        self._getskills = self.create_service(srvs.ResourceGetDescriptions, self._node_name + '/get_skills', self._get_descriptions_cb)
         self._init_skills()
         # Duration(nanoseconds=5 * (10**8)).sleep()
         self._initialized = True
 
         # Start communications
-        self._command = self.create_service(srvs.SkillCommand, 'command', self._command_cb)
-        self._monitor = self.create_publisher(msgs.TreeProgress, "monitor", 20)
-        self._tick_rate = self.create_publisher(Empty, "tick_rate", 20)
-        self._set_debug = self.create_subscription(Bool, 'set_debug', self._set_debug_cb, 2)
+        self._command = self.create_service(srvs.SkillCommand, self._node_name + '/command', self._command_cb)
+        self._monitor = self.create_publisher(msgs.TreeProgress, self._node_name + "/monitor", 20)
+        self._tick_rate = self.create_publisher(Empty, self._node_name + "/tick_rate", 20)
+        self._set_debug = self.create_subscription(Bool, self._node_name + '/set_debug', self._set_debug_cb, 2)
         self.init_discovery("skill_managers")
         log.info("[{}]".format(self.get_name()), "Skill manager ready.")
 

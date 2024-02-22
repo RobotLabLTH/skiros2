@@ -18,9 +18,9 @@ class SkillManagerInterface:
         self._skill_list = dict()
         self._msg_lock = Lock()
         self._msg_rec = Event()
-        self._skill_exe_client = self._node.create_client(srvs.SkillCommand, self._skill_mgr_name + '/command')
-        self._get_skills = self._node.create_client(srvs.ResourceGetDescriptions, self._skill_mgr_name + '/get_skills')
-        self._monitor_sub = self._node.create_subscription(msgs.TreeProgress, self._skill_mgr_name + '/monitor', self._progress_cb, 10)
+        self._skill_exe_client = self._node.create_client(srvs.SkillCommand, '/{}/command'.format(self._skill_mgr_name))
+        self._get_skills = self._node.create_client(srvs.ResourceGetDescriptions, '/{}/get_skills'.format(self._skill_mgr_name))
+        self._monitor_sub = self._node.create_subscription(msgs.TreeProgress, '/{}/monitor'.format(self._skill_mgr_name), self._progress_cb, 10)
         # TODO: find an equivalent of ROSTopicHz on ROS2
         # self._tick_rate = rostopic.ROSTopicHz(50)
         # self._tick_rate_sub = self._node.create_subscription(Empty, self._skill_mgr_name + '/tick_rate', self._tick_rate.callback_hz)
