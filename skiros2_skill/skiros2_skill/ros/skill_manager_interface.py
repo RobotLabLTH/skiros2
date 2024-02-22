@@ -70,7 +70,7 @@ class SkillManagerInterface:
         @brief Set skill manager debug mode on/off (publish more/less info about skill execution)
         @param state true=on, false=off
         """
-        self._set_debug.publish(state)
+        self._set_debug.publish(Bool(data=state))
 
     def get_skill_list(self, update=False):
         if update or not self._skill_list:
