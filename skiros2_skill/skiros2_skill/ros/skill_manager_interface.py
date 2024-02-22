@@ -6,6 +6,7 @@ from skiros2_skill.ros.utils import SkillHolder
 import skiros2_common.tools.logger as log
 from multiprocessing import Lock, Event
 import rclpy
+from rclpy import subscription
 
 
 class SkillManagerInterface:
@@ -54,8 +55,8 @@ class SkillManagerInterface:
         """
         @brief Unregister subscribers (note: deleting the instance without calling shutdown will leave callbacks active)
         """
-        self._monitor_sub.unregister()
-        # self._tick_rate_sub.unregister()
+        self._node.destroy_subscription(self._monitor_sub)
+        # self._node.destroy_client(self._tick_rate_sub)
 
     def print_state(self):
         temp = "Skills: { "
