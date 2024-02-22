@@ -197,9 +197,10 @@ class SkillManagerInterface:
 
     def call(self, service, msg):
         future = service.call_async(msg)
+        rclpy.spin_until_future_complete(self._node, future, timeout_sec=1.)
         while not future.done():
-            rclpy.spin_until_future_complete(self._node, future, timeout_sec=1.)
             log.warn("[{}]".format(self.__class__.__name__), "Waiting for reply from service {} ...".format(service.srv_name))
+            rclpy.spin_until_future_complete(self._node, future, timeout_sec=1.)
         # try:
         return future.result()
         # except Exception as e:
