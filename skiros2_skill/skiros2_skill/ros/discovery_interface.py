@@ -52,11 +52,11 @@ class DiscoveryInterface(object):
     def discover(self, event=None):
         self._pub_discovery.publish(Empty())
         for n, t in dict(self._active_nodes).items():
-            if Time.now() - t > self._active_timeout:
+            if self._node.get_clock().now() - t > self._active_timeout:
                 del self._active_nodes[n]
                 self.on_inactive(n)  # Node inactive
 
     def _description_cb(self, msg):
         if msg.data not in self._active_nodes:
             self.on_active(msg.data)  # Node active
-        self._active_nodes[msg.data] = Time.now()
+        self._active_nodes[msg.data] = self._node.get_clock().now()
