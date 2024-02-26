@@ -175,7 +175,7 @@ class SkillManagerInterface:
         """
         @brief Get the skill manager tick rate. Not working on ROS2
         """
-        return 0
+        return -1
         # rate_info = self._tick_rate.get_hz()
         # if rate_info is None:
         #     return 0
