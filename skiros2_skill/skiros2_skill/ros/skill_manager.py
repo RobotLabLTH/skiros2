@@ -53,16 +53,19 @@ class BtTicker:
 
     _finished_skill_ids = dict()
 
+    def __init__(self, node):
+        self._node = node
+
     def _run(self, _):
         """
         @brief Tick tasks at 25hz
         """
         BtTicker._finished_skill_ids = dict()
-        rate = rospy.Rate(25)
+        sleep_duration = Duration(nanoseconds=1 * (10**9) / 25)
         log.info("[BtTicker]", "Execution starts.")
         while BtTicker._tasks:
             self._tick()
-            rate.sleep()
+            self._node.get_clock().sleep_for(sleep_duration)
             self._tick_cb()
         log.info("[BtTicker]", "Execution stops.")
 
@@ -151,10 +154,10 @@ class BtTicker:
         if uid in BtTicker._tasks_to_pause:
             del BtTicker._tasks_to_pause[uid]
         BtTicker._tasks_to_preempt.append(uid)
-        starttime = Time.now()
+        starttime = self._node.get_clock().now()
         timeout = Duration(nanoseconds=5 * (10**9))
-        while(self.is_running() and Time.now() - starttime < timeout):
-            rospy.sleep(0.01)
+        while(self.is_running() and self._node.get_clock().now() - starttime < timeout):
+            self._node.get_clock().sleep_for(Duration(nanoseconds=1 * (10**7)))
         if self.is_running():
             log.info("preempt", "Task {} is not answering. Killing process.".format(uid))
             self.kill()
@@ -184,7 +187,7 @@ class SkillManager:
         self._wmi.set_default_prefix(prefix)
         self._local_wm = self._wmi
         self._instanciator = SkillInstanciator(self._local_wm)
-        self._ticker = BtTicker()
+        self._ticker = BtTicker(node)
         self._verbose = verbose
         self._ticker._verbose = verbose
         self._register_agent(agent_name)
