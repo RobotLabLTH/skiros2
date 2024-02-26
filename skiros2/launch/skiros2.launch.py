@@ -44,7 +44,7 @@ def generate_launch_description():
     )
     robot_name_arg = DeclareLaunchArgument(
         'robot_name',
-        default_value='robot'
+        default_value='test_robot'
     )
 
     # skiros_config_file = get_package_share_directory('skiros2') + "/cfg/skiros_config.yaml"
