@@ -118,8 +118,8 @@ class Element(object):
         # TODO: remove dependency from ROSpy
         # TODO: pass the node
         Element._node = rclpy.create_node('skiros_element')
-        # TODO: Remove empty string from default value. This might work if the node is passed to the plugin loader
-        Element._node.declare_parameter('reasoners_pkgs', [""], descriptor=ParameterDescriptor(description='List of reasoner pkgs (optional)', type=ParameterType.PARAMETER_STRING_ARRAY))
+        # TODO: HACK! Fixes reasoners_pkgs list (currently we would also not have other ones)
+        Element._node.declare_parameter('reasoners_pkgs', ["skiros2_std_reasoners"], descriptor=ParameterDescriptor(description='List of reasoner pkgs (optional)', type=ParameterType.PARAMETER_STRING_ARRAY))
         for package in Element._node.get_parameter('reasoners_pkgs').value:
             Element._plug_loader.load(package, DiscreteReasoner)
         for plugin in Element._plug_loader:

@@ -357,7 +357,7 @@ class SkirosInteractiveMarkers:
         int_marker.pose.orientation.y = pose[1][1]
         int_marker.pose.orientation.z = pose[1][2]
         int_marker.pose.orientation.w = pose[1][3]
-        int_marker.scale = 1
+        int_marker.scale = 1.0
 
         int_marker.name = frame_id
         int_marker.description = frame_id
@@ -368,60 +368,60 @@ class SkirosInteractiveMarkers:
 
         n = norm([1, 1])
         control = InteractiveMarkerControl()
-        control.orientation.w = 1 / n
-        control.orientation.x = 1 / n
-        control.orientation.y = 0
-        control.orientation.z = 0
+        control.orientation.w = 1. / n
+        control.orientation.x = 1. / n
+        control.orientation.y = 0.
+        control.orientation.z = 0.
         control.name = "rotate_x"
         control.interaction_mode = InteractiveMarkerControl.ROTATE_AXIS
         int_marker.controls.append(control)
 
         control = InteractiveMarkerControl()
-        control.orientation.w = 1 / n
-        control.orientation.x = 1 / n
-        control.orientation.y = 0
-        control.orientation.z = 0
+        control.orientation.w = 1. / n
+        control.orientation.x = 1. / n
+        control.orientation.y = 0.
+        control.orientation.z = 0.
         control.name = "move_x"
         control.interaction_mode = InteractiveMarkerControl.MOVE_AXIS
         int_marker.controls.append(control)
 
         control = InteractiveMarkerControl()
-        control.orientation.w = 1 / n
-        control.orientation.x = 0
-        control.orientation.y = 1 / n
-        control.orientation.z = 0
+        control.orientation.w = 1. / n
+        control.orientation.x = 0.
+        control.orientation.y = 1. / n
+        control.orientation.z = 0.
         control.name = "rotate_y"
         control.interaction_mode = InteractiveMarkerControl.ROTATE_AXIS
         int_marker.controls.append(control)
 
         control = InteractiveMarkerControl()
-        control.orientation.w = 1 / n
-        control.orientation.x = 0
-        control.orientation.y = 1 / n
-        control.orientation.z = 0
+        control.orientation.w = 1. / n
+        control.orientation.x = 0.
+        control.orientation.y = 1. / n
+        control.orientation.z = 0.
         control.name = "move_y"
         control.interaction_mode = InteractiveMarkerControl.MOVE_AXIS
         int_marker.controls.append(control)
 
         control = InteractiveMarkerControl()
-        control.orientation.w = 1 / n
-        control.orientation.x = 0
-        control.orientation.y = 0
-        control.orientation.z = 1 / n
+        control.orientation.w = 1. / n
+        control.orientation.x = 0.
+        control.orientation.y = 0.
+        control.orientation.z = 1. / n
         control.name = "rotate_z"
         control.interaction_mode = InteractiveMarkerControl.ROTATE_AXIS
         int_marker.controls.append(control)
 
         control = InteractiveMarkerControl()
-        control.orientation.w = 1 / n
-        control.orientation.x = 0
-        control.orientation.y = 0
-        control.orientation.z = 1 / n
+        control.orientation.w = 1. / n
+        control.orientation.x = 0.
+        control.orientation.y = 0.
+        control.orientation.z = 1. / n
         control.name = "move_z"
         control.interaction_mode = InteractiveMarkerControl.MOVE_AXIS
         int_marker.controls.append(control)
 
-        self._server.insert(int_marker, self.on_marker_feedback)
+        self._server.insert(int_marker, feedback_callback=self.on_marker_feedback)
         self._server.applyChanges()
 
 
@@ -607,6 +607,9 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         if self._sli.has_changes:
             self.create_skill_tree()
             self._sli.set_debug(self.debug_checkBox.isChecked())
+        # Update WM
+        if self._wmi.is_connected() and self._snapshot_id == "":
+            self.create_wm_tree()
         # Update robot BT rate
         if self._sli.agents:
             robot_info = ""
