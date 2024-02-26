@@ -4,9 +4,10 @@ from .discovery_interface import DiscoveryInterface
 
 
 class SkillLayerInterface(DiscoveryInterface):
-    def __init__(self, node, author="unknown"):
+    def __init__(self, node, author="unknown", allow_spinning=True):
         self._node = node
         self._author = author
+        self._allow_spinning = allow_spinning
         self._agents = dict()
         self._new_changes = False
         self._active_sm = set()
@@ -62,7 +63,7 @@ class SkillLayerInterface(DiscoveryInterface):
 
     def _on_active(self, name):
         log.info("[SkillLayerInterface]", "New skill manager detected: {}".format(name))
-        self._agents[name] = SkillManagerInterface(self._node, name, self._author)
+        self._agents[name] = SkillManagerInterface(self._node, name, self._author, self._allow_spinning)
         self._agents[name].set_monitor_cb(self._progress_cb)
         self._new_changes = True
 

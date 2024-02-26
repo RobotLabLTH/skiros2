@@ -8,7 +8,7 @@ from skiros2_world_model.core.world_model_abstract_interface import OntologyAbst
 import rclpy
 
 class OntologyInterface(OntologyAbstractInterface):
-    def __init__(self, node, author_name):
+    def __init__(self, node, author_name, allow_spinning=True):
         """
         @brief      Interface to ontology services
 
@@ -20,6 +20,7 @@ class OntologyInterface(OntologyAbstractInterface):
         """
         self._node = node
         self._author_name = author_name
+        self._allow_spinning = allow_spinning
         self._lock = self._node.create_client(SetBool, 'wm/lock')
         self._ontology_query = self._node.create_client(srvs.WoQuery, 'wm/ontology/query')
         self._ontology_modify = self._node.create_client(srvs.WoModify, 'wm/ontology/modify')
@@ -297,8 +298,13 @@ class OntologyInterface(OntologyAbstractInterface):
 
     def _call(self, service, msg):
         future = service.call_async(msg)
-        rclpy.spin_until_future_complete(self._node, future, timeout_sec=1.)
-        while not future.done():
-            log.warn("[{}]".format(self.__class__.__name__), "Waiting for reply from service {} ...".format(service.srv_name))
+        if self._allow_spinning:
+            log.info("Service call to {} with spining".format(service.srv_name))
             rclpy.spin_until_future_complete(self._node, future, timeout_sec=1.)
+            while not future.done():
+                log.warn("[{}]".format(self.__class__.__name__), "Waiting for reply from service {} ...".format(service.srv_name))
+                rclpy.spin_until_future_complete(self._node, future, timeout_sec=1.)
+        else:
+            while rclpy.ok() and not future.done():
+                pass
         return future.result()

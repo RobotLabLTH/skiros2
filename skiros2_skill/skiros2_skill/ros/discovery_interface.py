@@ -15,7 +15,6 @@ class DiscoverableNode(Node):
         self._sub_discovery = self.create_subscription(
             Empty, '/{}/discovery'.format(self._ns), self._on_discovery, 10)
         self._pub_description = self.create_publisher(String, '/{}/description'.format(self._ns), 10)
-        # Duration(nanoseconds=5 * (10**8)).sleep()  # Give time to ROS connection to initialize
         self.publish_description()
 
     def publish_description(self):

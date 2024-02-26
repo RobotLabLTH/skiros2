@@ -10,10 +10,11 @@ from rclpy import subscription
 
 
 class SkillManagerInterface:
-    def __init__(self, node, manager_name, author_name):
+    def __init__(self, node, manager_name, author_name, allow_spinning=True):
         self._skill_mgr_name = manager_name
         self._node = node
         self._author = author_name
+        self._allow_spinning = allow_spinning
         self._active_tasks = set()
         self._module_list = dict()
         self._skill_list = dict()
@@ -198,12 +199,13 @@ class SkillManagerInterface:
 
     def call(self, service, msg):
         future = service.call_async(msg)
-        rclpy.spin_until_future_complete(self._node, future, timeout_sec=1.)
-        while not future.done():
-            log.warn("[{}]".format(self.__class__.__name__), "Waiting for reply from service {} ...".format(service.srv_name))
+        if self._allow_spinning:
+            log.info("Service call to {} with spining".format(service.srv_name))
             rclpy.spin_until_future_complete(self._node, future, timeout_sec=1.)
-        # try:
+            while not future.done():
+                log.warn("[{}]".format(self.__class__.__name__), "Waiting for reply from service {} ...".format(service.srv_name))
+                rclpy.spin_until_future_complete(self._node, future, timeout_sec=1.)
+        else:
+            while rclpy.ok() and not future.done():
+                pass
         return future.result()
-        # except Exception as e:
-        #     node.get_logger().info('Service call failed %r' % (e,))
-        # return resp1

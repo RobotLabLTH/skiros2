@@ -15,7 +15,7 @@ except NameError:
 class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
     _elements_cache = {}
 
-    def __init__(self, node, author_name, make_cache=False):
+    def __init__(self, node, author_name, make_cache=False, allow_spinning=True):
         """
         @brief      Interface to world model scene services
 
@@ -27,7 +27,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         @param      make_cache   If true, keeps a local cache to speed
                                  up world model access
         """
-        OntologyInterface.__init__(self, node, author_name)
+        OntologyInterface.__init__(self, node, author_name, allow_spinning)
         self._node.declare_parameter("wm/init_scene", "")
         self._set_relations = self._node.create_client(srvs.WmSetRelation, 'wm/scene/set_relation')
         self._get = self._node.create_client(srvs.WmGet, 'wm/get')

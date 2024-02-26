@@ -465,8 +465,9 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         # Due to restrictions in Qt, you cannot manipulate Qt widgets directly within ROS callbacks,
         # because they are running in a different thread.
         self.initInteractiveServer(self._node, SkirosWidget.widget_id)
-        self._wmi = wmi.WorldModelInterface(self._node, SkirosWidget.widget_id)
-        self._sli = sli.SkillLayerInterface(self._node, SkirosWidget.widget_id)
+        # We can not spin in rqt application:
+        self._wmi = wmi.WorldModelInterface(self._node, SkirosWidget.widget_id, allow_spinning=False)
+        self._sli = sli.SkillLayerInterface(self._node, SkirosWidget.widget_id, allow_spinning=False)
 
         # Setup a timer to keep interface updated
         self.refresh_timer = QTimer()
@@ -630,7 +631,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         root = QTreeWidgetItem(self.skill_tree_widget, ["All", "All"])
         root.setExpanded(True)
         for ak, e in self._sli._agents.items():
-            for s in e._skill_list.values():
+            for s in e.get_skill_list().values():
                 s.manager = ak
                 self._add_available_skill(s)
         # simplifies hierarchy
