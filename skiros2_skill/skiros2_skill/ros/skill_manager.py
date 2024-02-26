@@ -317,39 +317,42 @@ class SkillManager:
     def clear_tasks(self):
         self._ticker.clear()
 
-    def execute_optimal(self):
-        # Optimize Procedure
-        self.optimizeTask()
-        self.print_task()
-        # Execute
-        return self.execute_task(False)
+    # 
+    # Previous research code - not used right now
+    # 
+    # def execute_optimal(self):
+    #     # Optimize Procedure
+    #     self.optimizeTask()
+    #     self.print_task()
+    #     # Execute
+    #     return self.execute_task(False)
 
-    def simulate_task(self, uid):
-        self.visitor = visitors.VisitorReversibleSimulator(self._local_wm, self._instanciator)
-        self.visitor.setVerbose(self._verbose)
-        # self.visitor.trackParam("Initial")
-        # self.visitor.trackParam("Gripper")
-        if self.visitor.traverse(self._tasks[uid]):
-            self._task = self.visitor.getExecutionRoot()
+    # def simulate_task(self, uid):
+    #     self.visitor = visitors.VisitorReversibleSimulator(self._local_wm, self._instanciator)
+    #     self.visitor.setVerbose(self._verbose)
+    #     # self.visitor.trackParam("Initial")
+    #     # self.visitor.trackParam("Gripper")
+    #     if self.visitor.traverse(self._tasks[uid]):
+    #         self._task = self.visitor.getExecutionRoot()
 
-    def optimize_task(self):
-        self.visitor = optimizer.VisitorOptimizer(self._local_wm, self._instanciator)
-        # self.visitor.setVerbose(True)
-        # self.visitor.trackParam("PlacingCell")
-        # self.visitor.trackParam("Object")
-        self.publish("Optimization", 1, "Start.")
-        try:
-            if self.visitor.traverse(self._task):
-                self._task = self.visitor.getExecutionRoot()
-                return True
-            else:
-                self._task = self.visitor.getExecutionRoot()
-                return False
-        except KeyError as e:
-            self._task = self.visitor.getExecutionRoot()
-            print("Exe: {}".format(self.visitor._execution_branch))
-            self.print_task()
-            raise e
+    # def optimize_task(self):
+    #     self.visitor = optimizer.VisitorOptimizer(self._local_wm, self._instanciator)
+    #     # self.visitor.setVerbose(True)
+    #     # self.visitor.trackParam("PlacingCell")
+    #     # self.visitor.trackParam("Object")
+    #     self.publish("Optimization", 1, "Start.")
+    #     try:
+    #         if self.visitor.traverse(self._task):
+    #             self._task = self.visitor.getExecutionRoot()
+    #             return True
+    #         else:
+    #             self._task = self.visitor.getExecutionRoot()
+    #             return False
+    #     except KeyError as e:
+    #         self._task = self.visitor.getExecutionRoot()
+    #         print("Exe: {}".format(self.visitor._execution_branch))
+    #         self.print_task()
+    #         raise e
 
 
 class SkillManagerNode(DiscoverableNode):
