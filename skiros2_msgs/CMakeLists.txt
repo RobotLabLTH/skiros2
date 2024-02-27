@@ -27,6 +27,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   srv/WmModify.srv
   srv/SkillCommand.srv
   action/AssignTask.action
+  action/TestAction.action
  )
 
 if(BUILD_TESTING)
