@@ -184,7 +184,8 @@ class SkillManager:
 
     def __init__(self, node, prefix, agent_name, verbose=True):
         self._agent_name = agent_name
-        self._wmi = wmi.WorldModelInterface(node, agent_name, make_cache=True)
+        # Note: The WMI must spin to set up the skill manager. During operation, the SM-node does the spinning
+        self._wmi = wmi.WorldModelInterface(node, agent_name, make_cache=True, allow_spinning=True)
         self._wmi.set_default_prefix(prefix)
         self._local_wm = self._wmi
         self._instanciator = SkillInstanciator(node, self._local_wm)
@@ -500,4 +501,6 @@ class SkillManagerNode(DiscoverableNode):
         return to_ret
 
     def run(self):
+        # Note: The WMI must spin initially to set up the skill manager. During operation, the SM-node does the spinning
+        self.sm._wmi._allow_spinning = False
         rclpy.spin(self)
