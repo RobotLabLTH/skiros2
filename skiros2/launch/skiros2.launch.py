@@ -33,6 +33,10 @@ def generate_launch_description():
     libraries_list = LaunchConfiguration('libraries_list')
     skill_list = LaunchConfiguration('skill_list')
     robot_name = LaunchConfiguration('robot_name')
+    init_scene = LaunchConfiguration('init_scene')
+    verbose = LaunchConfiguration('verbose')
+    workspace_dir = LaunchConfiguration('workspace_dir')
+    robot_ontology_prefix = LaunchConfiguration('robot_ontology_prefix')
 
     libraries_list_arg = DeclareLaunchArgument(
         'libraries_list',
@@ -46,23 +50,40 @@ def generate_launch_description():
         'robot_name',
         default_value='test_robot'
     )
+    init_scene_arg = DeclareLaunchArgument(
+        'init_scene',
+        default_value=''
+    )
+    verbose_arg = DeclareLaunchArgument(
+        'verbose',
+        default_value='false'
+    )
+    workspace_dir_arg = DeclareLaunchArgument(
+        'workspace_dir',
+        default_value=get_package_share_directory('skiros2') + "/owl"
+    )
+    robot_ontology_prefix_arg = DeclareLaunchArgument(
+        'robot_ontology_prefix',
+        default_value='skiros'
+    )
+
 
     # skiros_config_file = get_package_share_directory('skiros2') + "/cfg/skiros_config.yaml"
     wm_config = {
-        "workspace_dir": get_package_share_directory('skiros2') + "/owl",
-        "init_scene": "",
-        "verbose": False,
+        "workspace_dir": workspace_dir,
+        "init_scene": init_scene,
+        "verbose": verbose,
         "reasoners_pkgs": ["skiros2_std_reasoners"],
         # "load_contexts": [],
     }
 
     skill_mgr_config = {
-        "prefix": "skiros",
-        "verbose": False,
+        "prefix": robot_ontology_prefix,
+        "verbose": verbose,
         "libraries_list": libraries_list,
         "skill_list": skill_list,
         "robot_name": robot_name,
-        "deploy": False
+        "deploy": False,
     }
 
     static_tf = Node(package='tf2_ros',
@@ -91,7 +112,11 @@ def generate_launch_description():
     return LaunchDescription([libraries_list_arg,
                               skill_list_arg,
                               robot_name_arg,
+                              init_scene_arg,
+                              verbose_arg,
+                              workspace_dir_arg,
+                              robot_ontology_prefix_arg,
                               static_tf,
                               wm,
-                              gui,
+                              # gui,
                               skill_mgr])
