@@ -1,16 +1,21 @@
+from rclpy.node import Node
 from collections import defaultdict
 import skiros2_common.tools.logger as log
 from skiros2_common.core.abstract_skill import State
 from copy import deepcopy
 from skiros2_skill.core.skill import SkillDescription
+from skiros2_common.core.primitive import PrimitiveBase
+from skiros2_skill.core.skill import SkillInterface, SkillDescription, SkillCore
 from skiros2_common.tools.plugin_loader import PluginLoader
+from skiros2_world_model.ros import world_model_interface
 
 class SkillInstanciator:
-    def __init__(self, wmi):
+    def __init__(self, node: Node, wmi: world_model_interface):
         self._plugin_manager = PluginLoader()
         self._available_descriptions = {}
-        self._available_instances = defaultdict(list)
+        self._available_instances = defaultdict(list) # type: defaultdict[str,list[SkillCore]]
         self._wm = wmi
+        self._node = node
 
     def load_library(self, package, verbose):
         """
@@ -20,17 +25,17 @@ class SkillInstanciator:
         if verbose:
             self._plugin_manager.list()
 
-    def get_description(self, skill_type):
+    def get_description(self, skill_type)->SkillDescription:
         if not skill_type in self._available_descriptions:
             type_without_prefix = skill_type if not ":" in skill_type else skill_type[skill_type.find(":")+1:]
             self._available_descriptions[skill_type] = self._plugin_manager.getPluginByName(type_without_prefix)()
         return self._available_descriptions[skill_type]
 
-    def add_instance(self, skill_name):
+    def add_instance(self, skill_name)->PrimitiveBase:
         """
         @brief Add a new instance of a skill
         """
-        skill = self._plugin_manager.getPluginByName(skill_name)()
+        skill = self._plugin_manager.getPluginByName(skill_name)() # type: PrimitiveBase
         skill.init(self._wm, self)
         self._available_instances[skill.type].append(skill)
         return skill
@@ -40,7 +45,7 @@ class SkillInstanciator:
             for p in ps:
                 p.expand(p)
 
-    def assign_description(self, skill):
+    def assign_description(self, skill: SkillInterface):
         """
         @brief Assign a description to an abstract skill.
         """

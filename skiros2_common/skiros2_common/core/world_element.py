@@ -1,6 +1,5 @@
 import skiros2_common.tools.logger as log
 from skiros2_common.tools.plugin_loader import PluginLoader
-from skiros2_common.core.discrete_reasoner import DiscreteReasoner
 from skiros2_common.core.property import Property
 from datetime import datetime
 import rclpy
@@ -113,6 +112,7 @@ class Element(object):
         return self._last_update
 
     def _initPluginLoader(self):
+        from skiros2_common.core.discrete_reasoner import DiscreteReasoner
         Element._plug_loader = PluginLoader()
         Element._property_reasoner_map = {}
         # TODO: remove dependency from ROSpy

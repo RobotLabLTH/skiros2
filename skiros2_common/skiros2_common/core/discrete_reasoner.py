@@ -1,11 +1,14 @@
+from rclpy.node import Node
 from multiprocessing.dummy import Process
 
 
 class DiscreteReasoner(object):
+    from skiros2_world_model.ros import world_model_interface
+
     def __repr__(self):
         return self.__class__.__name__
 
-    def init(self, wmi, node):
+    def init(self, wmi: world_model_interface, node: Node):
         """
         Set an interface to the world model and the ROS node
         """

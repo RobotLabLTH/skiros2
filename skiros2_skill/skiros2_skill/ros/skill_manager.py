@@ -18,6 +18,7 @@ from skiros2_common.core.world_element import Element
 from skiros2_common.tools.id_generator import IdGen
 from multiprocessing.dummy import Process
 import skiros2_skill.core.visitors as visitors
+from skiros2_skill.core.skill import SkillCore
 from std_msgs.msg import Empty, Bool
 import inflection  # For camel-snake case conversion
 
@@ -186,12 +187,12 @@ class SkillManager:
         self._wmi = wmi.WorldModelInterface(node, agent_name, make_cache=True)
         self._wmi.set_default_prefix(prefix)
         self._local_wm = self._wmi
-        self._instanciator = SkillInstanciator(self._local_wm)
+        self._instanciator = SkillInstanciator(node, self._local_wm)
         self._ticker = BtTicker(node)
         self._verbose = verbose
         self._ticker._verbose = verbose
         self._register_agent(agent_name)
-        self._skills = []
+        self._skills = [] # type: list[SkillCore]
         # self._wmi.unlock() #Ensures the world model's mutex is unlocked
 
     @property
