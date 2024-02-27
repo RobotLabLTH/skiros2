@@ -62,11 +62,11 @@ class BtTicker:
         @brief Tick tasks at 25hz
         """
         BtTicker._finished_skill_ids = dict()
-        sleep_duration = Duration(nanoseconds=1 * (10**9) / 25)
+        loop_rate = self._node.create_rate(25, self._node.get_clock())
         log.info("[BtTicker]", "Execution starts.")
         while BtTicker._tasks:
             self._tick()
-            self._node.get_clock().sleep_for(sleep_duration)
+            loop_rate.sleep()
             self._tick_cb()
         log.info("[BtTicker]", "Execution stops.")
 
