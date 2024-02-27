@@ -436,9 +436,9 @@ class SkillManagerNode(DiscoverableNode):
                 task_id = self.sm.add_task(self._make_task(msg.skills))
             self.sm.execute_task(task_id)
         elif msg.action == msg.PREEMPT:
-            task_id = self.sm.preempt_task(msg.execution_id)
+            self.sm.preempt_task(msg.execution_id)
         elif msg.action == msg.PAUSE:
-            task_id = self.sm.pause(msg.execution_id)
+            self.sm.pause(msg.execution_id)
         elif msg.action == msg.TICK_ONCE:
             if task_id == -1:
                 task_id = self.sm.add_task(self._make_task(msg.skills))
