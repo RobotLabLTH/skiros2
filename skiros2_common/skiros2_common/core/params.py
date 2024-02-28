@@ -192,11 +192,11 @@ class ParamHandler(object):
     __slots__ = ['_params']
 
     def __init__(self, params=None):
-        self._params = {}
+        self._params = {} # type: dict[str,Param]
         if params:
             self._params = params
 
-    def __getitem__(self, key):
+    def __getitem__(self, key)->Param:
         if self.hasParam(key):
             return self._params[key]
         else:

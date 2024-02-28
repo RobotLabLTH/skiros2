@@ -40,7 +40,7 @@ class SkillDescription(object):
         # self.generateDefConditions()
 
     @property
-    def params(self):
+    def params(self)->params.ParamHandler:
         """
         @brief      Gets the skill's parameter handler
         """
