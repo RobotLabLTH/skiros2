@@ -118,5 +118,5 @@ def generate_launch_description():
                               robot_ontology_prefix_arg,
                               static_tf,
                               wm,
-                              # gui,
+                              gui,
                               skill_mgr])

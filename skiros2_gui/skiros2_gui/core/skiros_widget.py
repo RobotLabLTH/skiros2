@@ -438,6 +438,7 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
     def __init__(self, node, initial_topics=None, start_paused=False):
         super(SkirosWidget, self).__init__()
         self._node = node
+        self._marker_update = None
         self.setObjectName('SkirosWidget')
 
         _, self.package_path = get_resource('packages', 'skiros2_gui')
@@ -610,6 +611,8 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         # Update WM
         if self._wmi.is_connected() and self._snapshot_id == "":
             self.create_wm_tree()
+        # Process marker feedback
+        self._process_marker_feedback()
         # Update robot BT rate
         if self._sli.agents:
             robot_info = ""
@@ -818,9 +821,14 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
 
     def on_marker_feedback(self, feedback):
         if feedback.event_type == InteractiveMarkerFeedback.POSE_UPDATE:
+            self._marker_update = feedback
+
+    def _process_marker_feedback(self):
+        if self._marker_update is not None:
             with self._wm_mutex:
-                elem = self._wmi.get_element(feedback.marker_name)
-                elem.setData(":PoseStampedMsg", feedback)
+                elem = self._wmi.get_element(self._marker_update.marker_name)
+                elem.setData(":PoseStampedMsg", self._marker_update)
+                self._marker_update = None
                 self._wmi.update_element_properties(elem)
 
     @Slot()
