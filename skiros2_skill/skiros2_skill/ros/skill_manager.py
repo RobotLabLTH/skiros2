@@ -500,7 +500,7 @@ class SkillManagerNode(DiscoverableNode):
             to_ret.list.append(skill2msg(s))
         return to_ret
 
-    def run(self):
+    def disallow_spinning(self):
         # Note: The WMI must spin initially to set up the skill manager. During operation, the SM-node does the spinning
         self.sm._wmi._allow_spinning = False
-        rclpy.spin(self)
+        # rclpy.spin(self)
