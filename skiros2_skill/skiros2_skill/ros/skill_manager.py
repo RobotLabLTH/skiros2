@@ -387,11 +387,8 @@ class SkillManagerNode(DiscoverableNode):
         self.sm.observe_tick(self._on_tick)
 
         # Init skills
-        self._initialized = False
-        self._getskills = self.create_service(srvs.ResourceGetDescriptions, self._node_name + '/get_skills', self._get_descriptions_cb)
         self._init_skills()
-        # Duration(nanoseconds=5 * (10**8)).sleep()
-        self._initialized = True
+        self._getskills = self.create_service(srvs.ResourceGetDescriptions, self._node_name + '/get_skills', self._get_descriptions_cb)
 
         # Start communications
         self._command = self.create_service(srvs.SkillCommand, self._node_name + '/command', self._command_cb)
@@ -494,8 +491,6 @@ class SkillManagerNode(DiscoverableNode):
         """
         @brief Returns available skills. Called when receiving a command on ~/get_descriptions
         """
-        while not self._initialized:
-            Duration(nanoseconds=(10**8)).sleep()
         for s in self.sm.skills:
             to_ret.list.append(skill2msg(s))
         return to_ret
