@@ -26,6 +26,8 @@
   <exec_depend>xterm</exec_depend>
   <exec_depend>interactive_markers</exec_depend>
   <exec_depend>python-is-python3</exec_depend>
+  <exec_depend>python3-wrapt</exec_depend>
+  <exec_depend>python3-inflection</exec_depend>
 
    <export>
   </export>
