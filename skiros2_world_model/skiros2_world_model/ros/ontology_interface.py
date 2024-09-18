@@ -299,7 +299,7 @@ class OntologyInterface(OntologyAbstractInterface):
     def _call(self, service, msg):
         future = service.call_async(msg)
         if self._allow_spinning:
-            log.info("Service call to {} with spining".format(service.srv_name))
+            # log.debug("Service call to {} with spinning".format(service.srv_name)) # Commented out until log levels work
             rclpy.spin_until_future_complete(self._node, future, timeout_sec=1.)
             while not future.done():
                 log.warn("[{}]".format(self.__class__.__name__), "Waiting for reply from service {} ...".format(service.srv_name))
