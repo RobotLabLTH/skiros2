@@ -38,6 +38,7 @@ class WorldModelServer(OntologyServer):
         self._query_relations = self.create_service(srvs.WmQueryRelations, '~/scene/query_relations', self._wm_query_rel_cb)
         self._get = self.create_service(srvs.WmGet, '~/get', self._wm_get_cb)
         self._modify = self.create_service(srvs.WmModify, '~/modify', self._wm_modify_cb)
+        self._scene_name = self.create_service(srvs.WmInitScene, '~/init_scene', self._wm_init_scene_cb)
         # TODO: missing latching in ROS2, need to config QoS https://github.com/RobotWebTools/ros2-web-bridge/issues/134
         self._monitor = self.create_publisher(msgs.WmMonitor, "~/monitor", 20)
         self._load_and_save = self.create_service(srvs.WoLoadAndSave, '~/load_and_save', self._load_and_save_cb)
@@ -59,10 +60,10 @@ class WorldModelServer(OntologyServer):
         self._ontology.workspace = self._workspace
         log.info("[{}]".format(self.__class__.__name__), "Workspace folder: {}".format(self._workspace))
         self._ontology.set_default_prefix('skiros', 'http://rvmi.aau.dk/ontologies/skiros.owl#')
-        init_scene = self.get_parameter('init_scene').value
+        self._init_scene = self.get_parameter('init_scene').value
         self._ontology.reset()
-        if init_scene != "":
-            self._ontology.load_context(init_scene)
+        if self._init_scene != "":
+            self._ontology.load_context(self._init_scene)
         for context in self.get_parameter('load_contexts').value:
             if context:  # TODO: understand why it is returning an empty string?
                 context_id, filename = context.split(" ")
@@ -210,6 +211,10 @@ class WorldModelServer(OntologyServer):
                 self._publish_change(msg.author, "remove_recursive", elements=msg.elements, context_id=msg.context)
         if self._verbose:
             log.info("[WmModify]", "{} {} {}. Time: {:0.3f} secs".format(msg.author, msg.action, [e.id for e in to_ret.elements], self._times.get_last()))
+        return to_ret
+    
+    def _wm_init_scene_cb(self, _, to_ret):
+        to_ret.init_scene = self._init_scene        
         return to_ret
 
     def run(self):

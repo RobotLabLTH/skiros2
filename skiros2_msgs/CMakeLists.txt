@@ -21,6 +21,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   srv/WoQuery.srv
   srv/WoModify.srv
   srv/WmGet.srv
+  srv/WmInitScene.srv
   srv/WoLoadAndSave.srv
   srv/WmSetRelation.srv
   srv/WmQueryRelations.srv
