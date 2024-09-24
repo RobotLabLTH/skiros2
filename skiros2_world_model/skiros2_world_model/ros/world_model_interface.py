@@ -33,6 +33,7 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
         self._get = self._node.create_client(srvs.WmGet, 'wm/get')
         self._modify = self._node.create_client(srvs.WmModify, 'wm/modify')
         self._query_relations = self._node.create_client(srvs.WmQueryRelations, 'wm/scene/query_relations')
+        self._init_scene = self._node.create_client(srvs.WmInitScene, 'wm/init_scene')
         for s in [self._get, self._set_relations, self._modify, self._query_relations]:
             while not s.wait_for_service(timeout_sec=1.0):
                 log.warn("[{}]".format(self.__class__.__name__), "Service {} not available, waiting again ...".format(s.srv_name))
@@ -93,9 +94,10 @@ class WorldModelInterface(OntologyInterface, WorldModelAbstractInterface):
 
     def get_scene_name(self):
         """
-        @brief Get the name of the scene from ROS parameter
+        @brief Get the name of the scene from the world-model server
         """
-        return self._node.get_parameter('wm/init_scene').value
+        res = self._call(self._init_scene, srvs.WmInitScene.Request())
+        return res.init_scene
 
     def get_scene(self):
         """
