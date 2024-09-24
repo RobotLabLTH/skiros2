@@ -595,7 +595,7 @@
                <item>
                 <widget class="QLineEdit" name="scene_file_lineEdit">
                  <property name="text">
-                  <string>my_world_state.owl</string>
+                  <string>my_world_state.turtle</string>
                  </property>
                 </widget>
                </item>
