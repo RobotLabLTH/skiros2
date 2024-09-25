@@ -86,6 +86,10 @@ def generate_launch_description():
         "deploy": False,
     }
 
+    task_mgr_config = {
+        "verbose": verbose,
+    }
+
     static_tf = Node(package='tf2_ros',
                      executable='static_transform_publisher',
                      output='log',
@@ -109,6 +113,12 @@ def generate_launch_description():
                      respawn=True,
                      parameters=[skill_mgr_config])
 
+    task_mgr = Node(package='skiros2_task',
+                     executable='task_manager_node',
+                     output='screen',
+                     respawn=True,
+                     parameters=[task_mgr_config])
+
     return LaunchDescription([libraries_list_arg,
                               skill_list_arg,
                               robot_name_arg,
@@ -119,4 +129,5 @@ def generate_launch_description():
                               static_tf,
                               wm,
                               gui,
-                              skill_mgr])
+                              skill_mgr,
+                              task_mgr])

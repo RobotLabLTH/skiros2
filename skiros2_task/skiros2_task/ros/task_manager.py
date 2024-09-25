@@ -1,9 +1,10 @@
-import rospy
+import rclpy
+from rclpy.node import Node
+from rclpy import action
 
 from std_msgs.msg import Empty
 
 import skiros2_msgs.msg as msgs
-import actionlib
 import skiros2_common.core.params as skirosp
 import skiros2_common.core.conditions as cond
 
@@ -19,7 +20,7 @@ import skiros2_task.core.pddl_interface as pddl
 from skiros2_skill.ros.utils import SkillHolder
 
 
-class TaskManagerNode(PrettyObject):
+class TaskManagerNode(PrettyObject, Node):
     def __init__(self):
         """
         This class manage the robot task planning. A list of goals can be set by
@@ -29,24 +30,27 @@ class TaskManagerNode(PrettyObject):
         Initialize task manager as a ros node. Establish access to the global
         and local world model, skill manager and the task planner.
         """
-        rospy.init_node("task_manager", anonymous=False)
-        self._author_name = rospy.get_name()
+        # TODO: Eventually the node name must not be hard-coded, but robot specific. Question: How to fetch name from the param before creating the node
+        self._node_name = "task_mgr"
+        super().__init__(self._node_name)
+        self._author_name = self._node_name
 
         self._goals = []
         self._skills = {}
         self._abstract_objects = []
 
-        self._wmi = wmi.WorldModelInterface(self._author_name)
-        self._sli = sli.SkillLayerInterface(self._author_name)
+        self._wmi = wmi.WorldModelInterface(self, self._author_name, make_cache=True, allow_spinning=False)
+        self._sli = sli.SkillLayerInterface(self, self._author_name, allow_spinning=False)
         self._pddl_interface = pddl.PddlInterface()
 
-        self._verbose = rospy.get_param('~verbose', True)
+        self.declare_parameter("verbose", False)
+        self._verbose = self.get_parameter('verbose').value
         log.setLevel(log.INFO)
-        self._assign_task_action = actionlib.SimpleActionServer(
-            '~task_plan', msgs.AssignTaskAction, execute_cb=self._assign_task_cb, auto_start=False)
-        self._assign_task_action.start()
-
-        self._is_ready = False
+        self._assign_task_action = action.ActionServer(
+            self,
+            msgs.AssignTaskAction,
+            '/tm/task_plan',
+            self._assign_task_cb)
 
     @property
     def skills(self):
@@ -292,9 +296,11 @@ class TaskManagerNode(PrettyObject):
         return self._pddl_interface.invokePlanner()
 
     def run(self):
-        rospy.spin()
+        rclpy.spin(self)
 
 
 if __name__ == '__main__':
+    rclpy.init()
     node = TaskManagerNode()
     node.run()
+    rclpy.shutdown()
