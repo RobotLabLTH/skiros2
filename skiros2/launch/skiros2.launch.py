@@ -100,7 +100,7 @@ def generate_launch_description():
 
     gui = Node(package='rqt_gui',
                executable='rqt_gui',
-               # arguments=["-s skiros2_gui.gui.Skiros"], # does not find the plugin. Not sure why - it appears in the list and can be selected with "ros2 run"
+               arguments=["-s", "skiros2_gui"],
                output='screen')
     
     skill_mgr = Node(package='skiros2_skill',
