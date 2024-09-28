@@ -157,10 +157,11 @@ class ForallPredicate(object):
 
 
 class Action(object):
-    __slots__ = 'name', 'params', 'preconditions', 'holdconditions', 'effects'
+    __slots__ = 'label', 'name', 'params', 'preconditions', 'holdconditions', 'effects'
 
     def __init__(self, skill, params, precons, holdcons, postcons):
-        self.name = skill._label
+        self.label = skill._label 
+        self.name = self.label.replace(" ", "_").lower()  # tfd can not handle spaces
         self.params = params
         self.holdconditions = holdcons
         self.preconditions = precons
@@ -231,6 +232,9 @@ class PddlInterface:
     def getSubTypes(self, supertype):
         if supertype in self._types._types:
             return self._types._types[supertype]
+
+    def getAction(self, name):
+        return self._actions[name] if name in self._actions else None
 
     def _addSuperTypes(self, predicate):
         lookuplist = self._predicates

@@ -1,8 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from rclpy import action
-
-from std_msgs.msg import Empty
+from rclpy.callback_groups import ReentrantCallbackGroup
 
 import skiros2_msgs.action as action_msgs
 import skiros2_common.core.params as skirosp
@@ -34,42 +33,49 @@ class TaskManagerNode(PrettyObject, Node):
         self._node_name = "task_mgr"
         super().__init__(self._node_name)
         self._author_name = self._node_name
+        self._default_callback_group = ReentrantCallbackGroup()
 
         self._goals = []
-        self._skills = {}
+        self._skills = None
         self._abstract_objects = []
 
         self._wmi = wmi.WorldModelInterface(self, self._author_name, make_cache=True, allow_spinning=False)
         self._sli = sli.SkillLayerInterface(self, self._author_name, allow_spinning=False)
+        self._timer = self.create_timer(0.5, self._update_skills) # Hack: We can not fetch a new list when processing the action right now, so we update it periodically before
         self._pddl_interface = pddl.PddlInterface()
 
         self.declare_parameter("verbose", False)
         self._verbose = self.get_parameter('verbose').value
         log.setLevel(log.INFO)
+        self._action_callback_group = ReentrantCallbackGroup()
         self._assign_task_action = action.ActionServer(
             self,
             action_msgs.AssignTask,
             '/tm/task_plan',
-            self._assign_task_cb)
+            self._assign_task_cb, callback_group=self._action_callback_group)
 
     @property
     def skills(self):
         """Get available skills.
+        """
+        return self._skills
 
+    def _update_skills(self):
+        """
         Return the updated list of skills available in the system
 
         Returns:
             dict: {Skill name : instance? }
         """
-        if self._sli.has_changes:
-            self._skills.clear()
+        if self._skills is None or self._sli.has_changes:
+            log.info("Updating skills")
+            self._skills = {}
             for ak, e in self._sli._agents.items():
-                for sk, s in e._skill_list.items():
+                for sk, s in e.skills.items():
                     s.manager = ak
                     self._skills[sk] = s
-        return self._skills
 
-    def _assign_task_cb(self, msg):
+    def _assign_task_cb(self, goal_handle):
         """Callback for setting new goals.
 
         Executed whenever we receive an action to set a new goal.
@@ -77,30 +83,31 @@ class TaskManagerNode(PrettyObject, Node):
         Args:
             msg (skiros2_msgs.action_msgs.AssignTask): action message containing the goals
         """
+        def _set_result(code: int, msg: str, succeeded: bool) -> None:
+                self._result.progress_code = code
+                self._result.progress_message = msg
+                goal_handle.succeed() if succeeded else goal_handle.abort()
+
         try:
-            log.info("[Goal]", msg.request.goals)
-            self._current_goals = msg.request.goals
+            log.info("[Goal]", goal_handle.request.goals)
+            self._result = action_msgs.AssignTask.Result()        
+            self._current_goals = goal_handle.request.goals
             plan = self._task_plan()
             log.info("[Plan]", plan)
             if plan is None:
                 log.warn(self.class_name, "Planning failed for goals: {}".format(self._current_goals))
-                self._result = action_msgs.AssignTask.Result(1, "Planning failed.")
-                self._assign_task_action.set_aborted(self._result)
-                return
-            if not plan:
-                self._result = action_msgs.AssignTask.Result(2, "No skills to execute.")
-                self._assign_task_action.set_succeeded(self._result)
-                return
-            task = self.build_task(plan)
-            self._result = action_msgs.AssignTask.Result(3, task.toJson())
-            self._assign_task_action.set_succeeded(self._result)
-            return
+                _set_result(1, "Planning failed", False)
+            elif not plan:
+                _set_result(2, "No skills to execute", True)
+            else:
+                task = self.build_task(plan)
+                _set_result(3, task.toJson(), True)
         except OSError as e:
-            self._result = action_msgs.AssignTask.Result(1, "FD task planner not found. Maybe is not installed?")
-            self._assign_task_action.set_aborted(self._result)
+            _set_result(1, f"{e.__class__.__name__}: '{str(e)}'. Maybe FD task planner is not installed?", False)
         except Exception as e:
-            self._result = action_msgs.AssignTask.Result(1, str(e))
-            self._assign_task_action.set_aborted(self._result)
+            _set_result(1, f"{e.__class__.__name__}: '{str(e)}'", False)
+        finally:
+            return self._result
 
     def _task_plan(self):  # TODO: make this concurrent
         with tk.Timer(self.class_name) as timer:
@@ -123,8 +130,11 @@ class TaskManagerNode(PrettyObject, Node):
         for s in skills:
             s = s[s.find('(') + 1: s.find(')')]
             tokens = s.split(' ')
-            skill = deepcopy(self.skills[tokens.pop(0)])
-            planned_map = self._pddl_interface.getActionParamMap(skill.name, tokens)
+            action = self._pddl_interface.getAction(tokens[0])
+            if action is None:
+                raise RuntimeError("Action {} not found in domain".format(tokens[0]))
+            skill = deepcopy(self.skills[action.label])
+            planned_map = self._pddl_interface.getActionParamMap(tokens[0], tokens[1:])
 #            print "{}".format(planned_map)
             for k, v in planned_map.items():
                 e = self.get_element(v)
@@ -169,6 +179,8 @@ class TaskManagerNode(PrettyObject, Node):
         elements = {}
         self._elements = {}
         # Find objects
+        if "thing" not in self._pddl_interface._types._types:
+            raise RuntimeError("No known things in domain. Can not plan.")
         for objType in self._pddl_interface._types._types["thing"]:
             temp = self._wmi.resolve_elements(wmi.Element(objType))
             elements[objType] = temp
@@ -295,12 +307,11 @@ class TaskManagerNode(PrettyObject, Node):
     def plan(self):
         return self._pddl_interface.invokePlanner()
 
-    def run(self):
-        rclpy.spin(self)
-
 
 if __name__ == '__main__':
     rclpy.init()
     node = TaskManagerNode()
-    node.run()
+    executor = MultiThreadedExecutor()
+    executor.add_node(node)
+    executor.spin()
     rclpy.shutdown()
