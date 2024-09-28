@@ -1,8 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from rclpy import action
-
-from std_msgs.msg import Empty
+from rclpy.callback_groups import ReentrantCallbackGroup
 
 import skiros2_msgs.action as action_msgs
 import skiros2_common.core.params as skirosp
@@ -34,40 +33,47 @@ class TaskManagerNode(PrettyObject, Node):
         self._node_name = "task_mgr"
         super().__init__(self._node_name)
         self._author_name = self._node_name
+        self._default_callback_group = ReentrantCallbackGroup()
 
         self._goals = []
-        self._skills = {}
+        self._skills = None
         self._abstract_objects = []
 
         self._wmi = wmi.WorldModelInterface(self, self._author_name, make_cache=True, allow_spinning=False)
         self._sli = sli.SkillLayerInterface(self, self._author_name, allow_spinning=False)
+        self._timer = self.create_timer(0.5, self._update_skills) # Hack: We can not fetch a new list when processing the action right now, so we update it periodically before
         self._pddl_interface = pddl.PddlInterface()
 
         self.declare_parameter("verbose", False)
         self._verbose = self.get_parameter('verbose').value
         log.setLevel(log.INFO)
+        self._action_callback_group = ReentrantCallbackGroup()
         self._assign_task_action = action.ActionServer(
             self,
             action_msgs.AssignTask,
             '/tm/task_plan',
-            self._assign_task_cb)
+            self._assign_task_cb, callback_group=self._action_callback_group)
 
     @property
     def skills(self):
         """Get available skills.
+        """
+        return self._skills
 
+    def _update_skills(self):
+        """
         Return the updated list of skills available in the system
 
         Returns:
             dict: {Skill name : instance? }
         """
-        if self._sli.has_changes:
-            self._skills.clear()
+        if self._skills is None or self._sli.has_changes:
+            log.info("Updating skills")
+            self._skills = {}
             for ak, e in self._sli._agents.items():
-                for sk, s in e._skill_list.items():
+                for sk, s in e.skills.items():
                     s.manager = ak
                     self._skills[sk] = s
-        return self._skills
 
     def _assign_task_cb(self, msg):
         """Callback for setting new goals.
@@ -295,12 +301,11 @@ class TaskManagerNode(PrettyObject, Node):
     def plan(self):
         return self._pddl_interface.invokePlanner()
 
-    def run(self):
-        rclpy.spin(self)
-
 
 if __name__ == '__main__':
     rclpy.init()
     node = TaskManagerNode()
-    node.run()
+    executor = MultiThreadedExecutor()
+    executor.add_node(node)
+    executor.spin()
     rclpy.shutdown()
