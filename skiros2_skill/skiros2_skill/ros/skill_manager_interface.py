@@ -17,7 +17,7 @@ class SkillManagerInterface:
         self._allow_spinning = allow_spinning
         self._active_tasks = set()
         self._module_list = dict()
-        self._skill_list = dict()
+        self._skill_list = None
         self._msg_lock = Lock()
         self._msg_rec = Event()
         self._skill_exe_client = self._node.create_client(srvs.SkillCommand, '/{}/command'.format(self._skill_mgr_name))
@@ -31,7 +31,6 @@ class SkillManagerInterface:
         for s in [self._skill_exe_client, self._get_skills]:
             while not s.wait_for_service(timeout_sec=1.0):
                 log.warn("[{}]".format(self.__class__.__name__), "Service {} not available, waiting again ...".format(s.srv_name))
-        self.get_skill_list(True)
 
     @property
     def name(self):
@@ -87,6 +86,8 @@ class SkillManagerInterface:
         return self._skill_list
 
     def get_skill(self, name):
+        if not self._skill_list:
+            self.get_skill_list()
         return self._skill_list[name]
 
     def execute(self, execution_id=-1, skill_list=None, action=srvs.SkillCommand.Request().START):
