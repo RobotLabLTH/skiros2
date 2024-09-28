@@ -130,8 +130,11 @@ class TaskManagerNode(PrettyObject, Node):
         for s in skills:
             s = s[s.find('(') + 1: s.find(')')]
             tokens = s.split(' ')
-            skill = deepcopy(self.skills[tokens.pop(0)])
-            planned_map = self._pddl_interface.getActionParamMap(skill.name, tokens)
+            action = self._pddl_interface.getAction(tokens[0])
+            if action is None:
+                raise RuntimeError("Action {} not found in domain".format(tokens[0]))
+            skill = deepcopy(self.skills[action.label])
+            planned_map = self._pddl_interface.getActionParamMap(tokens[0], tokens[1:])
 #            print "{}".format(planned_map)
             for k, v in planned_map.items():
                 e = self.get_element(v)
