@@ -543,9 +543,15 @@ class SkillBase(SkillInterface, object):
             p._instanciator = self._instanciator
         return p
 
+    """ROS2 Node Instance"""
+    @property
+    def node(self):
+        return self._node
+
     def init(self, wmi, instanciator):
         self._wmi = wmi
         self._instanciator = instanciator
+        self._node = instanciator._node # type: Node
         self.createDescription()
         self.generateDefParams()
         self._children_processor = Sequential()
