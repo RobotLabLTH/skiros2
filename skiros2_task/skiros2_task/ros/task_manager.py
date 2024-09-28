@@ -179,6 +179,8 @@ class TaskManagerNode(PrettyObject, Node):
         elements = {}
         self._elements = {}
         # Find objects
+        if "thing" not in self._pddl_interface._types._types:
+            raise RuntimeError("No known things in domain. Can not plan.")
         for objType in self._pddl_interface._types._types["thing"]:
             temp = self._wmi.resolve_elements(wmi.Element(objType))
             elements[objType] = temp
