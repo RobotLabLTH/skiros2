@@ -75,7 +75,7 @@ class TaskManagerNode(PrettyObject, Node):
                     s.manager = ak
                     self._skills[sk] = s
 
-    def _assign_task_cb(self, msg):
+    def _assign_task_cb(self, goal_handle):
         """Callback for setting new goals.
 
         Executed whenever we receive an action to set a new goal.
@@ -83,30 +83,31 @@ class TaskManagerNode(PrettyObject, Node):
         Args:
             msg (skiros2_msgs.action_msgs.AssignTask): action message containing the goals
         """
+        def _set_result(code: int, msg: str, succeeded: bool) -> None:
+                self._result.progress_code = code
+                self._result.progress_message = msg
+                goal_handle.succeed() if succeeded else goal_handle.abort()
+
         try:
-            log.info("[Goal]", msg.request.goals)
-            self._current_goals = msg.request.goals
+            log.info("[Goal]", goal_handle.request.goals)
+            self._result = action_msgs.AssignTask.Result()        
+            self._current_goals = goal_handle.request.goals
             plan = self._task_plan()
             log.info("[Plan]", plan)
             if plan is None:
                 log.warn(self.class_name, "Planning failed for goals: {}".format(self._current_goals))
-                self._result = action_msgs.AssignTask.Result(1, "Planning failed.")
-                self._assign_task_action.set_aborted(self._result)
-                return
-            if not plan:
-                self._result = action_msgs.AssignTask.Result(2, "No skills to execute.")
-                self._assign_task_action.set_succeeded(self._result)
-                return
-            task = self.build_task(plan)
-            self._result = action_msgs.AssignTask.Result(3, task.toJson())
-            self._assign_task_action.set_succeeded(self._result)
-            return
+                _set_result(1, "Planning failed", False)
+            elif not plan:
+                _set_result(2, "No skills to execute", True)
+            else:
+                task = self.build_task(plan)
+                _set_result(3, task.toJson(), True)
         except OSError as e:
-            self._result = action_msgs.AssignTask.Result(1, "FD task planner not found. Maybe is not installed?")
-            self._assign_task_action.set_aborted(self._result)
+            _set_result(1, f"{e.__class__.__name__}: '{str(e)}'. Maybe FD task planner is not installed?", False)
         except Exception as e:
-            self._result = action_msgs.AssignTask.Result(1, str(e))
-            self._assign_task_action.set_aborted(self._result)
+            _set_result(1, f"{e.__class__.__name__}: '{str(e)}'", False)
+        finally:
+            return self._result
 
     def _task_plan(self):  # TODO: make this concurrent
         with tk.Timer(self.class_name) as timer:

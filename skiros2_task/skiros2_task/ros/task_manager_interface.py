@@ -35,18 +35,17 @@ class TaskManagerInterface(PrettyObject):
             return False
         self._goal_future = self._assign_task_client.send_goal_async(req, feedback_callback = feedback_cb)
 
-        def _result_cb(self,  future: task.Future):
+        def _result_cb(future: task.Future):
             goal_handle = future.result()
-            self._goal_handle = goal_handle
-            if goal_handle.accepted:
-                self._goal_msg.set(True)
-            else:
-                self._goal_msg.set(False)
+            def _done_cb(future):
+                status = future.result().status # type: GoalStatus
+                result = future.result().result
+                done_cb(status, result)
 
-            self._get_result_future = goal_handle.get_result_async()
-            self._get_result_future.add_done_callback(done_cb)
+            result_future = goal_handle.get_result_async()
+            result_future.add_done_callback(_done_cb)
+        
         self._goal_future.add_done_callback(_result_cb)
-
         return True
 
     def preempt(self):
