@@ -4,7 +4,7 @@ from rclpy import action
 
 from std_msgs.msg import Empty
 
-import skiros2_msgs.msg as msgs
+import skiros2_msgs.action as action_msgs
 import skiros2_common.core.params as skirosp
 import skiros2_common.core.conditions as cond
 
@@ -48,7 +48,7 @@ class TaskManagerNode(PrettyObject, Node):
         log.setLevel(log.INFO)
         self._assign_task_action = action.ActionServer(
             self,
-            msgs.AssignTaskAction,
+            action_msgs.AssignTask,
             '/tm/task_plan',
             self._assign_task_cb)
 
@@ -72,34 +72,34 @@ class TaskManagerNode(PrettyObject, Node):
     def _assign_task_cb(self, msg):
         """Callback for setting new goals.
 
-        Executed whenever we receive a service call to set a new goal.
+        Executed whenever we receive an action to set a new goal.
 
         Args:
-            msg (skiros2_msgs.srv.TmSetGoals): Service message containing the goals
+            msg (skiros2_msgs.action_msgs.AssignTask): action message containing the goals
         """
         try:
-            log.info("[Goal]", msg.goals)
-            self._current_goals = msg.goals
+            log.info("[Goal]", msg.request.goals)
+            self._current_goals = msg.request.goals
             plan = self._task_plan()
             log.info("[Plan]", plan)
             if plan is None:
                 log.warn(self.class_name, "Planning failed for goals: {}".format(self._current_goals))
-                self._result = msgs.AssignTaskResult(1, "Planning failed.")
+                self._result = action_msgs.AssignTask.Result(1, "Planning failed.")
                 self._assign_task_action.set_aborted(self._result)
                 return
             if not plan:
-                self._result = msgs.AssignTaskResult(2, "No skills to execute.")
+                self._result = action_msgs.AssignTask.Result(2, "No skills to execute.")
                 self._assign_task_action.set_succeeded(self._result)
                 return
             task = self.build_task(plan)
-            self._result = msgs.AssignTaskResult(3, task.toJson())
+            self._result = action_msgs.AssignTask.Result(3, task.toJson())
             self._assign_task_action.set_succeeded(self._result)
             return
         except OSError as e:
-            self._result = msgs.AssignTaskResult(1, "FD task planner not found. Maybe is not installed?")
+            self._result = action_msgs.AssignTask.Result(1, "FD task planner not found. Maybe is not installed?")
             self._assign_task_action.set_aborted(self._result)
         except Exception as e:
-            self._result = msgs.AssignTaskResult(1, str(e))
+            self._result = action_msgs.AssignTask.Result(1, str(e))
             self._assign_task_action.set_aborted(self._result)
 
     def _task_plan(self):  # TODO: make this concurrent
