@@ -1,10 +1,11 @@
-#!/usr/bin/env python
-
 from skiros2_task.ros.task_manager import *
 import rclpy
 
-if __name__ == '__main__':
+def main():
     rclpy.init()
     node = TaskManagerNode()
     node.run()
     rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()

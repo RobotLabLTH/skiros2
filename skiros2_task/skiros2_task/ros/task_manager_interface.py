@@ -3,6 +3,7 @@ from rclpy import action, task
 from skiros2_common.tools.decorators import PrettyObject
 
 import skiros2_msgs.msg as msgs
+import skiros2_msgs.action as action_msgs
 import skiros2_common.tools.logger as log
 
 
@@ -11,7 +12,7 @@ class TaskManagerInterface(PrettyObject):
         """
         @brief      Interface for the task planning action server
         """
-        self._assign_task_client = action.ActionClient(node, msgs.AssignTaskAction, '/tm/task_plan')
+        self._assign_task_client = action.ActionClient(node, action_msgs.AssignTask, '/tm/task_plan')
         self._assign_task_client.wait_for_server()
         self._goal_handle = None
 
@@ -27,7 +28,7 @@ class TaskManagerInterface(PrettyObject):
 
         @return     (bool) True if action server is found, False otherwise
         """
-        req = msgs.AssignTaskGoal()
+        req = action_msgs.AssignTask.Goal()
         req.goals = goals
         if not self._assign_task_client.wait_for_server(0.1):
             log.error("[TaskManagerInterface]", "Action server is not available.")
