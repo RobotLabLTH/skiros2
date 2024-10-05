@@ -61,6 +61,7 @@ class SkillInterface(SkillCore):
         p._children_processor = deepcopy(self._children_processor)
         p._type = copy(self._type)
         p._label = copy(self._label)
+        p._available_for_planning = self._available_for_planning
         p._params = deepcopy(self._params)
         p._remaps = deepcopy(self._remaps)
         p._description = deepcopy(self._description)
@@ -434,6 +435,7 @@ class SkillWrapper(SkillInterface):
         Makes a light copy (only description and params)
         """
         p = SkillWrapper(self._type, self._label)
+        p._available_for_planning = self._available_for_planning
         p._params = deepcopy(self._params)
         p._remaps = deepcopy(self._remaps)
         p._description = deepcopy(self._description)
