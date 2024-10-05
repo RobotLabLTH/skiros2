@@ -29,6 +29,7 @@ def skill2msg(skill):
     msg = msgs.ResourceDescription()
     msg.type = skill.type
     msg.name = skill.label
+    msg.available_for_planning = skill.available_for_planning
     msg.params = utils.serializeParamMap(skill._description._params.getParamMap())
     return msg
 

@@ -32,6 +32,7 @@ class SkillHolder(object):
         msg = msgs.ResourceDescription()
         msg.type = self.type
         msg.name = self.name
+        msg.available_for_planning = self.available_for_planning
         msg.params = serializeParamMap(self.ph.getParamMap())
         return msg
 
