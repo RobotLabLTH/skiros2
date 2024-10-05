@@ -255,7 +255,7 @@ class SkillManager:
                 self._wmi.add_class(c2, c1)
         self._wmi.add_element(e)
         self._skills.append(skill)
-        return SkillHolder(self._agent_name, skill.type, skill.label, skill.params.getCopy())
+        return SkillHolder(self._agent_name, skill.type, skill.label, skill.params.getCopy(), available_for_planning=skill.available_for_planning)
 
     def add_primitive(self, name):
         """
@@ -421,7 +421,7 @@ class SkillManagerNode(DiscoverableNode):
     def _make_task(self, msg):
         task = []
         for s in msg:
-            task.append(SkillHolder("", s.type, s.name, utils.deserializeParamMap(s.params)))
+            task.append(SkillHolder("", s.type, s.name, utils.deserializeParamMap(s.params), available_for_planning=s.available_for_planning))
         return task
 
     def _command_cb(self, msg, to_ret):
