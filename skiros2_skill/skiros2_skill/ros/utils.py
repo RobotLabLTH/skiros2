@@ -4,20 +4,21 @@ from skiros2_common.ros.utils import registerClass, serializeParamMap, decodePar
 import json
 
 def encodeSkill(encoder, obj):
-    return {'manager': obj.manager, 'type': obj.type, 'name': obj.name,
+    return {'manager': obj.manager, 'type': obj.type, 'name': obj.name, 'available_for_planning': obj.available_for_planning,
     'ph': {k: encoder.default(v) for k, v in obj.ph.items() }, 'children': obj.children}
 
 def decodeSkill(obj):
     if isinstance(obj, str):
         obj = json_loads_byteified(obj)
-    return SkillHolder(obj['manager'], obj['type'], obj['name'], {k: decodeParam(v) for k, v in obj['ph'].items()}, [decodeSkill(c) for c in obj['children']])
+    return SkillHolder(obj['manager'], obj['type'], obj['name'], {k: decodeParam(v) for k, v in obj['ph'].items()}, [decodeSkill(c) for c in obj['children']], obj['available_for_planning'])
 
 class SkillHolder(object):
-    __slots__ = ['manager', 'type', 'name', 'ph', 'children']
-    def __init__(self, manager, type_in, name, params_in=None, children=None):
+    __slots__ = ['manager', 'type', 'name', 'available_for_planning', 'ph', 'children']
+    def __init__(self, manager, type_in, name, params_in=None, children=None, available_for_planning=True):
         self.manager = manager
         self.name = name
         self.type = type_in
+        self.available_for_planning = available_for_planning
         self.ph = params.ParamHandler()
         self.children = list()
         if params_in:
