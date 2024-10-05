@@ -852,6 +852,13 @@
     </owl:Class>
 
 
+    <!-- http://rvmi.aau.dk/ontologies/skiros.owl#AvailableForPlanning -->
+
+    <owl:DatatypeProperty rdf:about="http://rvmi.aau.dk/ontologies/skiros.owl#AvailableForPlanning">
+        <rdfs:domain rdf:resource="http://rvmi.aau.dk/ontologies/skiros.owl#Skill"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+    </owl:DatatypeProperty>
+
 
     <!-- http://rvmi.aau.dk/ontologies/skiros.owl#TransformationPose -->
 
