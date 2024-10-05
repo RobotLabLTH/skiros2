@@ -29,6 +29,7 @@ class SkillDescription(object):
         """
         # Description
         self._type = "skiros:" + self.__class__.__name__
+        self._available_for_planning = True
         # Params
         self._params = params.ParamHandler()
         # Conditions
@@ -59,6 +60,10 @@ class SkillDescription(object):
         @brief      Gets the skill's type
         """
         return self._type
+
+    @property
+    def available_for_planning(self):
+        return self._available_for_planning
 
     @property
     def wmi(self):
@@ -109,6 +114,12 @@ class SkillDescription(object):
                                                                "skiros:StateProperty", key, "=", "Idle", True)]
                 elif o == ParamOptions.RespectType:
                     self._pre_conditions.append(self.getOnTypeCond(key + 'OfType', key, self.params[key].default.type))
+
+    def setAvailableForPlanning(self, available=True):
+        """
+        @brief Specify if the skill can be used for planning
+        """
+        self._available_for_planning = available
 
     def generateDefParams(self):
         """
@@ -209,6 +220,7 @@ class SkillDescription(object):
     def toElement(self):
         to_ret = Element(self._type)
         to_ret._label = self._label
+        to_ret.setProperty("skiros:AvailableForPlanning", self.available_for_planning)
         for _, p in self.params.items():
             if p.dataTypeIs(Element):
                 to_ret.addRelation(self, "skiros:hasParam", p.toElement())
@@ -238,6 +250,7 @@ class SkillCore(SkillDescription):
         self._id = SkillCore.gen_id.getId()
         self._type = ""
         self._label = ""
+        self._available_for_planning = True
         self._description = SkillDescription()
         # Params
         self._params = params.ParamHandler()
