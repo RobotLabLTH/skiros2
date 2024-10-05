@@ -72,6 +72,9 @@ class TaskManagerNode(PrettyObject, Node):
             self._skills = {}
             for ak, e in self._sli._agents.items():
                 for sk, s in e.skills.items():
+                    if not s.available_for_planning:
+                        log.info(f"'{sk}' not available for planning, skipping")
+                        continue
                     s.manager = ak
                     self._skills[sk] = s
 
