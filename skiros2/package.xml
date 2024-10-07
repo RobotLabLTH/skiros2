@@ -17,8 +17,7 @@
   <exec_depend>skiros2_common</exec_depend>
   <exec_depend>tf2</exec_depend>
   <exec_depend>rqt_gui</exec_depend>
-  <!-- Removed until its port is finished: -->
-  <!-- <exec_depend>skiros2_task</exec_depend> -->
+  <exec_depend>skiros2_task</exec_depend>
   <exec_depend>skiros2_msgs</exec_depend>
   <exec_depend>skiros2_world_model</exec_depend>
   <exec_depend>skiros2_skill</exec_depend>
