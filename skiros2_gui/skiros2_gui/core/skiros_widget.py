@@ -636,7 +636,8 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         fu.setExpanded(True)
         root = QTreeWidgetItem(self.skill_tree_widget, ["All", "All"])
         root.setExpanded(True)
-        for ak, e in self._sli._agents.items():
+        agents = self._sli._agents.copy()
+        for ak, e in agents.items():
             for s in e.get_skill_list().values():
                 s.manager = ak
                 self._add_available_skill(s)
