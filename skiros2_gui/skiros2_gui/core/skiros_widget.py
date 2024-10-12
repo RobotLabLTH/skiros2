@@ -1250,6 +1250,9 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         stype = self.skill_tree_widget.findItems(s.type, Qt.MatchRecursive | Qt.MatchFixedString, 1)
         if not stype:  # If it is the first of its type, add the parents hierarchy to the tree
             hierarchy = self._wmi.query_ontology('SELECT ?x {{ {} rdfs:subClassOf*  ?x }}'.format(s.type))
+            if "skiros:Skill" not in hierarchy:
+                log.warn("[add_available_skill]", f"Skill {s.name} is not a subclass of 'skiros:Skill'. Ignoring.")
+                return
             hierarchy = hierarchy[:hierarchy.index("skiros:Skill")]
             hierarchy.reverse()
             parent = self.skill_tree_widget.findItems("All", Qt.MatchRecursive | Qt.MatchFixedString, 1)[0]
