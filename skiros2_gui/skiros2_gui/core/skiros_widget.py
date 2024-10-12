@@ -616,7 +616,8 @@ class SkirosWidget(QWidget, SkirosInteractiveMarkers):
         # Update robot BT rate
         if self._sli.agents:
             robot_info = ""
-            for name, manager in self._sli.agents.items():
+            agents = self._sli.agents.copy()
+            for name, manager in agents.items():
                 robot_info += "{}: {:0.1f}hz ".format(name.replace("/", ""), manager.get_tick_rate())
             self.robot_rate_info.setText(robot_info)
             self.robot_output.setText(self.robot_text)

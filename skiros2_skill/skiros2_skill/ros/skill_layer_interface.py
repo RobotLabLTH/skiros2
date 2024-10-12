@@ -84,5 +84,6 @@ class SkillLayerInterface(DiscoveryInterface):
             self._monitor_cb(msg)
 
     def print_state(self):
-        for k, a in self._agents.items():
+        agents = self._agents.copy()
+        for k, a in agents.items():
             print(k + ":" + a.printState())

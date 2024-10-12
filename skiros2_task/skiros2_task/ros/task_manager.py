@@ -70,7 +70,8 @@ class TaskManagerNode(PrettyObject, Node):
         if self._skills is None or self._sli.has_changes:
             log.info("Updating skills")
             self._skills = {}
-            for ak, e in self._sli._agents.items():
+            agents = self._sli._agents.copy()
+            for ak, e in agents.items():
                 for sk, s in e.skills.items():
                     if not s.available_for_planning:
                         log.info(f"'{sk}' not available for planning, skipping")
