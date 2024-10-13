@@ -156,14 +156,14 @@ class BtTicker:
         if uid in BtTicker._tasks_to_pause:
             del BtTicker._tasks_to_pause[uid]
         BtTicker._tasks_to_preempt.append(uid)
-        starttime = self._node.get_clock().now()
-        timeout = Duration(nanoseconds=5 * (10**9))
-        while(self.is_running() and self._node.get_clock().now() - starttime < timeout):
-            self._node.get_clock().sleep_for(Duration(nanoseconds=1 * (10**7)))
-        if self.is_running():
-            log.info("preempt", "Task {} is not answering. Killing process.".format(uid))
-            self.kill()
-        log.info("preempt", "Task {} preempted.".format(uid))
+        # starttime = self._node.get_clock().now()
+        # timeout = Duration(nanoseconds=5 * (10**9))
+        # while self.is_running() and self._node.get_clock().now() - starttime < timeout:
+        #     self._node.get_clock().sleep_for(Duration(nanoseconds=1 * (10**7)))
+        # if self.is_running():
+        #     log.info("preempt", "Task {} is not answering. Killing process.".format(uid))
+        #     self.kill()
+        # log.info("preempt", "Task {} preempt requested.".format(uid))
 
     def preempt_all(self):
         for uid in list(BtTicker._tasks.keys()):
