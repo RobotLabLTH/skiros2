@@ -77,6 +77,10 @@ class Predicate(object):
             self.value = predicate.getProperty("skiros:desiredValue").value
 
     def isFunction(self):
+        return self.operator is not None and not isinstance(self.value, str) and not isinstance(self.value, bool)
+    
+    def value_is_bool(self):
+        return isinstance(self.value, bool) or self.value in ["true", "false", "True", "False"]
     
     def property_string(self):
         if self.value_is_bool():
@@ -87,14 +91,19 @@ class Predicate(object):
             prop_str = self.name
         return f"{prop_str}_{str(self.value)}"
     
+    def is_negated(self, invert):
+        negate = self.negated or (not self.negated and invert)
+        if self.value_is_bool() and (not self.value or self.value in ["false", "False"]):
+            return not negate
+        return negate
 
     def toActionPddl(self, invert=False):
         string = ''
-        if self.negated or (not self.negated and invert):
+        if self.is_negated(invert):
             string += '(not '
         if self.isFunction():
             string += '({} '.format(self.operator)
-        if isinstance(self.value, basestring):
+        if isinstance(self.value, basestring) or isinstance(self.value, bool):
             string += '({}'.format(self.property_string())
         else:
             string += '({}'.format(self.name)
@@ -102,13 +111,13 @@ class Predicate(object):
             string += ' ?{}'.format(p["key"])
         if self.isFunction():
             string += ') {}'.format(self.value)
-        if self.negated or (not self.negated and invert):
+        if self.is_negated(invert):
             string += ')'
         string += ")"
         return string
 
     def toUngroundPddl(self):
-        if isinstance(self.value, str):
+        if isinstance(self.value, str) or isinstance(self.value, bool):
             string = '({}'.format(self.property_string())
         else:
             string = '({}'.format(self.name)
