@@ -77,7 +77,16 @@ class Predicate(object):
             self.value = predicate.getProperty("skiros:desiredValue").value
 
     def isFunction(self):
-        return self.operator is not None and not isinstance(self.value, str)
+    
+    def property_string(self):
+        if self.value_is_bool():
+            return self.name
+        if ":" in self.name:
+            prop_str = self.name.split(":", 1)[1]
+        else:
+            prop_str = self.name
+        return f"{prop_str}_{str(self.value)}"
+    
 
     def toActionPddl(self, invert=False):
         string = ''
@@ -86,7 +95,7 @@ class Predicate(object):
         if self.isFunction():
             string += '({} '.format(self.operator)
         if isinstance(self.value, basestring):
-            string += '({}'.format(self.value)
+            string += '({}'.format(self.property_string())
         else:
             string += '({}'.format(self.name)
         for p in self.params:
@@ -100,7 +109,7 @@ class Predicate(object):
 
     def toUngroundPddl(self):
         if isinstance(self.value, str):
-            string = '({}'.format(self.value)
+            string = '({}'.format(self.property_string())
         else:
             string = '({}'.format(self.name)
         for p in self.params:
@@ -128,20 +137,41 @@ class GroundPredicate(object):
         return not self.__eq__(other)
 
     def isFunction(self):
-        return self.operator is not None and not isinstance(self.value, str)
+        return self.operator is not None and not isinstance(self.value, str) and not isinstance(self.value, bool)
+
+    def value_is_bool(self):
+        return isinstance(self.value, bool) or self.value in ["true", "false", "True", "False"]
+
+    def property_string(self):
+        if self.value_is_bool():
+            return self.name
+        if ":" in self.name:
+            prop_str = self.name.split(":", 1)[1]
+        else:
+            prop_str = self.name
+        return f"{prop_str}_{str(self.value)}"
+
+    def is_negated(self):
+        if self.value_is_bool() and (not self.value or self.value in ["false", "False"]):
+            return True
+        return False
 
     def toPddl(self):
         string = ''
+        if self.is_negated():
+            string += '(not '
         if self.isFunction():
             string += '({} '.format(self.operator)
-        if isinstance(self.value, str):
-            string += '({}'.format(self.value)
+        if isinstance(self.value, basestring) or isinstance(self.value, bool):
+            string += '({}'.format(self.property_string())
         else:
             string += '({}'.format(self.name)
         for p in self.params:
             string += ' {}'.format(p)
         if self.isFunction():
             string += ') {}'.format(self.value)
+        if self.is_negated():
+            string += ')'
         string += ")"
         return string
 
