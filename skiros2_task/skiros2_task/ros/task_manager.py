@@ -96,6 +96,9 @@ class TaskManagerNode(PrettyObject, Node):
             log.info("[Goal]", goal_handle.request.goals)
             self._result = action_msgs.AssignTask.Result()        
             self._current_goals = goal_handle.request.goals
+            if not self._current_goals or self._current_goals[0] != "(" or self._current_goals[-1] != ")":
+                _set_result(1, f"Invalid goal format. Expected '(<goal condition>)'. Got goal '{self._current_goals.replace("\n", "")}'", False)
+                return self._result
             plan = self._task_plan()
             log.info("[Plan]", plan)
             if plan is None:
