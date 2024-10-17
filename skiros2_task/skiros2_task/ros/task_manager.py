@@ -299,11 +299,16 @@ class TaskManagerNode(PrettyObject, Node):
                     g = g[1:-1]
                     tokens = g.split(" ")
                     if len(tokens) == 3:
-                        self._pddl_interface.addGoal(pddl.GroundPredicate(tokens[0], [tokens[1], tokens[2]]))
-                        if tokens[1].find("-") == -1:  # If isAbstractObject
-                            self._abstract_objects.append(self._wmi.get_template_element(tokens[1]))
-                        if tokens[2].find("-") == -1:  # If isAbstractObject
-                            self._abstract_objects.append(self._wmi.get_template_element(tokens[2]))
+                        if "not" in tokens:
+                            self._pddl_interface.addGoal(pddl.GroundPredicate(tokens[1][1:], [tokens[2][:-1]], value=False))
+                            if tokens[2][:-1].find("-") == -1:  # If isAbstractObject
+                                self._abstract_objects.append(self._wmi.get_template_element(tokens[2][:-1]))
+                        else:
+                            self._pddl_interface.addGoal(pddl.GroundPredicate(tokens[0], [tokens[1], tokens[2]]))
+                            if tokens[1].find("-") == -1:  # If isAbstractObject
+                                self._abstract_objects.append(self._wmi.get_template_element(tokens[1]))
+                            if tokens[2].find("-") == -1:  # If isAbstractObject
+                                self._abstract_objects.append(self._wmi.get_template_element(tokens[2]))
                     else:
                         self._pddl_interface.addGoal(pddl.GroundPredicate(tokens[0], [tokens[1]]))
                         if tokens[1].find("-") == -1:  # If isAbstractObject
