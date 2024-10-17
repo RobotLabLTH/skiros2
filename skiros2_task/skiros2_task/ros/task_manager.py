@@ -236,15 +236,22 @@ class TaskManagerNode(PrettyObject, Node):
                 # The predicate is handled normally
                 if len(p.params) == 1:
                     if p.value != None:
-                        c = cond.ConditionProperty("", p.name, "x", p.operator, p.value, True)
+                        if p.value is False:
+                            c = cond.ConditionProperty("", p.name, "x", p.operator, True, True)
+                        else:
+                            c = cond.ConditionProperty("", p.name, "x", p.operator, p.value, True)
                     else:
                         c = cond.ConditionHasProperty("", p.name, "x", True)
                     xtype = p.params[0]["valueType"]
                     for xe in elements[xtype]:
                         params.specify("x", xe)
                         if c.evaluate(params, self._wmi):
-                            self._pddl_interface.addInitState(
-                                pddl.GroundPredicate(p.name, [xe._id], p.operator, p.value))
+                            if p.value is False:
+                                self._pddl_interface.addInitState(
+                                    pddl.GroundPredicate(p.name, [xe._id], p.operator, True))
+                            else:
+                                self._pddl_interface.addInitState(
+                                    pddl.GroundPredicate(p.name, [xe._id], p.operator, p.value))
                 else:
                     xtype = p.params[0]["valueType"]
                     ytype = p.params[1]["valueType"]
