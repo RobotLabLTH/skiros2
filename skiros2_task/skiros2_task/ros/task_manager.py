@@ -154,6 +154,8 @@ class TaskManagerNode(PrettyObject, Node):
     def initDomain(self):
         skills = self._wmi.resolve_elements(wmi.Element(":Skill"))
         for skill in skills:
+            if skill.label not in self.skills:
+                continue
             params = {}
             preconds = []
             holdconds = []
