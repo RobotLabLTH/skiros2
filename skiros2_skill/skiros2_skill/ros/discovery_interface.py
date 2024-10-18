@@ -46,7 +46,7 @@ class DiscoveryInterface(object):
         self._sub_description = self._node.create_subscription(
             String, '/{}/description'.format(self._ns), self._description_cb, 10, callback_group=self._discovery_callback_group)
         self._node.create_timer(discovery_period, self.discover)
-        self._active_timeout = Duration(nanoseconds=discovery_period * 2 * 10**9)  # Period before considering a node inactive
+        self._active_timeout = Duration(nanoseconds=discovery_period * 15 * 10**9)  # Period before considering a node inactive
 
     def discover(self, event=None):
         self._pub_discovery.publish(Empty())
